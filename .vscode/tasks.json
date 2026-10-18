@@ -1,0 +1,31 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Validate repository cleanup",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"status",
+				"--short",
+				"--branch"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check My-Teta repository",
+			"type": "shell",
+			"command": "C:\\Users\\ranam\\AppData\\Local\\Microsoft\\WinGet\\Packages\\GitHub.cli_Microsoft.Winget.Source_8wekyb3d8bbwe\\bin\\gh.exe",
+			"args": [
+				"repo",
+				"view",
+				"myteta19/My-Teta",
+				"--json",
+				"name,visibility,url"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}

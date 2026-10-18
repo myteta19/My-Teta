@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#0f172a">
+	<meta name="description" content="A social space for the moments worth keeping.">
+	<title>My Teta | Your people, your moments</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>tailwind.config={theme:{extend:{colors:{ink:'#0f172a',lagoon:'#0d9488',leaf:'#059669',iris:'#6366f1'},fontFamily:{sans:['DM Sans','sans-serif'],display:['Manrope','sans-serif'],editorial:['Newsreader','serif']}}}};</script>
+	<link rel="stylesheet" href="styles.css">
+	<script src="app.js" defer></script>
+</head>
+<body>
+	<a class="skip-link" href="#main-content">Skip to content</a>
+	<header class="topbar">
+		<a class="brand" href="#home" aria-label="My Teta home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>my teta<span class="brand-dot">.</span></span></a>
+		<label class="search-box" aria-label="Search"><span>⌕</span><input id="global-search" type="search" placeholder="Find a moment, a person..."><kbd>/</kbd></label>
+		<nav class="primary-nav" aria-label="Main navigation">
+			<button class="nav-tab is-active" data-view="home" type="button"><span>⌂</span>Home</button>
+			<button class="nav-tab" data-view="friends" type="button"><span>♧</span>Friends</button>
+			<button class="nav-tab" data-view="reels" type="button"><span>▷</span>Reels</button>
+			<button class="nav-tab" data-view="chat" type="button"><span>◌</span>Chat<i class="nav-badge">2</i></button>
+		</nav>
+		<div class="topbar-actions"><button class="icon-button" id="notifications" type="button" aria-label="Notifications" title="Notifications">♧<i class="notification-dot"></i></button><button class="profile-trigger" data-view="profile" type="button" aria-label="Open profile"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&h=96&q=85" alt="Maya Chen"><i></i></button></div>
+	</header>
+
+	<main class="app-shell" id="main-content">
+		<aside class="left-rail">
+			<button class="rail-profile" data-view="profile" type="button"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&h=96&q=85" alt=""><span><strong>Maya Chen</strong><small>@mayainmotion</small></span><b>···</b></button>
+			<p class="rail-label">YOUR SPACE</p>
+			<button class="rail-link is-active" data-view="home" type="button"><span>⌂</span>Feed <small>12</small></button>
+			<button class="rail-link" data-view="friends" type="button"><span>♧</span>People</button>
+			<button class="rail-link" data-view="reels" type="button"><span>▷</span>Reels <em>NEW</em></button>
+			<button class="rail-link" data-view="chat" type="button"><span>◌</span>Messages <small>2</small></button>
+			<button class="rail-link" data-view="profile" type="button"><span>◉</span>Your profile</button>
+			<p class="rail-label circles-label">YOUR CIRCLES <button id="add-circle" type="button" aria-label="Add a circle">+</button></p>
+			<button class="circle-link" type="button"><i class="circle-icon peach">☼</i>Sunday table</button>
+			<button class="circle-link" type="button"><i class="circle-icon lilac">✳</i>Studio people</button>
+			<button class="circle-link" type="button"><i class="circle-icon mint">↗</i>Little escapes</button>
+			<button class="circle-create" id="create-circle" type="button">＋ Create a circle</button>
+			<p class="rail-note"><span>✳</span>Good things happen<br>when we show up.</p>
+		</aside>
+
+		<section class="view-panel" id="home-view">
+			<div class="greeting-row"><div><p class="eyebrow"><i></i>TUESDAY, OCTOBER 17</p><h1>A little closer, <span>Maya.</span></h1><p class="muted">The good stuff is happening around you.</p></div><button class="button button-outline" data-action="write-post" type="button"><b>＋</b> Share a moment</button></div>
+			<section class="stories"><div class="section-heading"><h2>Little windows</h2><button class="text-action" id="all-stories" type="button">See all ↗</button></div><div class="story-list" id="story-list"></div></section>
+			<section class="composer" id="composer"><div class="composer-main"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&h=96&q=85" alt=""><button id="composer-prompt" type="button">What felt like you today?</button><textarea id="post-input" rows="2" maxlength="500" placeholder="What felt like you today?" aria-label="Write a post"></textarea></div><div class="composer-bottom"><span>● Friends</span><div><button type="button" data-action="photo">▧ Photo</button><button type="button" data-action="mood">☺ Feeling</button><button class="button button-primary button-small" id="share-post" type="button">Share ↗</button></div></div></section>
+			<div class="feed-heading"><div><p class="eyebrow">YOUR PEOPLE, LATELY</p><h2>From your circle</h2></div><button class="filter-button" id="feed-filter" type="button">For you ⌄</button></div>
+			<div class="feed-list" id="feed-list"></div><button class="load-more" id="load-more" type="button">That’s the latest <span>✳</span></button>
+		</section>
+
+		<section class="view-panel" id="friends-view" hidden><div class="page-heading"><p class="eyebrow">YOUR WORLD, A LITTLE WIDER</p><h1 id="friends-title">People <span>feel like home.</span></h1><p>Find your people. Keep the good ones close.</p></div><div class="friends-toolbar"><div class="segmented"><button class="is-selected" data-friend-filter="suggested" type="button">For you</button><button data-friend-filter="following" type="button">Following</button></div><span id="friend-count"></span></div><div class="people-grid" id="people-grid"></div></section>
+
+		<section class="view-panel reels-view" id="reels-view" hidden><div class="reels-heading"><div><p class="eyebrow">A QUICK CHANGE OF SCENERY</p><h1>In the <span>moment.</span></h1></div><button class="button button-primary" id="open-reel-modal" type="button">＋ Create reel</button></div><div class="reels-layout"><div class="reel-track" id="reel-track" aria-label="Vertical reels"></div><aside class="reels-note"><span>✳</span><p>Little things<br>look good on you.</p><small id="reels-counter">01 / 03</small></aside></div></section>
+
+		<section class="view-panel chat-view" id="chat-view" hidden><div class="chat-shell"><aside class="chat-sidebar"><div class="chat-title"><div><p class="eyebrow">YOUR PEOPLE</p><h1>Messages<span>.</span></h1></div><button class="icon-button" id="new-message" type="button" aria-label="New message">＋</button></div><label class="chat-search">⌕ <input id="chat-search" type="search" placeholder="Search conversations"></label><div class="chat-filters"><button class="is-active" type="button">All <span>4</span></button><button type="button">Unread <span>2</span></button></div><div class="chat-contact-list" id="chat-contact-list"></div></aside><section class="chat-conversation" aria-label="Conversation"><header class="conversation-header" id="conversation-header"></header><div class="conversation-messages" id="conversation-messages" aria-live="polite"></div><div class="recording-panel" id="recording-panel" hidden><div class="recording-status"><i></i><span id="recording-label">Recording</span><time id="recording-time">00:00</time></div><div class="recording-tools"><label for="voice-effect">Voice</label><select id="voice-effect"><option value="normal">Normal</option><option value="chipmunk">Chipmunk</option><option value="deep">Deep voice</option><option value="echo">Echo</option></select><button class="button button-primary button-small" id="stop-recording" type="button">Finish ■</button></div></div><div class="voice-preview" id="voice-preview-row" hidden><audio id="voice-preview" controls></audio><button class="text-action" id="discard-recording" type="button">Discard</button><button class="button button-primary button-small" id="send-recording" type="button">Send ↗</button></div><form class="message-composer" id="message-form"><button class="icon-button" id="attach-message" type="button" aria-label="Attach file">＋</button><input id="message-input" placeholder="Write something kind..." maxlength="500" autocomplete="off" aria-label="Write a message"><button class="icon-button" id="record-button" type="button" aria-label="Record voice message" title="Record a voice message">◉</button><button class="send-button" type="submit" aria-label="Send message">↗</button></form><p class="voice-hint">◉ Hold a little, say a lot. Voice notes stay on this device.</p></section></div></section>
+
+		<section class="view-panel profile-view" id="profile-view" hidden><div class="profile-cover"></div><div class="profile-overview"><img class="profile-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90" alt="Maya Chen"><div><p class="eyebrow">A WORK IN PROGRESS</p><h1>Maya Chen</h1><p>@mayainmotion · Brooklyn, NY</p></div><button class="button button-outline" id="edit-profile" type="button">Edit profile</button></div><p class="profile-bio">Collecting little things: good light, long walks, and meals that turn into stories. <span>✳</span></p><div class="profile-stats"><div><strong>248</strong><small>friends</small></div><div><strong>86</strong><small>moments</small></div><div><strong>12</strong><small>circles</small></div></div><div class="feed-heading"><div><p class="eyebrow">FROM THE ARCHIVE</p><h2>Your moments</h2></div></div><div class="feed-list" id="profile-feed-list"></div></section>
+
+		<aside class="right-rail"><section class="weather-note"><span>☼</span><div><p class="eyebrow">A GOOD DAY TO</p><strong>Take the long way.</strong><small>Brooklyn · 68° and bright</small></div></section><section class="right-section"><div class="section-heading"><div><p class="eyebrow">AROUND YOU</p><h2>People to know</h2></div><button class="text-action" data-view="friends" type="button">More ↗</button></div><div class="suggestion-list" id="suggestion-list"></div></section><section class="birthday-note"><span>✿</span><div><p class="eyebrow">A LITTLE REMINDER</p><strong>Two birthdays this week</strong><button class="text-action" id="birthday-note" type="button">Send a little love ↗</button></div></section><footer class="right-footer">About　Privacy　Community　© 2026 My Teta</footer></aside>
+		<nav class="mobile-nav" aria-label="Mobile navigation"><button class="is-active" data-view="home" aria-label="Home" type="button">⌂</button><button data-view="friends" aria-label="Friends" type="button">♧</button><button class="mobile-create" data-action="write-post" aria-label="Share a moment" type="button">＋</button><button data-view="reels" aria-label="Reels" type="button">▷</button><button data-view="chat" aria-label="Chat" type="button">◌</button></nav>
+	</main>
+
+	<div class="modal-backdrop" id="auth-modal" hidden><section class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-title"><button class="modal-close" data-close-modal type="button" aria-label="Close">×</button><div class="modal-brand"><span class="brand-mark"><i></i><i></i><i></i></span>my teta<span class="brand-dot">.</span></div><p class="eyebrow">A PLACE FOR YOUR PEOPLE</p><h2 id="auth-title">Come on in.</h2><p class="modal-subtitle">A little more you, a little more together.</p><div class="auth-tabs"><button id="auth-signin-tab" class="is-selected" type="button">Sign in</button><button id="auth-signup-tab" type="button">Create account</button></div><form id="auth-form" novalidate><label class="form-field">Email address<input id="auth-email" type="email" autocomplete="email" placeholder="you@example.com" required></label><label class="form-field">Password<input id="auth-password" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters" required></label><p class="form-error" id="auth-error" role="alert"></p><button class="button button-primary auth-submit" id="auth-submit" type="submit">Sign in ↗</button></form><div class="auth-divider">OR, KEEP IT SIMPLE</div><div class="oauth-row"><button class="oauth-button" data-oauth="Apple" type="button">● Apple</button><button class="oauth-button" data-oauth="Google" type="button"><b>G</b> Google</button></div><p class="demo-note">Frontend demo only. Account services are not connected.</p></section></div>
+
+	<div class="modal-backdrop" id="reel-modal" hidden><section class="modal" role="dialog" aria-modal="true" aria-labelledby="reel-modal-title"><button class="modal-close" data-close-modal type="button" aria-label="Close">×</button><p class="eyebrow">A SMALL WINDOW INTO YOUR DAY</p><h2 id="reel-modal-title">Make a reel.</h2><p class="modal-subtitle">The in-between bits are the best bits.</p><form id="reel-form"><label class="upload-zone" for="reel-file"><input id="reel-file" type="file" accept="video/*" hidden><b>↥</b><strong id="upload-label">Choose a video</strong><small>MP4, MOV · keep it under 60 seconds</small></label><video id="reel-upload-preview" controls playsinline hidden></video><label class="form-field">Add a caption<textarea id="reel-caption" maxlength="180" rows="3" placeholder="A moment worth keeping..."></textarea></label><label class="sensitivity-toggle"><span><strong>18+ sensitivity</strong><small>Blur the cover for sensitive moments</small></span><input type="checkbox" id="sensitive-toggle"><i></i></label><button class="button button-primary auth-submit" id="publish-reel" type="submit" disabled>Share reel ↗</button></form></section></div>
+	<div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
