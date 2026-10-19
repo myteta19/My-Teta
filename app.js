@@ -3942,25 +3942,6 @@
         document.getElementById('contact-subject')?.focus();
       });
     }
-
-    // 7. FAQ Accordion Click Handlers
-    document.querySelectorAll('.faq-question').forEach(qBtn => {
-      qBtn.addEventListener('click', () => {
-        const item = qBtn.closest('.faq-item');
-        if (!item) return;
-        const isOpen = item.classList.contains('is-open');
-        document.querySelectorAll('.faq-item').forEach(i => {
-          i.classList.remove('is-open');
-          const icon = i.querySelector('.faq-toggle-icon');
-          if (icon) icon.textContent = '＋';
-        });
-        if (!isOpen) {
-          item.classList.add('is-open');
-          const icon = item.querySelector('.faq-toggle-icon');
-          if (icon) icon.textContent = '−';
-        }
-      });
-    });
   }
 
   // ==========================================
