@@ -416,30 +416,86 @@
       id: 1,
       name: "Amara Vance",
       avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
+      status: "Active now · Ceramicist & Sculptor",
+      online: true,
       lastMsg: "Did the tea arrive yet? Let me know!",
       time: "10:14 AM",
       unread: 2,
       messages: [
-        { type: "received", text: "Hey Maya! Are we still on for farmer's market on Saturday?" },
-        { type: "sent", text: "Yes absolutely! Let's meet at 9:30 before the peaches sell out." },
-        { type: "received", text: "Did the tea arrive yet? Let me know!" }
+        { type: "received", text: "Hey Maya! Are we still on for farmer's market on Saturday?", time: "10:08 AM" },
+        { type: "sent", text: "Yes absolutely! Let's meet at 9:30 before the peaches sell out.", time: "10:11 AM" },
+        { type: "received", text: "Did the tea arrive yet? Let me know!", time: "10:14 AM" }
+      ],
+      autoReplies: [
+        "Yes! Brewing some fresh sencha right now 🍵",
+        "Can't wait! I'll bring the new porcelain tea cups from the kiln.",
+        "Sounds delightful! See you at 9:30 sharp ✨",
+        "Perfect, let me know when you're on your way!"
       ]
     },
     {
       id: 2,
       name: "Soren Kierkegaard",
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
+      status: "Active 20m ago · Sunday Table Host",
+      online: true,
       lastMsg: "I saved two slices of the sourdough for you.",
       time: "Yesterday",
       unread: 0,
       messages: [
-        { type: "received", text: "I saved two slices of the sourdough for you." },
-        { type: "sent", text: "You're an angel! I'll swing by after the studio session." }
+        { type: "received", text: "I saved two slices of the sourdough for you with whipped honey butter.", time: "Yesterday, 4:15 PM" },
+        { type: "sent", text: "You're an angel! I'll swing by after the studio session.", time: "Yesterday, 4:22 PM" },
+        { type: "received", text: "I saved two slices of the sourdough for you.", time: "Yesterday, 4:28 PM" }
+      ],
+      autoReplies: [
+        "Anytime! The crust came out super crispy today 🍞",
+        "Let me know when you arrive, I'll put the kettle on.",
+        "Save room for apple cinnamon tart too! 🍎"
+      ]
+    },
+    {
+      id: 3,
+      name: "Lucas Dubois",
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
+      status: "Active 1h ago · Hudson Valley Explorer",
+      online: false,
+      lastMsg: "The trail photos look unreal! Did you see the sunset?",
+      time: "Oct 17",
+      unread: 1,
+      messages: [
+        { type: "received", text: "Did you catch the mist rolling over the ridges this morning?", time: "Oct 17, 8:10 AM" },
+        { type: "sent", text: "Yes! Captured some 35mm film shots from the ridge overlook.", time: "Oct 17, 9:02 AM" },
+        { type: "received", text: "The trail photos look unreal! Did you see the sunset?", time: "Oct 17, 7:45 PM" }
+      ],
+      autoReplies: [
+        "Film colors hit different out here! Can't wait for your prints.",
+        "Next weekend we're hiking the north ridge trail if you're up for it 🌲",
+        "Sending good vibes from upstate!"
+      ]
+    },
+    {
+      id: 4,
+      name: "Priya Patel",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+      status: "Active in circle · Botanist & Maker",
+      online: true,
+      lastMsg: "Loved the tea recommendation, thank you so much!",
+      time: "Oct 15",
+      unread: 0,
+      messages: [
+        { type: "sent", text: "Priya, have you tried the roasted oolong from the small farm yet?", time: "Oct 15, 2:10 PM" },
+        { type: "received", text: "Loved the tea recommendation, thank you so much!", time: "Oct 15, 2:40 PM" }
+      ],
+      autoReplies: [
+        "The botanical garden gathering starts at 4pm on Sunday if you'd like to join!",
+        "I saved some jasmine cuttings for you as well 🌿",
+        "Have a wonderful week Maya!"
       ]
     }
   ];
 
   let activeChatId = 1;
+  let chatFilterMode = 'all';
 
   // ==========================================
   // NOTIFICATIONS & FRIEND REQUESTS DATA
@@ -598,7 +654,10 @@
     const rightRail = document.querySelector('.right-rail');
 
     if (viewName === 'reels') {
-      if (appShell) appShell.classList.add('is-reels-active');
+      if (appShell) {
+        appShell.classList.add('is-reels-active');
+        appShell.classList.remove('is-chat-active');
+      }
       if (rightRail) rightRail.style.display = 'none';
       // Autoplay active reel if video exists
       const activeVideo = document.getElementById('active-reel-video');
@@ -610,8 +669,32 @@
           if (wave) wave.classList.add('is-playing');
         }).catch(() => {});
       }
+    } else if (viewName === 'chat') {
+      if (appShell) {
+        appShell.classList.add('is-chat-active');
+        appShell.classList.remove('is-reels-active');
+      }
+      if (rightRail) rightRail.style.display = 'none';
+      // Pause video when leaving reels view
+      const activeVideo = document.getElementById('active-reel-video');
+      if (activeVideo && !activeVideo.paused) {
+        activeVideo.pause();
+        const wrapper = document.getElementById('reel-video-wrapper');
+        if (wrapper) wrapper.classList.add('is-paused');
+        const wave = document.getElementById('player-soundwave');
+        if (wave) wave.classList.remove('is-playing');
+      }
+      if (typeof renderChat === 'function') renderChat();
+      setTimeout(() => {
+        const msgInput = document.getElementById('message-input');
+        if (msgInput) msgInput.focus();
+        const msgBox = document.getElementById('conversation-messages');
+        if (msgBox) msgBox.scrollTop = msgBox.scrollHeight;
+      }, 50);
     } else {
-      if (appShell) appShell.classList.remove('is-reels-active');
+      if (appShell) {
+        appShell.classList.remove('is-reels-active', 'is-chat-active');
+      }
       if (rightRail) rightRail.style.display = '';
       // Pause video when leaving reels view to prevent background audio
       const activeVideo = document.getElementById('active-reel-video');
@@ -1904,42 +1987,109 @@
   }
 
   // ==========================================
-  // 10. CHAT SYSTEM
+  // 10. CHAT SYSTEM (FOCUSED INSTANT MESSAGING)
   // ==========================================
   const chatContactList = document.getElementById('chat-contact-list');
   const conversationHeader = document.getElementById('conversation-header');
   const conversationMessages = document.getElementById('conversation-messages');
   const messageForm = document.getElementById('message-form');
   const messageInput = document.getElementById('message-input');
-  const recordButton = document.getElementById('record-button');
-  const recordingPanel = document.getElementById('recording-panel');
-  const stopRecordingBtn = document.getElementById('stop-recording');
-  const voicePreviewRow = document.getElementById('voice-preview-row');
+  const chatSearchInput = document.getElementById('chat-search');
+  const typingIndicator = document.getElementById('chat-typing-indicator');
+  const typingLabel = document.getElementById('typing-label');
+  const attachMessageBtn = document.getElementById('attach-message');
+  const newMessageBtn = document.getElementById('new-message');
+
+  function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function updateChatBadges() {
+    const allCount = CHATS.length;
+    const unreadCount = CHATS.filter(c => c.unread > 0).length;
+    const elAll = document.getElementById('chat-count-all');
+    const elUnread = document.getElementById('chat-count-unread');
+    if (elAll) elAll.textContent = allCount;
+    if (elUnread) elUnread.textContent = unreadCount;
+  }
+
+  function getFilteredChats() {
+    const query = chatSearchInput ? chatSearchInput.value.trim().toLowerCase() : '';
+    return CHATS.filter(chat => {
+      const matchesFilter = (chatFilterMode === 'unread') ? (chat.unread > 0) : true;
+      const matchesSearch = !query || 
+        chat.name.toLowerCase().includes(query) || 
+        (chat.lastMsg && chat.lastMsg.toLowerCase().includes(query));
+      return matchesFilter && matchesSearch;
+    });
+  }
 
   function renderChat() {
+    updateChatBadges();
     if (!chatContactList) return;
-    chatContactList.innerHTML = CHATS.map(chat => `
-      <div class="chat-item ${chat.id === activeChatId ? 'is-selected' : ''}" data-chat-id="${chat.id}">
-        <img src="${chat.avatar}" alt="${chat.name}">
-        <div class="chat-item-body">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>${chat.name}</strong>
-            <small style="color:var(--ink-faint); font-size:0.7rem;">${chat.time}</small>
-          </div>
-          <p>${chat.lastMsg}</p>
+
+    const filtered = getFilteredChats();
+
+    if (filtered.length === 0) {
+      chatContactList.innerHTML = `
+        <div style="padding: 32px 16px; text-align: center; color: var(--ink-faint); font-size: 0.85rem;">
+          <p style="margin: 0 0 4px; font-weight: 600;">No conversations found</p>
+          <small>Try clearing your search or filter</small>
         </div>
-      </div>
-    `).join('');
+      `;
+    } else {
+      chatContactList.innerHTML = filtered.map(chat => `
+        <div class="chat-item ${chat.id === activeChatId ? 'is-selected' : ''}" data-chat-id="${chat.id}" role="button" tabindex="0" aria-label="Chat with ${escapeHTML(chat.name)}">
+          <div class="chat-avatar-wrap">
+            <img src="${chat.avatar}" alt="${escapeHTML(chat.name)}">
+            ${chat.online ? '<span class="chat-online-dot" title="Active now"></span>' : ''}
+          </div>
+          <div class="chat-item-body">
+            <div class="chat-item-header">
+              <strong>${escapeHTML(chat.name)}</strong>
+              <time>${chat.time}</time>
+            </div>
+            <div class="chat-item-preview">
+              <p>${escapeHTML(chat.lastMsg)}</p>
+              ${chat.unread > 0 ? `<span class="chat-unread-badge">${chat.unread}</span>` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
 
     chatContactList.querySelectorAll('[data-chat-id]').forEach(item => {
       item.addEventListener('click', () => {
-        activeChatId = Number(item.dataset.chatId);
-        renderChat();
-        renderConversation();
+        const id = Number(item.dataset.chatId);
+        selectChat(id);
       });
     });
 
     renderConversation();
+  }
+
+  function selectChat(id) {
+    activeChatId = id;
+    const currentChat = CHATS.find(c => c.id === activeChatId);
+    if (currentChat && currentChat.unread > 0) {
+      currentChat.unread = 0;
+      updateChatBadges();
+    }
+    if (messageInput && currentChat) {
+      messageInput.placeholder = `Write a message to ${currentChat.name.split(' ')[0]}...`;
+    }
+    renderChat();
+    renderConversation();
+
+    // Mobile sidebar toggle support
+    const shell = document.querySelector('.chat-shell');
+    if (shell) shell.classList.remove('show-sidebar');
   }
 
   function renderConversation() {
@@ -1947,25 +2097,51 @@
     if (!currentChat) return;
 
     if (conversationHeader) {
+      const roleText = currentChat.status ? (currentChat.status.split('·')[1]?.trim() || currentChat.status) : 'In your circle';
       conversationHeader.innerHTML = `
-        <img src="${currentChat.avatar}" alt="${currentChat.name}">
-        <div>
-          <strong>${currentChat.name}</strong>
-          <small style="display:block; font-size:0.75rem; color:var(--leaf);">Active in your circle</small>
+        <div class="conversation-header-user">
+          <div class="conversation-header-avatar">
+            <img src="${currentChat.avatar}" alt="${escapeHTML(currentChat.name)}">
+            ${currentChat.online ? '<span class="chat-online-dot"></span>' : ''}
+          </div>
+          <div class="conversation-header-info">
+            <strong>${escapeHTML(currentChat.name)}</strong>
+            <small>${currentChat.online ? '● Active now' : 'Active recently'} · ${escapeHTML(roleText)}</small>
+          </div>
+        </div>
+        <div class="conversation-header-actions">
+          <button class="chat-action-btn" type="button" id="chat-call-btn" title="Audio call">📞</button>
+          <button class="chat-action-btn" type="button" id="chat-video-btn" title="Video call">📹</button>
+          <button class="chat-action-btn" type="button" id="chat-info-btn" title="Conversation info">ⓘ</button>
         </div>
       `;
+
+      document.getElementById('chat-call-btn')?.addEventListener('click', () => {
+        showToast(`Starting voice call with ${currentChat.name}...`, "📞");
+      });
+      document.getElementById('chat-video-btn')?.addEventListener('click', () => {
+        showToast(`Connecting video stream with ${currentChat.name}...`, "📹");
+      });
+      document.getElementById('chat-info-btn')?.addEventListener('click', () => {
+        showToast(`${currentChat.name} · ${currentChat.status}`, "ℹ");
+      });
     }
 
     if (conversationMessages) {
-      conversationMessages.innerHTML = currentChat.messages.map(msg => `
-        <div class="msg ${msg.type === 'sent' ? 'msg-sent' : 'msg-received'}">
-          ${msg.text}
-        </div>
-      `).join('');
+      conversationMessages.innerHTML = `
+        <div class="msg-date-divider"><span>Today</span></div>
+        ${currentChat.messages.map(msg => `
+          <div class="msg-wrap ${msg.type === 'sent' ? 'msg-sent' : 'msg-received'}">
+            <div class="msg-bubble">${msg.isHTML ? msg.text : escapeHTML(msg.text)}</div>
+            <span class="msg-time">${msg.time || 'Just now'}</span>
+          </div>
+        `).join('')}
+      `;
       conversationMessages.scrollTop = conversationMessages.scrollHeight;
     }
   }
 
+  // Handle Send Message
   if (messageForm && messageInput) {
     messageForm.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -1973,73 +2149,118 @@
       if (!text) return;
 
       const currentChat = CHATS.find(c => c.id === activeChatId);
-      if (currentChat) {
-        currentChat.messages.push({ type: 'sent', text });
-        currentChat.lastMsg = text;
+      if (!currentChat) return;
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+      // Append user's sent message
+      currentChat.messages.push({
+        type: 'sent',
+        text: text,
+        time: timeStr
+      });
+      currentChat.lastMsg = text;
+      currentChat.time = "Just now";
+      messageInput.value = "";
+
+      renderConversation();
+      renderChat();
+
+      // Show typing indicator after brief delay
+      if (typingIndicator) {
+        setTimeout(() => {
+          typingIndicator.hidden = false;
+          if (typingLabel) {
+            typingLabel.textContent = `${currentChat.name.split(' ')[0]} is typing...`;
+          }
+          if (conversationMessages) {
+            conversationMessages.scrollTop = conversationMessages.scrollHeight;
+          }
+        }, 300);
+      }
+
+      // Simulate realistic incoming reply
+      setTimeout(() => {
+        if (typingIndicator) typingIndicator.hidden = true;
+
+        let replyText = "Sounds great! Catch you later today ☕";
+        if (currentChat.autoReplies && currentChat.autoReplies.length > 0) {
+          const randIdx = Math.floor(Math.random() * currentChat.autoReplies.length);
+          replyText = currentChat.autoReplies[randIdx];
+        }
+
+        const replyNow = new Date();
+        const replyTimeStr = replyNow.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+        currentChat.messages.push({
+          type: 'received',
+          text: replyText,
+          time: replyTimeStr
+        });
+        currentChat.lastMsg = replyText;
         currentChat.time = "Just now";
-        messageInput.value = "";
+
         renderConversation();
         renderChat();
-
-        // Simulate reply after 1.5s
-        setTimeout(() => {
-          currentChat.messages.push({
-            type: 'received',
-            text: "Sounds great! Catch you later today ☕"
-          });
-          currentChat.lastMsg = "Sounds great! Catch you later today ☕";
-          renderConversation();
-          renderChat();
-        }, 1500);
-      }
+      }, 1400);
     });
   }
 
-  // Voice recording mock
-  if (recordButton && recordingPanel && stopRecordingBtn) {
-    let recordingTimer = null;
-    let seconds = 0;
-
-    recordButton.addEventListener('click', () => {
-      recordingPanel.hidden = false;
-      seconds = 0;
-      const timeDisplay = document.getElementById('recording-time');
-      recordingTimer = setInterval(() => {
-        seconds++;
-        const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
-        const secs = String(seconds % 60).padStart(2, '0');
-        if (timeDisplay) timeDisplay.textContent = `${mins}:${secs}`;
-      }, 1000);
-    });
-
-    stopRecordingBtn.addEventListener('click', () => {
-      clearInterval(recordingTimer);
-      recordingPanel.hidden = true;
-      if (voicePreviewRow) voicePreviewRow.hidden = false;
-      showToast("Voice note recorded with sound filter applied!", "◉");
-    });
-  }
-
-  const sendRecordingBtn = document.getElementById('send-recording');
-  const discardRecordingBtn = document.getElementById('discard-recording');
-  if (sendRecordingBtn && voicePreviewRow) {
-    sendRecordingBtn.addEventListener('click', () => {
-      voicePreviewRow.hidden = true;
+  // Photo / Moment Attachment
+  if (attachMessageBtn) {
+    attachMessageBtn.addEventListener('click', () => {
       const currentChat = CHATS.find(c => c.id === activeChatId);
-      if (currentChat) {
-        currentChat.messages.push({
-          type: 'sent',
-          text: "🎙️ Voice Note (0:08) — [Echo effect]"
-        });
-        renderConversation();
-        showToast("Voice note sent!", "↗");
-      }
+      if (!currentChat) return;
+
+      const photoMoments = [
+        "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80"
+      ];
+      const randomPhoto = photoMoments[Math.floor(Math.random() * photoMoments.length)];
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+      currentChat.messages.push({
+        type: 'sent',
+        text: `📷 Shared a photo moment:<br><img src="${randomPhoto}" alt="Photo moment" style="max-width:240px; width:100%; border-radius:12px; margin-top:8px; display:block; box-shadow:0 2px 8px rgba(0,0,0,0.1);">`,
+        isHTML: true,
+        time: timeStr
+      });
+      currentChat.lastMsg = "📷 Shared a photo moment";
+      currentChat.time = "Just now";
+
+      renderConversation();
+      renderChat();
+      showToast(`Photo sent to ${currentChat.name}!`, "📷");
     });
   }
-  if (discardRecordingBtn && voicePreviewRow) {
-    discardRecordingBtn.addEventListener('click', () => {
-      voicePreviewRow.hidden = true;
-      showToast("Recording discarded", "×");
+
+  // Filter Buttons (All vs Unread)
+  document.querySelectorAll('.chat-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.chat-filter-btn').forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      chatFilterMode = btn.dataset.chatFilter || 'all';
+      renderChat();
+    });
+  });
+
+  // Search Conversations
+  if (chatSearchInput) {
+    chatSearchInput.addEventListener('input', () => {
+      renderChat();
+    });
+  }
+
+  // New Message Button
+  if (newMessageBtn) {
+    newMessageBtn.addEventListener('click', () => {
+      if (chatSearchInput) {
+        chatSearchInput.focus();
+        showToast("Search contacts to start a new chat", "✍️");
+      }
     });
   }
 

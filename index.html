@@ -465,7 +465,58 @@
 			</div>
 		</section>
 
-		<section class="view-panel chat-view" id="chat-view" hidden><div class="chat-shell"><aside class="chat-sidebar"><div class="chat-title"><div><p class="eyebrow">YOUR PEOPLE</p><h1>Messages<span>.</span></h1></div><button class="icon-button" id="new-message" type="button" aria-label="New message">＋</button></div><label class="chat-search">⌕ <input id="chat-search" type="search" placeholder="Search conversations"></label><div class="chat-filters"><button class="is-active" type="button">All <span>4</span></button><button type="button">Unread <span>2</span></button></div><div class="chat-contact-list" id="chat-contact-list"></div></aside><section class="chat-conversation" aria-label="Conversation"><header class="conversation-header" id="conversation-header"></header><div class="conversation-messages" id="conversation-messages" aria-live="polite"></div><div class="recording-panel" id="recording-panel" hidden><div class="recording-status"><i></i><span id="recording-label">Recording</span><time id="recording-time">00:00</time></div><div class="recording-tools"><label for="voice-effect">Voice</label><select id="voice-effect"><option value="normal">Normal</option><option value="chipmunk">Chipmunk</option><option value="deep">Deep voice</option><option value="echo">Echo</option></select><button class="button button-primary button-small" id="stop-recording" type="button">Finish ■</button></div></div><div class="voice-preview" id="voice-preview-row" hidden><audio id="voice-preview" controls></audio><button class="text-action" id="discard-recording" type="button">Discard</button><button class="button button-primary button-small" id="send-recording" type="button">Send ↗</button></div><form class="message-composer" id="message-form"><button class="icon-button" id="attach-message" type="button" aria-label="Attach file">＋</button><input id="message-input" placeholder="Write something kind..." maxlength="500" autocomplete="off" aria-label="Write a message"><button class="icon-button" id="record-button" type="button" aria-label="Record voice message" title="Record a voice message">◉</button><button class="send-button" type="submit" aria-label="Send message">↗</button></form><p class="voice-hint">◉ Hold a little, say a lot. Voice notes stay on this device.</p></section></div></section>
+		<section class="view-panel chat-view" id="chat-view" hidden>
+			<div class="chat-shell">
+				<!-- Chat Contacts Sidebar -->
+				<aside class="chat-sidebar">
+					<div class="chat-title">
+						<div>
+							<p class="eyebrow">YOUR PEOPLE</p>
+							<h1>Messages<span>.</span></h1>
+						</div>
+						<button class="icon-button" id="new-message" type="button" aria-label="Start new conversation" title="New message">＋</button>
+					</div>
+
+					<div class="chat-search-wrap">
+						<label class="chat-search">
+							<span class="chat-search-icon">⌕</span>
+							<input id="chat-search" type="search" placeholder="Search conversations...">
+						</label>
+					</div>
+
+					<div class="chat-filters" role="tablist">
+						<button class="chat-filter-btn is-active" data-chat-filter="all" type="button">All <span id="chat-count-all">4</span></button>
+						<button class="chat-filter-btn" data-chat-filter="unread" type="button">Unread <span id="chat-count-unread">1</span></button>
+					</div>
+
+					<div class="chat-contact-list" id="chat-contact-list"></div>
+				</aside>
+
+				<!-- Main Conversation Stage -->
+				<section class="chat-conversation" aria-label="Active conversation">
+					<header class="conversation-header" id="conversation-header"></header>
+
+					<div class="conversation-messages" id="conversation-messages" aria-live="polite"></div>
+
+					<!-- Typing Indicator -->
+					<div class="chat-typing-indicator" id="chat-typing-indicator" hidden>
+						<div class="typing-bubble">
+							<span class="dot"></span>
+							<span class="dot"></span>
+							<span class="dot"></span>
+						</div>
+						<span id="typing-label">Amara is typing...</span>
+					</div>
+
+					<!-- Clean Focused Message Composer -->
+					<form class="message-composer" id="message-form">
+						<button class="chat-composer-btn" id="attach-message" type="button" title="Send photo moment" aria-label="Attach photo">📎</button>
+						<input id="message-input" type="text" placeholder="Write a message to Amara..." maxlength="500" autocomplete="off" aria-label="Write a message" required>
+						<button class="send-button" type="submit" aria-label="Send message" title="Send message">↗</button>
+					</form>
+				</section>
+			</div>
+		</section>
 
 		<section class="view-panel profile-view" id="profile-view" hidden>
 			<!-- Profile Header Card -->
