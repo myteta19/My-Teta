@@ -78,9 +78,58 @@
   ];
 
   const REELS = [
-    { id: 1, author: "Maya Chen", avatar: CURRENT_USER.avatar, caption: "Rainy afternoon in Fort Greene 🌧️ #brooklyn #moments", image: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=600&q=80", likes: 142 },
-    { id: 2, author: "Amara Vance", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80", caption: "Centering clay on the kick wheel ✨ pure meditation", image: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=600&q=80", likes: 219 },
-    { id: 3, author: "Julian Lee", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80", caption: "Sunset shadow play over Brutalist facades 🌇", image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80", likes: 88 }
+    {
+      id: 1,
+      author: "Maya Chen",
+      handle: "@mayainmotion",
+      avatar: CURRENT_USER.avatar,
+      caption: "Rainy afternoon in Fort Greene 🌧️ finding calm in the rhythm of the drops.",
+      image: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=600&q=80",
+      likes: 142,
+      views: "18.4k",
+      duration: "0:24",
+      music: "Lo-Fi Rain · Brooklyn Chill",
+      isLiked: false
+    },
+    {
+      id: 2,
+      author: "Amara Vance",
+      handle: "@amarav",
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
+      caption: "Centering clay on the kick wheel ✨ pure theta state meditation.",
+      image: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=600&q=80",
+      likes: 219,
+      views: "29.1k",
+      duration: "0:36",
+      music: "Ceramics Ambient · Studio Vol. 2",
+      isLiked: true
+    },
+    {
+      id: 3,
+      author: "Julian Lee",
+      handle: "@julianlee",
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
+      caption: "Sunset shadow play over Brutalist facades 🌇 evening geometry.",
+      image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80",
+      likes: 88,
+      views: "12.7k",
+      duration: "0:19",
+      music: "Golden Hour Glow · City Synth",
+      isLiked: false
+    },
+    {
+      id: 4,
+      author: "Lucas Dubois",
+      handle: "@lucas_d",
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
+      caption: "Hidden waterfall trail in Hudson Valley 🌿 breath of fresh mountain air.",
+      image: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80",
+      likes: 312,
+      views: "42.5k",
+      duration: "0:45",
+      music: "Forest Stream & Birds · Nature Sound",
+      isLiked: false
+    }
   ];
 
   const CHATS = [
@@ -126,6 +175,8 @@
 
   const navTabs = document.querySelectorAll('.nav-tab, .rail-link, .mobile-nav button[data-view], [data-view]');
   const storyList = document.getElementById('story-list');
+  const homeReelsTrack = document.getElementById('home-reels-track');
+  const homeCreateReelBtn = document.getElementById('home-create-reel');
   const feedList = document.getElementById('feed-list');
   const profileFeedList = document.getElementById('profile-feed-list');
   const peopleGrid = document.getElementById('people-grid');
@@ -392,27 +443,115 @@
   });
 
   // ==========================================
-  // 9. REELS VIEW & CAROUSEL
+  // 9. REELS VIEW & HOME REELS SHOWCASE
   // ==========================================
+  function renderHomeReels() {
+    if (!homeReelsTrack) return;
+    homeReelsTrack.innerHTML = REELS.map(reel => `
+      <article class="home-reel-card" data-reel-id="${reel.id}" tabindex="0" role="button" aria-label="Watch reel by ${reel.author}">
+        <div class="home-reel-media">
+          <img src="${reel.image}" alt="${reel.caption}" loading="lazy">
+          <span class="home-reel-duration">${reel.duration}</span>
+          <div class="home-reel-play" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </div>
+          <div class="sound-wave-badge" title="${reel.music}">
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="home-reel-info">
+          <div class="home-reel-author">
+            <img src="${reel.avatar}" alt="${reel.author}">
+            <strong>${reel.author}</strong>
+          </div>
+          <p class="home-reel-caption">${reel.caption}</p>
+          <div class="home-reel-meta">
+            <span class="reel-views">👁 ${reel.views}</span>
+            <button class="reel-like-chip ${reel.isLiked ? 'is-liked' : ''}" data-reel-like="${reel.id}" type="button" aria-label="Like reel">
+              <span>${reel.isLiked ? '♥' : '♡'}</span> <span>${reel.likes}</span>
+            </button>
+          </div>
+        </div>
+      </article>
+    `).join('');
+
+    homeReelsTrack.querySelectorAll('.home-reel-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('[data-reel-like]')) return;
+        const reelId = card.dataset.reelId;
+        const reel = REELS.find(r => r.id == reelId);
+        showToast(`Playing ${reel.author}'s reel...`, '▷');
+        switchView('reels');
+      });
+    });
+
+    homeReelsTrack.querySelectorAll('[data-reel-like]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const reelId = btn.dataset.reelLike;
+        const reel = REELS.find(r => r.id == reelId);
+        if (reel) {
+          reel.isLiked = !reel.isLiked;
+          reel.likes += reel.isLiked ? 1 : -1;
+          renderHomeReels();
+          renderReels();
+          showToast(reel.isLiked ? "Saved reel to your moments ♥" : "Unliked reel", reel.isLiked ? "♥" : "♡");
+        }
+      });
+    });
+  }
+
   function renderReels() {
     if (!reelTrack) return;
     reelTrack.innerHTML = REELS.map(reel => `
-      <div class="reel-item">
+      <div class="reel-item" id="reel-item-${reel.id}">
         <img src="${reel.image}" alt="${reel.caption}">
         <div class="reel-overlay">
           <div class="reel-author">
             <img src="${reel.avatar}" alt="${reel.author}">
-            <strong>${reel.author}</strong>
+            <div>
+              <strong>${reel.author}</strong>
+              <small style="display:block; font-size:0.75rem; color:rgba(255,255,255,0.7);">${reel.handle || ''} · ${reel.music}</small>
+            </div>
           </div>
           <p class="reel-caption">${reel.caption}</p>
         </div>
         <div class="reel-actions-side">
-          <button class="reel-side-btn" title="Like">♥</button>
-          <button class="reel-side-btn" title="Comment">💬</button>
-          <button class="reel-side-btn" title="Share">↗</button>
+          <button class="reel-side-btn ${reel.isLiked ? 'is-liked' : ''}" data-reel-like="${reel.id}" title="Like" type="button">
+            ${reel.isLiked ? '♥' : '♡'}
+          </button>
+          <button class="reel-side-btn" title="Comment" type="button">💬</button>
+          <button class="reel-side-btn" title="Share" type="button" data-reel-share="${reel.id}">↗</button>
         </div>
       </div>
     `).join('');
+
+    reelTrack.querySelectorAll('[data-reel-like]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const reelId = btn.dataset.reelLike;
+        const reel = REELS.find(r => r.id == reelId);
+        if (reel) {
+          reel.isLiked = !reel.isLiked;
+          reel.likes += reel.isLiked ? 1 : -1;
+          renderReels();
+          renderHomeReels();
+          showToast(reel.isLiked ? "Liked reel!" : "Unliked reel", "♥");
+        }
+      });
+    });
+
+    reelTrack.querySelectorAll('[data-reel-share]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(window.location.href);
+          showToast("Reel link copied!", "↗");
+        } else {
+          showToast("Reel shared!", "↗");
+        }
+      });
+    });
 
     if (reelsCounter) {
       reelsCounter.textContent = `01 / 0${REELS.length}`;
@@ -569,6 +708,28 @@
     });
   }
 
+  if (homeCreateReelBtn && reelModal) {
+    homeCreateReelBtn.addEventListener('click', () => {
+      reelModal.hidden = false;
+    });
+  }
+
+  // Quick action: Share moment buttons (topbar, greeting row, mobile nav)
+  document.querySelectorAll('[data-action="write-post"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchView('home');
+      const composer = document.getElementById('composer');
+      if (composer) {
+        composer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        composer.classList.add('composer-highlight');
+        setTimeout(() => composer.classList.remove('composer-highlight'), 1200);
+      }
+      if (postInput) {
+        setTimeout(() => postInput.focus(), 300);
+      }
+    });
+  });
+
   document.querySelectorAll('[data-close-modal]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (authModal) authModal.hidden = true;
@@ -607,6 +768,7 @@
   // 12. INITIALIZATION
   // ==========================================
   renderStories();
+  renderHomeReels();
   renderFeed();
   renderFriends('suggested');
   renderReels();
