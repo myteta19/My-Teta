@@ -52,6 +52,7 @@
 			<button class="nav-tab" data-view="friends" type="button"><span>♧</span>Friends</button>
 			<button class="nav-tab" data-view="reels" type="button"><span>▷</span>Reels<i class="nav-pill-badge">HOT</i></button>
 			<button class="nav-tab" data-view="chat" type="button"><span>◌</span>Chat<i class="nav-badge">2</i></button>
+			<button class="nav-tab" data-view="settings" type="button"><span>⚙</span>Settings</button>
 		</nav>
 		<div class="topbar-actions">
 			<button class="button button-primary button-small topbar-share-btn" data-action="write-post" type="button"><b>＋</b> Share</button>
@@ -90,6 +91,7 @@
 			<button class="rail-link" data-view="reels" type="button"><span>▷</span>Reels <em class="pulse-em">LIVE</em></button>
 			<button class="rail-link" data-view="chat" type="button"><span>◌</span>Messages <small>2</small></button>
 			<button class="rail-link" data-view="profile" type="button"><span>◉</span>Your profile</button>
+			<button class="rail-link" data-view="settings" type="button"><span>⚙</span>Settings</button>
 			<p class="rail-label circles-label">YOUR CIRCLES <button id="add-circle" type="button" aria-label="Add a circle">+</button></p>
 			<button class="circle-link" type="button"><i class="circle-icon peach">☼</i>Sunday table</button>
 			<button class="circle-link" type="button"><i class="circle-icon lilac">✳</i>Studio people</button>
@@ -541,6 +543,9 @@
 						<button class="button button-outline button-small" id="jump-password-btn" type="button">
 							🔒 Security
 						</button>
+						<button class="button button-outline button-small" data-view="settings" type="button">
+							⚙ Settings
+						</button>
 						<button class="icon-button" id="share-profile-btn" type="button" title="Share profile" aria-label="Share profile">
 							↗
 						</button>
@@ -806,8 +811,729 @@
 			</div>
 		</section>
 
+		<!-- SETTINGS & APP MANAGEMENT VIEW -->
+		<section class="view-panel settings-view" id="settings-view" hidden>
+			<!-- Settings Header -->
+			<div class="settings-page-header">
+				<div class="settings-page-header-text">
+					<p class="eyebrow"><i class="pulse-dot"></i>APP CONTROLS & MANAGEMENT</p>
+					<h1>App Settings<span>.</span></h1>
+					<p class="muted">Customize display & themes, handle privacy circles, notifications, playback controls, and manage your account.</p>
+				</div>
+				<div class="settings-header-actions">
+					<button class="button button-outline button-small" id="btn-export-data-top" type="button" title="Export all account data as JSON">
+						⬇ Export Data
+					</button>
+					<button class="button button-primary button-small" id="btn-save-all-settings" type="button">
+						Save Changes ✓
+					</button>
+				</div>
+			</div>
+
+			<!-- Main Settings Stage -->
+			<div class="settings-stage">
+				<!-- Settings Nav Sidebar -->
+				<aside class="settings-nav-sidebar">
+					<div class="settings-user-summary">
+						<img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=85" alt="Maya Chen" id="settings-summary-avatar">
+						<div class="settings-user-info">
+							<strong id="settings-summary-name">Maya Chen</strong>
+							<span id="settings-summary-handle">@mayainmotion</span>
+							<small class="settings-status-indicator">● Active in Circles</small>
+						</div>
+					</div>
+
+					<nav class="settings-category-menu" role="tablist" aria-label="Settings categories">
+						<button class="settings-cat-btn is-active" data-settings-tab="general" type="button">
+							<span class="cat-icon">⚙</span>
+							<span class="cat-label">General & Theme</span>
+						</button>
+						<button class="settings-cat-btn" data-settings-tab="account" type="button">
+							<span class="cat-icon">👤</span>
+							<span class="cat-label">Account & Profile</span>
+						</button>
+						<button class="settings-cat-btn" data-settings-tab="privacy" type="button">
+							<span class="cat-icon">🔒</span>
+							<span class="cat-label">Privacy & Circles</span>
+						</button>
+						<button class="settings-cat-btn" data-settings-tab="notifications" type="button">
+							<span class="cat-icon">🔔</span>
+							<span class="cat-label">Notifications & Sounds</span>
+						</button>
+						<button class="settings-cat-btn" data-settings-tab="media" type="button">
+							<span class="cat-icon">▷</span>
+							<span class="cat-label">Media & Playback</span>
+						</button>
+						<button class="settings-cat-btn" data-settings-tab="security" type="button">
+							<span class="cat-icon">🛡️</span>
+							<span class="cat-label">Security & Devices</span>
+						</button>
+						<button class="settings-cat-btn" data-settings-tab="storage" type="button">
+							<span class="cat-icon">💾</span>
+							<span class="cat-label">Data & Storage</span>
+						</button>
+					</nav>
+
+					<div class="settings-app-badge-card">
+						<div class="badge-app-row">
+							<span class="badge-app-dot"></span>
+							<strong>My Teta App v2.4.0</strong>
+						</div>
+						<p>Crafted for peaceful, mindful connection.</p>
+					</div>
+				</aside>
+
+				<!-- Settings Content Panes -->
+				<div class="settings-content-pane">
+					<!-- PANE 1: GENERAL & THEME -->
+					<div class="settings-tab-pane" id="settings-pane-general">
+						<div class="settings-card">
+							<div class="settings-card-header">
+								<div>
+									<h3>Appearance & Themes</h3>
+									<p>Select how My Teta feels. Changes apply immediately across the entire workspace.</p>
+								</div>
+								<span class="settings-card-badge">Live Preview</span>
+							</div>
+
+							<!-- Theme Options Grid -->
+							<div class="theme-picker-grid">
+								<button type="button" class="theme-card is-active" data-theme-val="light">
+									<div class="theme-preview theme-prev-light">
+										<div class="theme-prev-bar"></div>
+										<div class="theme-prev-body">
+											<div class="theme-prev-bubble"></div>
+											<div class="theme-prev-bubble alt"></div>
+										</div>
+									</div>
+									<div class="theme-card-info">
+										<strong>Light Daylight</strong>
+										<small>Crisp white & soft stone</small>
+									</div>
+								</button>
+
+								<button type="button" class="theme-card" data-theme-val="dim">
+									<div class="theme-preview theme-prev-dim">
+										<div class="theme-prev-bar"></div>
+										<div class="theme-prev-body">
+											<div class="theme-prev-bubble"></div>
+											<div class="theme-prev-bubble alt"></div>
+										</div>
+									</div>
+									<div class="theme-card-info">
+										<strong>Midnight Slate</strong>
+										<small>Deep navy, gentle on eyes</small>
+									</div>
+								</button>
+
+								<button type="button" class="theme-card" data-theme-val="dark">
+									<div class="theme-preview theme-prev-dark">
+										<div class="theme-prev-bar"></div>
+										<div class="theme-prev-body">
+											<div class="theme-prev-bubble"></div>
+											<div class="theme-prev-bubble alt"></div>
+										</div>
+									</div>
+									<div class="theme-card-info">
+										<strong>Obsidian Dark</strong>
+										<small>Pure contrast & pitch dark</small>
+									</div>
+								</button>
+
+								<button type="button" class="theme-card" data-theme-val="cozy">
+									<div class="theme-preview theme-prev-cozy">
+										<div class="theme-prev-bar"></div>
+										<div class="theme-prev-body">
+											<div class="theme-prev-bubble"></div>
+											<div class="theme-prev-bubble alt"></div>
+										</div>
+									</div>
+									<div class="theme-card-info">
+										<strong>Cozy Sepia</strong>
+										<small>Warm paper & tea tone</small>
+									</div>
+								</button>
+							</div>
+
+							<!-- Accent Color Palette -->
+							<div class="settings-sub-section">
+								<h4>Accent Color</h4>
+								<p>Choose the key highlighting color for buttons, badges, and active navigation indicators.</p>
+								<div class="accent-swatch-list">
+									<button type="button" class="accent-swatch is-active" data-accent-val="lagoon" style="background:#0d9488" title="Lagoon Teal">✓</button>
+									<button type="button" class="accent-swatch" data-accent-val="violet" style="background:#6366f1" title="Electric Violet"></button>
+									<button type="button" class="accent-swatch" data-accent-val="cyan" style="background:#06b6d4" title="Lucid Cyan"></button>
+									<button type="button" class="accent-swatch" data-accent-val="peach" style="background:#ea580c" title="Warm Peach"></button>
+									<button type="button" class="accent-swatch" data-accent-val="emerald" style="background:#059669" title="Emerald Pine"></button>
+									<button type="button" class="accent-swatch" data-accent-val="rose" style="background:#f43f5e" title="Wild Rose"></button>
+								</div>
+							</div>
+
+							<!-- Sound & Experience Toggles -->
+							<div class="settings-toggles-list">
+								<div class="settings-toggle-row">
+									<div>
+										<strong>App Sound Effects</strong>
+										<small>Play calm chimes when sending moments, liking reels, or switching slides.</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-sound-effects" checked>
+										<span class="slider"></span>
+									</label>
+								</div>
+
+								<div class="settings-toggle-row">
+									<div>
+										<strong>Compact Density</strong>
+										<small>Reduce card padding and margins for dense information display.</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-compact-density">
+										<span class="slider"></span>
+									</label>
+								</div>
+							</div>
+
+							<!-- Language & Timezone -->
+							<div class="form-grid-2" style="margin-top: 20px;">
+								<div class="form-group">
+									<label for="setting-language">Application Language</label>
+									<select id="setting-language" class="settings-select">
+										<option value="en" selected>English (US)</option>
+										<option value="es">Español (Spanish)</option>
+										<option value="fr">Français (French)</option>
+										<option value="de">Deutsch (German)</option>
+										<option value="ja">日本語 (Japanese)</option>
+									</select>
+								</div>
+								<div class="form-group">
+									<label for="setting-timezone">Primary Timezone</label>
+									<select id="setting-timezone" class="settings-select">
+										<option value="est" selected>Eastern Time (US & Canada) · New York</option>
+										<option value="cst">Central Time (US & Canada) · Chicago</option>
+										<option value="pst">Pacific Time (US & Canada) · Los Angeles</option>
+										<option value="gmt">Greenwich Mean Time · London</option>
+										<option value="cet">Central European Time · Paris, Berlin</option>
+										<option value="jst">Japan Standard Time · Tokyo</option>
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- PANE 2: ACCOUNT & PROFILE -->
+					<div class="settings-tab-pane" id="settings-pane-account" hidden>
+						<div class="settings-card">
+							<div class="settings-card-header">
+								<div>
+									<h3>Account Information</h3>
+									<p>Update your public identity, bio, contact records, and personal presence.</p>
+								</div>
+								<button type="button" class="button button-outline button-small" id="btn-jump-profile-view">View Public Profile ↗</button>
+							</div>
+
+							<form id="settings-account-form" class="settings-form">
+								<div class="form-grid-2">
+									<div class="form-group">
+										<label for="setting-name-input">Display Name</label>
+										<input type="text" id="setting-name-input" value="Maya Chen" required maxlength="50">
+									</div>
+									<div class="form-group">
+										<label for="setting-handle-input">Username / Handle</label>
+										<div class="handle-input-wrap">
+											<span class="handle-prefix">@</span>
+											<input type="text" id="setting-handle-input" value="mayainmotion" required maxlength="30">
+										</div>
+									</div>
+								</div>
+
+								<div class="form-grid-2">
+									<div class="form-group">
+										<label for="setting-email-input">Email Address</label>
+										<input type="email" id="setting-email-input" value="maya.chen@myteta.io" required>
+									</div>
+									<div class="form-group">
+										<label for="setting-phone-input">Phone Number</label>
+										<input type="tel" id="setting-phone-input" value="+1 (917) 555-0192" placeholder="+1 (xxx) xxx-xxxx">
+									</div>
+								</div>
+
+								<div class="form-grid-2">
+									<div class="form-group">
+										<label for="setting-location-input">City & Location</label>
+										<input type="text" id="setting-location-input" value="Brooklyn, NY" maxlength="60">
+									</div>
+									<div class="form-group">
+										<label for="setting-website-input">Website or Studio URL</label>
+										<input type="url" id="setting-website-input" value="https://mayachen.studio">
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label for="setting-bio-input">About You (Bio)</label>
+									<textarea id="setting-bio-input" rows="3" maxlength="220">Collecting little things: good light, long walks, and meals that turn into stories.</textarea>
+									<small class="character-count"><span id="settings-bio-char-count">81</span> / 220 characters</small>
+								</div>
+
+								<div class="settings-form-actions">
+									<button type="submit" class="button button-primary">Save Account Details ✓</button>
+								</div>
+							</form>
+
+							<!-- Danger Zone -->
+							<div class="settings-danger-card">
+								<div>
+									<h4>Account Danger Zone</h4>
+									<p>Deactivate your account temporarily or permanently delete all data.</p>
+								</div>
+								<div class="danger-actions-row">
+									<button type="button" class="button button-outline button-small" id="btn-deactivate-acc">Deactivate Account</button>
+									<button type="button" class="button button-danger button-small" id="btn-delete-acc">Delete Account 🗑</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- PANE 3: PRIVACY & CIRCLES -->
+					<div class="settings-tab-pane" id="settings-pane-privacy" hidden>
+						<div class="settings-card">
+							<div class="settings-card-header">
+								<div>
+									<h3>Privacy & Circle Visibility</h3>
+									<p>Decide who can see your moments, discover your profile, or message you.</p>
+								</div>
+							</div>
+
+							<div class="settings-toggles-list">
+								<div class="settings-toggle-row">
+									<div>
+										<strong>Private Account (Circles Only)</strong>
+										<small>Only approved friends and verified members of your circles can view your moments archive and stories.</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-private-account">
+										<span class="slider"></span>
+									</label>
+								</div>
+
+								<div class="settings-toggle-row">
+									<div>
+										<strong>Show Active Status</strong>
+										<small>Let friends and circle members see when you are currently active on My Teta (● Active now).</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-active-status" checked>
+										<span class="slider"></span>
+									</label>
+								</div>
+
+								<div class="settings-toggle-row">
+									<div>
+										<strong>Send Read Receipts</strong>
+										<small>Show others when you have read their direct messages in chat conversations.</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-read-receipts" checked>
+										<span class="slider"></span>
+									</label>
+								</div>
+
+								<div class="settings-toggle-row">
+									<div>
+										<strong>Hide Reel & Moment View Counts</strong>
+										<small>Only you will see how many times people watched your reels and stories.</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-hide-views">
+										<span class="slider"></span>
+									</label>
+								</div>
+							</div>
+
+							<!-- Communication Permissions -->
+							<div class="settings-sub-section">
+								<h4>Who Can Direct Message You</h4>
+								<div class="settings-radio-group">
+									<label class="settings-radio-card">
+										<input type="radio" name="perm-message" value="everyone" checked>
+										<div class="radio-content">
+											<strong>Everyone on My Teta</strong>
+											<small>Anyone can start a chat request with you.</small>
+										</div>
+									</label>
+									<label class="settings-radio-card">
+										<input type="radio" name="perm-message" value="mutuals">
+										<div class="radio-content">
+											<strong>Friends & Mutual Connections</strong>
+											<small>Only accounts you follow or have mutual friends with.</small>
+										</div>
+									</label>
+									<label class="settings-radio-card">
+										<input type="radio" name="perm-message" value="circles">
+										<div class="radio-content">
+											<strong>Circles Only</strong>
+											<small>Strictly limited to members in your active circles.</small>
+										</div>
+									</label>
+								</div>
+							</div>
+
+							<!-- Blocked Accounts Manager -->
+							<div class="settings-sub-section">
+								<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+									<div>
+										<h4>Blocked Accounts (<span id="blocked-count">1</span>)</h4>
+										<small style="color:var(--ink-muted);">Blocked accounts cannot see your profile, moments, or send messages.</small>
+									</div>
+								</div>
+
+								<div class="blocked-users-list" id="blocked-users-list">
+									<!-- Dynamically populated -->
+								</div>
+
+								<div class="block-add-row">
+									<input type="text" id="input-new-block" placeholder="Enter username to block (e.g. @spammer)">
+									<button type="button" class="button button-outline button-small" id="btn-add-block">Block User</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- PANE 4: NOTIFICATIONS & SOUNDS -->
+					<div class="settings-tab-pane" id="settings-pane-notifications" hidden>
+						<div class="settings-card">
+							<div class="settings-card-header">
+								<div>
+									<h3>Notifications & Frequency</h3>
+									<p>Keep in touch with what matters while keeping notifications peaceful and quiet.</p>
+								</div>
+							</div>
+
+							<div class="settings-toggles-list">
+								<div class="settings-toggle-row">
+									<div>
+										<strong>Master Push Notifications</strong>
+										<small>Enable notifications on desktop and mobile web alerts.</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-push-master" checked>
+										<span class="slider"></span>
+									</label>
+								</div>
+
+								<div class="settings-toggle-row">
+									<div>
+										<strong>Direct Messages</strong>
+										<small>Notify when you receive a new chat message.</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-notif-messages" checked>
+										<span class="slider"></span>
+									</label>
+								</div>
+
+								<div class="settings-toggle-row">
+									<div>
+										<strong>Friend Requests & Circle Invites</strong>
+										<small>Notify when someone invites you to a circle or sends a friend request.</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-notif-requests" checked>
+										<span class="slider"></span>
+									</label>
+								</div>
+
+								<div class="settings-toggle-row">
+									<div>
+										<strong>New Stories from Circles</strong>
+										<small>Subtle ping when someone in your close circle shares a morning window.</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-notif-stories" checked>
+										<span class="slider"></span>
+									</label>
+								</div>
+
+								<div class="settings-toggle-row">
+									<div>
+										<strong>Hearts & Reflection Comments</strong>
+										<small>Notify when friends react or comment on your reels or moments.</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-notif-reactions" checked>
+										<span class="slider"></span>
+									</label>
+								</div>
+							</div>
+
+							<!-- Quiet Hours -->
+							<div class="settings-sub-section">
+								<div class="settings-toggle-row" style="padding:0 0 14px 0; border:none;">
+									<div>
+										<h4>Do Not Disturb (Quiet Hours)</h4>
+										<small>Pause all audible alerts during your rest hours.</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-quiet-hours" checked>
+										<span class="slider"></span>
+									</label>
+								</div>
+
+								<div class="form-grid-2" id="quiet-hours-range">
+									<div class="form-group">
+										<label for="setting-quiet-start">Quiet Hours Start</label>
+										<input type="time" id="setting-quiet-start" value="22:00">
+									</div>
+									<div class="form-group">
+										<label for="setting-quiet-end">Quiet Hours End</label>
+										<input type="time" id="setting-quiet-end" value="08:00">
+									</div>
+								</div>
+							</div>
+
+							<!-- Email Digest -->
+							<div class="settings-sub-section">
+								<h4>Calm Email Digest</h4>
+								<p>Receive a mindful weekly summary of moments from your circles.</p>
+								<select id="setting-email-digest" class="settings-select" style="max-width:320px;">
+									<option value="weekly" selected>Weekly Calm Digest (Sundays at 9 AM)</option>
+									<option value="daily">Daily Reflection Digest</option>
+									<option value="none">Off (No email digests)</option>
+								</select>
+							</div>
+						</div>
+					</div>
+
+					<!-- PANE 5: MEDIA & PLAYBACK -->
+					<div class="settings-tab-pane" id="settings-pane-media" hidden>
+						<div class="settings-card">
+							<div class="settings-card-header">
+								<div>
+									<h3>Media, Reels & Playback</h3>
+									<p>Tune video resolution, autoplay behaviors, and story pacing.</p>
+								</div>
+							</div>
+
+							<div class="settings-toggles-list">
+								<div class="settings-toggle-row">
+									<div>
+										<strong>Autoplay Reels in Feed</strong>
+										<small>Automatically play video loops as you scroll through reels.</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-reels-autoplay" checked>
+										<span class="slider"></span>
+									</label>
+								</div>
+
+								<div class="settings-toggle-row">
+									<div>
+										<strong>Always Start Videos Muted</strong>
+										<small>Avoid sudden sound spikes by keeping soundwaves muted until tapped.</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-reels-mute-default" checked>
+										<span class="slider"></span>
+									</label>
+								</div>
+
+								<div class="settings-toggle-row">
+									<div>
+										<strong>Save Shared Moments to Camera Roll</strong>
+										<small>Automatically keep a high-resolution copy on your device.</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-save-camera-roll">
+										<span class="slider"></span>
+									</label>
+								</div>
+							</div>
+
+							<!-- Video Streaming Quality -->
+							<div class="settings-sub-section">
+								<h4>Streaming Quality</h4>
+								<div class="settings-radio-group">
+									<label class="settings-radio-card">
+										<input type="radio" name="stream-quality" value="auto" checked>
+										<div class="radio-content">
+											<strong>Adaptive Auto (Recommended)</strong>
+											<small>Balances video crispness and network bandwidth automatically.</small>
+										</div>
+									</label>
+									<label class="settings-radio-card">
+										<input type="radio" name="stream-quality" value="hd">
+										<div class="radio-content">
+											<strong>High Definition (1080p)</strong>
+											<small>Always load maximum visual quality (uses more data).</small>
+										</div>
+									</label>
+									<label class="settings-radio-card">
+										<input type="radio" name="stream-quality" value="saver">
+										<div class="radio-content">
+											<strong>Data Saver Mode (480p / 720p)</strong>
+											<small>Optimized for mobile cellular connections and low latency.</small>
+										</div>
+									</label>
+								</div>
+							</div>
+
+							<!-- Story Pace -->
+							<div class="settings-sub-section">
+								<h4>Story Slide Pacing</h4>
+								<p>Controls how many seconds each story slide plays before moving to the next.</p>
+								<div class="story-speed-cards">
+									<button type="button" class="speed-card" data-story-speed="3000">
+										<strong>⚡ Fast</strong>
+										<small>3 seconds</small>
+									</button>
+									<button type="button" class="speed-card is-active" data-story-speed="5000">
+										<strong>⏱ Standard</strong>
+										<small>5 seconds</small>
+									</button>
+									<button type="button" class="speed-card" data-story-speed="7000">
+										<strong>☕ Relaxed</strong>
+										<small>7 seconds</small>
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- PANE 6: SECURITY & DEVICES -->
+					<div class="settings-tab-pane" id="settings-pane-security" hidden>
+						<div class="settings-card">
+							<div class="settings-card-header">
+								<div>
+									<h3>Security & Active Sessions</h3>
+									<p>Keep your account safe with encryption, two-factor authentication, and device review.</p>
+								</div>
+							</div>
+
+							<!-- Two-Factor Authentication -->
+							<div class="security-toggles-card" style="margin-bottom: 24px;">
+								<div class="security-toggle-item">
+									<div>
+										<div style="display:flex; align-items:center; gap:8px;">
+											<strong>Two-Factor Authentication (2FA)</strong>
+											<span class="security-status-badge" id="settings-2fa-status">Disabled</span>
+										</div>
+										<small>Require an SMS code or authenticator app when signing in on a new device.</small>
+									</div>
+									<label class="switch">
+										<input type="checkbox" id="setting-toggle-2fa">
+										<span class="slider"></span>
+									</label>
+								</div>
+							</div>
+
+							<!-- Password Change Form -->
+							<form id="settings-password-form" class="settings-form">
+								<h4 style="margin-bottom:12px;">Change Password</h4>
+								<div class="form-group">
+									<label for="setting-pwd-current">Current Password</label>
+									<div class="password-input-wrap">
+										<input type="password" id="setting-pwd-current" placeholder="Enter current password" autocomplete="current-password" required>
+										<button type="button" class="pwd-toggle-btn" data-toggle-target="setting-pwd-current" aria-label="Toggle password visibility">👁</button>
+									</div>
+								</div>
+
+								<div class="form-grid-2">
+									<div class="form-group">
+										<label for="setting-pwd-new">New Password</label>
+										<div class="password-input-wrap">
+											<input type="password" id="setting-pwd-new" placeholder="At least 8 characters" minlength="8" autocomplete="new-password" required>
+											<button type="button" class="pwd-toggle-btn" data-toggle-target="setting-pwd-new" aria-label="Toggle password visibility">👁</button>
+										</div>
+										<div class="pwd-strength-bar">
+											<div class="pwd-strength-fill" id="settings-pwd-strength-fill"></div>
+										</div>
+										<small class="pwd-strength-text" id="settings-pwd-strength-text">Password strength: None</small>
+									</div>
+
+									<div class="form-group">
+										<label for="setting-pwd-confirm">Confirm New Password</label>
+										<div class="password-input-wrap">
+											<input type="password" id="setting-pwd-confirm" placeholder="Re-type new password" minlength="8" autocomplete="new-password" required>
+											<button type="button" class="pwd-toggle-btn" data-toggle-target="setting-pwd-confirm" aria-label="Toggle password visibility">👁</button>
+										</div>
+										<small class="pwd-match-error" id="settings-pwd-match-error"></small>
+									</div>
+								</div>
+
+								<div class="settings-form-actions">
+									<button type="submit" class="button button-primary">Update Password 🔒</button>
+								</div>
+							</form>
+
+							<!-- Connected Devices -->
+							<div class="settings-sub-section" style="margin-top:28px;">
+								<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+									<div>
+										<h4>Logged-in Devices & Sessions</h4>
+										<small style="color:var(--ink-muted);">Devices currently authenticated to your My Teta account.</small>
+									</div>
+									<button type="button" class="button button-outline button-small" id="btn-logout-sessions">Log Out Other Sessions</button>
+								</div>
+
+								<div class="active-sessions-list" id="active-sessions-list">
+									<!-- Dynamically populated -->
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- PANE 7: DATA & STORAGE -->
+					<div class="settings-tab-pane" id="settings-pane-storage" hidden>
+						<div class="settings-card">
+							<div class="settings-card-header">
+								<div>
+									<h3>Data, Storage & Backup</h3>
+									<p>Manage offline cache, download an open JSON archive of your account, or reset preferences.</p>
+								</div>
+							</div>
+
+							<!-- Cache Usage Card -->
+							<div class="storage-usage-card">
+								<div class="storage-usage-header">
+									<div>
+										<strong id="storage-used-label">28.4 MB of 500 MB</strong>
+										<p style="margin:2px 0 0; font-size:0.8rem; color:var(--ink-muted);">Local cached media, offline reels, and story buffers</p>
+									</div>
+									<button type="button" class="button button-outline button-small" id="btn-clear-cache">Clear App Cache 🧹</button>
+								</div>
+								<div class="storage-bar">
+									<div class="storage-bar-fill" id="storage-bar-fill" style="width: 6%;"></div>
+								</div>
+							</div>
+
+							<!-- Export Data Card -->
+							<div class="settings-export-card">
+								<div class="export-card-icon">💾</div>
+								<div class="export-card-body">
+									<h4>Download Your Data Archive</h4>
+									<p>Get a complete, machine-readable JSON backup of your account profile, personal moments, uploaded reels, friend connections, circles, and chat histories.</p>
+									<button type="button" class="button button-primary button-small" id="btn-download-json-archive">
+										⬇ Download Archive (JSON)
+									</button>
+								</div>
+							</div>
+
+							<!-- Reset Preferences Card -->
+							<div class="settings-sub-section" style="margin-top:24px;">
+								<h4>Reset App Preferences</h4>
+								<p>Restore default color themes, playback settings, notification rules, and audio preferences.</p>
+								<button type="button" class="button button-outline button-small" id="btn-reset-preferences" style="color:var(--rose); border-color:rgba(244,63,94,0.4);">
+									Reset to Factory Defaults ↺
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
 		<aside class="right-rail"><section class="weather-note"><span>☼</span><div><p class="eyebrow">A GOOD DAY TO</p><strong>Take the long way.</strong><small>Brooklyn · 68° and bright</small></div></section><section class="right-section"><div class="section-heading"><div><p class="eyebrow">AROUND YOU</p><h2>People to know</h2></div><button class="text-action" data-view="friends" type="button">More ↗</button></div><div class="suggestion-list" id="suggestion-list"></div></section><section class="birthday-note"><span>✿</span><div><p class="eyebrow">A LITTLE REMINDER</p><strong>Two birthdays this week</strong><button class="text-action" id="birthday-note" type="button">Send a little love ↗</button></div></section><footer class="right-footer">About　Privacy　Community　© 2026 My Teta</footer></aside>
-		<nav class="mobile-nav" aria-label="Mobile navigation"><button class="is-active" data-view="home" aria-label="Home" type="button">⌂</button><button data-view="friends" aria-label="Friends" type="button">♧</button><button class="mobile-create" data-action="write-post" aria-label="Share a moment" type="button">＋</button><button data-view="reels" aria-label="Reels" type="button">▷</button><button data-view="chat" aria-label="Chat" type="button">◌</button></nav>
+		<nav class="mobile-nav" aria-label="Mobile navigation"><button class="is-active" data-view="home" aria-label="Home" type="button">⌂</button><button data-view="friends" aria-label="Friends" type="button">♧</button><button class="mobile-create" data-action="write-post" aria-label="Share a moment" type="button">＋</button><button data-view="reels" aria-label="Reels" type="button">▷</button><button data-view="chat" aria-label="Chat" type="button">◌</button><button data-view="settings" aria-label="Settings" type="button">⚙</button></nav>
 	</main>
 
 	<!-- STORY PLAYER THEATER MODAL -->

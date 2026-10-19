@@ -597,7 +597,8 @@
     friends: document.getElementById('friends-view'),
     reels: document.getElementById('reels-view'),
     chat: document.getElementById('chat-view'),
-    profile: document.getElementById('profile-view')
+    profile: document.getElementById('profile-view'),
+    settings: document.getElementById('settings-view')
   };
 
   const navTabs = document.querySelectorAll('.nav-tab, .rail-link, .mobile-nav button[data-view], [data-view]');
@@ -656,7 +657,7 @@
     if (viewName === 'reels') {
       if (appShell) {
         appShell.classList.add('is-reels-active');
-        appShell.classList.remove('is-chat-active');
+        appShell.classList.remove('is-chat-active', 'is-settings-active');
       }
       if (rightRail) rightRail.style.display = 'none';
       // Autoplay active reel if video exists
@@ -672,7 +673,7 @@
     } else if (viewName === 'chat') {
       if (appShell) {
         appShell.classList.add('is-chat-active');
-        appShell.classList.remove('is-reels-active');
+        appShell.classList.remove('is-reels-active', 'is-settings-active');
       }
       if (rightRail) rightRail.style.display = 'none';
       // Pause video when leaving reels view
@@ -691,9 +692,25 @@
         const msgBox = document.getElementById('conversation-messages');
         if (msgBox) msgBox.scrollTop = msgBox.scrollHeight;
       }, 50);
+    } else if (viewName === 'settings') {
+      if (appShell) {
+        appShell.classList.add('is-settings-active');
+        appShell.classList.remove('is-reels-active', 'is-chat-active');
+      }
+      if (rightRail) rightRail.style.display = 'none';
+      // Pause video when leaving reels view
+      const activeVideo = document.getElementById('active-reel-video');
+      if (activeVideo && !activeVideo.paused) {
+        activeVideo.pause();
+        const wrapper = document.getElementById('reel-video-wrapper');
+        if (wrapper) wrapper.classList.add('is-paused');
+        const wave = document.getElementById('player-soundwave');
+        if (wave) wave.classList.remove('is-playing');
+      }
+      if (typeof renderSettings === 'function') renderSettings();
     } else {
       if (appShell) {
-        appShell.classList.remove('is-reels-active', 'is-chat-active');
+        appShell.classList.remove('is-reels-active', 'is-chat-active', 'is-settings-active');
       }
       if (rightRail) rightRail.style.display = '';
       // Pause video when leaving reels view to prevent background audio
@@ -744,7 +761,7 @@
   let storyTimerInterval = null;
   let storySlideStartTime = 0;
   let storySlideElapsed = 0;
-  const STORY_SLIDE_DURATION = 5000;
+  let STORY_SLIDE_DURATION = 5000;
   let storyViewerInitialized = false;
 
   function renderStories() {
@@ -3083,9 +3100,542 @@
     if (togglePrivacy) {
       togglePrivacy.addEventListener('change', () => {
         CURRENT_USER.isPrivate = togglePrivacy.checked;
+        const settingPriv = document.getElementById('setting-private-account');
+        if (settingPriv) settingPriv.checked = CURRENT_USER.isPrivate;
         showToast(CURRENT_USER.isPrivate ? "Profile is now Circles Only (Private)" : "Profile is now Public", "👁");
       });
     }
+  }
+
+  // ==========================================
+  // 13. SETTINGS & APP MANAGEMENT SYSTEM
+  // ==========================================
+  let activeSettingsTab = 'general';
+
+  const APP_SETTINGS = {
+    theme: 'light',
+    accent: 'lagoon',
+    soundEffects: true,
+    compactDensity: false,
+    language: 'en',
+    timezone: 'est',
+
+    // Privacy & Circles
+    privateAccount: false,
+    activeStatus: true,
+    readReceipts: true,
+    hideViews: false,
+    whoCanMessage: 'everyone',
+
+    // Notifications
+    pushMaster: true,
+    notifMessages: true,
+    notifRequests: true,
+    notifStories: true,
+    notifReactions: true,
+    quietHours: true,
+    quietStart: '22:00',
+    quietEnd: '08:00',
+    emailDigest: 'weekly',
+
+    // Media & Playback
+    reelsAutoplay: true,
+    reelsMuteDefault: true,
+    saveCameraRoll: false,
+    streamQuality: 'auto',
+    storySpeed: 5000,
+
+    // Blocked accounts
+    blockedAccounts: [
+      { id: 'b_1', name: "Spam Bot 3000", handle: "@cryptospam99", date: "Oct 10, 2026" }
+    ],
+
+    // Active sessions
+    activeSessions: [
+      { id: 's_1', device: "MacBook Pro 16”", client: "Chrome 130 · macOS Sonoma", location: "Brooklyn, NY", current: true },
+      { id: 's_2', device: "iPhone 15 Pro", client: "My Teta iOS App v2.4", location: "New York, NY", current: false }
+    ]
+  };
+
+  function switchSettingsTab(tabName) {
+    activeSettingsTab = tabName;
+    document.querySelectorAll('[data-settings-tab]').forEach(btn => {
+      btn.classList.toggle('is-active', btn.dataset.settingsTab === tabName);
+    });
+
+    const panes = {
+      general: document.getElementById('settings-pane-general'),
+      account: document.getElementById('settings-pane-account'),
+      privacy: document.getElementById('settings-pane-privacy'),
+      notifications: document.getElementById('settings-pane-notifications'),
+      media: document.getElementById('settings-pane-media'),
+      security: document.getElementById('settings-pane-security'),
+      storage: document.getElementById('settings-pane-storage')
+    };
+
+    Object.keys(panes).forEach(key => {
+      if (panes[key]) {
+        panes[key].hidden = (key !== tabName);
+      }
+    });
+  }
+
+  function renderBlockedAccounts() {
+    const list = document.getElementById('blocked-users-list');
+    const countEl = document.getElementById('blocked-count');
+    if (countEl) countEl.textContent = APP_SETTINGS.blockedAccounts.length;
+    if (!list) return;
+
+    if (APP_SETTINGS.blockedAccounts.length === 0) {
+      list.innerHTML = `
+        <div style="padding:14px; text-align:center; color:var(--ink-faint); font-size:0.82rem;">
+          No blocked accounts
+        </div>
+      `;
+      return;
+    }
+
+    list.innerHTML = APP_SETTINGS.blockedAccounts.map(u => `
+      <div class="blocked-user-item">
+        <div class="blocked-user-meta">
+          <strong>${escapeHTML(u.name)} (${escapeHTML(u.handle)})</strong>
+          <small>Blocked on ${u.date}</small>
+        </div>
+        <button type="button" class="button button-outline button-small unblock-btn" data-unblock-id="${u.id}">
+          Unblock
+        </button>
+      </div>
+    `).join('');
+
+    list.querySelectorAll('[data-unblock-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.unblockId;
+        const user = APP_SETTINGS.blockedAccounts.find(x => x.id === id);
+        APP_SETTINGS.blockedAccounts = APP_SETTINGS.blockedAccounts.filter(x => x.id !== id);
+        renderBlockedAccounts();
+        showToast(`Unblocked ${user ? user.handle : 'account'}.`, "✓");
+      });
+    });
+  }
+
+  function renderActiveSessions() {
+    const list = document.getElementById('active-sessions-list');
+    if (!list) return;
+
+    list.innerHTML = APP_SETTINGS.activeSessions.map(sess => `
+      <div class="session-card-item">
+        <div class="session-card-info">
+          <span class="session-card-icon">${sess.device.includes('iPhone') ? '📱' : '💻'}</span>
+          <div class="session-card-text">
+            <strong>${escapeHTML(sess.device)} ${sess.current ? '<span class="session-current-badge">This Device</span>' : ''}</strong>
+            <small>${escapeHTML(sess.client)} · ${escapeHTML(sess.location)}</small>
+          </div>
+        </div>
+        ${!sess.current ? `
+          <button type="button" class="button button-outline button-small session-logout-btn" data-session-id="${sess.id}">
+            Log Out
+          </button>
+        ` : ''}
+      </div>
+    `).join('');
+
+    list.querySelectorAll('[data-session-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.sessionId;
+        APP_SETTINGS.activeSessions = APP_SETTINGS.activeSessions.filter(s => s.id !== id);
+        renderActiveSessions();
+        showToast("Logged out of selected session.", "🛡️");
+      });
+    });
+  }
+
+  function renderSettings() {
+    // 1. Sync User info in Sidebar
+    const summaryAvatar = document.getElementById('settings-summary-avatar');
+    const summaryName = document.getElementById('settings-summary-name');
+    const summaryHandle = document.getElementById('settings-summary-handle');
+
+    if (summaryAvatar) summaryAvatar.src = CURRENT_USER.avatar;
+    if (summaryName) summaryName.textContent = CURRENT_USER.name;
+    if (summaryHandle) summaryHandle.textContent = CURRENT_USER.handle;
+
+    // 2. Sync Account Form
+    const nameInput = document.getElementById('setting-name-input');
+    const handleInput = document.getElementById('setting-handle-input');
+    const locationInput = document.getElementById('setting-location-input');
+    const websiteInput = document.getElementById('setting-website-input');
+    const bioInput = document.getElementById('setting-bio-input');
+    const bioCount = document.getElementById('settings-bio-char-count');
+
+    if (nameInput) nameInput.value = CURRENT_USER.name;
+    if (handleInput) handleInput.value = CURRENT_USER.handle.replace(/^@/, '');
+    if (locationInput) locationInput.value = CURRENT_USER.location;
+    if (websiteInput) websiteInput.value = CURRENT_USER.website;
+    if (bioInput) {
+      bioInput.value = CURRENT_USER.bio.replace(/[✳\s]+$/, '');
+      if (bioCount) bioCount.textContent = bioInput.value.length;
+    }
+
+    // 3. Sync Privacy Toggles
+    const privToggle = document.getElementById('setting-private-account');
+    if (privToggle) privToggle.checked = CURRENT_USER.isPrivate;
+
+    const twoFaToggle = document.getElementById('setting-toggle-2fa');
+    const twoFaStatus = document.getElementById('settings-2fa-status');
+    if (twoFaToggle) twoFaToggle.checked = CURRENT_USER.is2FA;
+    if (twoFaStatus) {
+      twoFaStatus.textContent = CURRENT_USER.is2FA ? "Enabled" : "Disabled";
+      twoFaStatus.style.background = CURRENT_USER.is2FA ? "rgba(16, 185, 129, 0.15)" : "";
+      twoFaStatus.style.color = CURRENT_USER.is2FA ? "#059669" : "";
+    }
+
+    // 4. Render Dynamic Lists
+    renderBlockedAccounts();
+    renderActiveSessions();
+  }
+
+  function initSettingsEvents() {
+    // 1. Category Navigation Switch
+    document.querySelectorAll('[data-settings-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        switchSettingsTab(btn.dataset.settingsTab);
+      });
+    });
+
+    // 2. Theme Switching
+    document.querySelectorAll('[data-theme-val]').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('[data-theme-val]').forEach(c => c.classList.remove('is-active'));
+        card.classList.add('is-active');
+        const themeVal = card.dataset.themeVal;
+        APP_SETTINGS.theme = themeVal;
+        if (themeVal === 'light') {
+          document.documentElement.removeAttribute('data-theme');
+        } else {
+          document.documentElement.setAttribute('data-theme', themeVal);
+        }
+        showToast(`Theme changed to ${card.querySelector('strong')?.textContent.trim() || themeVal}! ✨`, "☼");
+      });
+    });
+
+    // 3. Accent Color Switching
+    document.querySelectorAll('[data-accent-val]').forEach(swatch => {
+      swatch.addEventListener('click', () => {
+        document.querySelectorAll('[data-accent-val]').forEach(s => {
+          s.classList.remove('is-active');
+          s.textContent = '';
+        });
+        swatch.classList.add('is-active');
+        swatch.textContent = '✓';
+        const accentVal = swatch.dataset.accentVal;
+        APP_SETTINGS.accent = accentVal;
+        document.documentElement.setAttribute('data-accent', accentVal);
+        showToast(`Accent color updated to ${swatch.title || accentVal}! 🎨`, "🎨");
+      });
+    });
+
+    // 4. Sound & Density Toggles
+    const soundToggle = document.getElementById('setting-sound-effects');
+    if (soundToggle) {
+      soundToggle.addEventListener('change', () => {
+        APP_SETTINGS.soundEffects = soundToggle.checked;
+        showToast(APP_SETTINGS.soundEffects ? "Sound effects enabled 🔔" : "Sound effects muted 🔕", "🔔");
+      });
+    }
+
+    const densityToggle = document.getElementById('setting-compact-density');
+    if (densityToggle) {
+      densityToggle.addEventListener('change', () => {
+        APP_SETTINGS.compactDensity = densityToggle.checked;
+        document.body.classList.toggle('is-compact-app', densityToggle.checked);
+        showToast(densityToggle.checked ? "Compact density enabled" : "Standard spacious density", "📐");
+      });
+    }
+
+    // 5. Account Form Submit
+    const accountForm = document.getElementById('settings-account-form');
+    if (accountForm) {
+      accountForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nameVal = document.getElementById('setting-name-input')?.value.trim();
+        const handleVal = document.getElementById('setting-handle-input')?.value.trim().replace(/^@/, '');
+        const locVal = document.getElementById('setting-location-input')?.value.trim();
+        const webVal = document.getElementById('setting-website-input')?.value.trim();
+        const bioVal = document.getElementById('setting-bio-input')?.value.trim();
+
+        if (!nameVal || !handleVal) {
+          showToast("Name and handle are required.", "×");
+          return;
+        }
+
+        const oldName = CURRENT_USER.name;
+        CURRENT_USER.name = nameVal;
+        CURRENT_USER.handle = `@${handleVal}`;
+        CURRENT_USER.location = locVal || "Brooklyn, NY";
+        CURRENT_USER.website = webVal || "https://mayachen.studio";
+        CURRENT_USER.bio = bioVal || "Collecting little things.";
+
+        posts.forEach(p => {
+          if (p.author === oldName) {
+            p.author = CURRENT_USER.name;
+            p.handle = CURRENT_USER.handle;
+          }
+        });
+        REELS.forEach(r => {
+          if (r.author === oldName) {
+            r.author = CURRENT_USER.name;
+            r.handle = CURRENT_USER.handle;
+          }
+        });
+
+        renderProfile();
+        renderSettings();
+        showToast("Account details updated securely! ✓", "✓");
+      });
+    }
+
+    // 6. Character counter for Bio
+    const settingBio = document.getElementById('setting-bio-input');
+    const settingBioCount = document.getElementById('settings-bio-char-count');
+    if (settingBio && settingBioCount) {
+      settingBio.addEventListener('input', () => {
+        settingBioCount.textContent = settingBio.value.length;
+      });
+    }
+
+    // 7. Jump to profile button
+    document.getElementById('btn-jump-profile-view')?.addEventListener('click', () => {
+      switchView('profile');
+    });
+
+    // 8. Danger Zone buttons
+    document.getElementById('btn-deactivate-acc')?.addEventListener('click', () => {
+      showToast("Account is safe. Deactivation paused for demonstration.", "ℹ");
+    });
+    document.getElementById('btn-delete-acc')?.addEventListener('click', () => {
+      if (confirm("Are you sure you want to permanently delete your account? All moments and circles will be archived.")) {
+        showToast("Account deletion request submitted securely.", "🗑");
+      }
+    });
+
+    // 9. Privacy Toggles
+    const settingPrivToggle = document.getElementById('setting-private-account');
+    if (settingPrivToggle) {
+      settingPrivToggle.addEventListener('change', () => {
+        CURRENT_USER.isPrivate = settingPrivToggle.checked;
+        const toggleInProfile = document.getElementById('toggle-privacy');
+        if (toggleInProfile) toggleInProfile.checked = CURRENT_USER.isPrivate;
+        showToast(CURRENT_USER.isPrivate ? "Account is now Circles Only (Private) 🔒" : "Account is now Public 👁", "🔒");
+      });
+    }
+
+    const activeStatusToggle = document.getElementById('setting-active-status');
+    if (activeStatusToggle) {
+      activeStatusToggle.addEventListener('change', () => {
+        APP_SETTINGS.activeStatus = activeStatusToggle.checked;
+        showToast(APP_SETTINGS.activeStatus ? "Active status visible to circles" : "Active status hidden", "●");
+      });
+    }
+
+    const readReceiptsToggle = document.getElementById('setting-read-receipts');
+    if (readReceiptsToggle) {
+      readReceiptsToggle.addEventListener('change', () => {
+        APP_SETTINGS.readReceipts = readReceiptsToggle.checked;
+        showToast(APP_SETTINGS.readReceipts ? "Read receipts enabled" : "Read receipts off", "✓");
+      });
+    }
+
+    // 10. Add New Block
+    const addBlockBtn = document.getElementById('btn-add-block');
+    const newBlockInput = document.getElementById('input-new-block');
+    if (addBlockBtn && newBlockInput) {
+      addBlockBtn.addEventListener('click', () => {
+        const val = newBlockInput.value.trim().replace(/^@/, '');
+        if (!val) {
+          showToast("Please enter a username to block.", "ℹ");
+          return;
+        }
+        APP_SETTINGS.blockedAccounts.push({
+          id: 'b_' + Date.now(),
+          name: val,
+          handle: '@' + val,
+          date: "Just now"
+        });
+        newBlockInput.value = '';
+        renderBlockedAccounts();
+        showToast(`@${val} has been blocked from your circles.`, "🔒");
+      });
+    }
+
+    // 11. Story Speed Cards
+    document.querySelectorAll('[data-story-speed]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-story-speed]').forEach(b => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+        const speed = Number(btn.dataset.storySpeed);
+        APP_SETTINGS.storySpeed = speed;
+        STORY_SLIDE_DURATION = speed;
+        showToast(`Story slide duration set to ${speed / 1000}s ⏱`, "⏱");
+      });
+    });
+
+    // 12. Security 2FA Toggle in Settings
+    const setting2fa = document.getElementById('setting-toggle-2fa');
+    if (setting2fa) {
+      setting2fa.addEventListener('change', () => {
+        CURRENT_USER.is2FA = setting2fa.checked;
+        const toggle2faInProfile = document.getElementById('toggle-2fa');
+        if (toggle2faInProfile) toggle2faInProfile.checked = CURRENT_USER.is2FA;
+        const statusBadge = document.getElementById('settings-2fa-status');
+        if (statusBadge) {
+          statusBadge.textContent = CURRENT_USER.is2FA ? "Enabled" : "Disabled";
+          statusBadge.style.background = CURRENT_USER.is2FA ? "rgba(16, 185, 129, 0.15)" : "";
+          statusBadge.style.color = CURRENT_USER.is2FA ? "#059669" : "";
+        }
+        showToast(CURRENT_USER.is2FA ? "2FA security active ✓" : "2FA disabled", "🔒");
+      });
+    }
+
+    // 13. Settings Password Form
+    const settingsPwdForm = document.getElementById('settings-password-form');
+    if (settingsPwdForm) {
+      const curInput = document.getElementById('setting-pwd-current');
+      const newInput = document.getElementById('setting-pwd-new');
+      const confInput = document.getElementById('setting-pwd-confirm');
+      const fillBar = document.getElementById('settings-pwd-strength-fill');
+      const strengthText = document.getElementById('settings-pwd-strength-text');
+      const matchErr = document.getElementById('settings-pwd-match-error');
+
+      if (newInput) {
+        newInput.addEventListener('input', () => {
+          const val = newInput.value;
+          let strength = 0;
+          if (val.length >= 8) strength += 25;
+          if (/[A-Z]/.test(val)) strength += 25;
+          if (/[0-9]/.test(val)) strength += 25;
+          if (/[^A-Za-z0-9]/.test(val)) strength += 25;
+
+          if (fillBar) fillBar.style.width = strength + '%';
+          if (strengthText) {
+            if (strength <= 25) {
+              strengthText.textContent = "Strength: Weak";
+              strengthText.style.color = "var(--rose)";
+            } else if (strength <= 50) {
+              strengthText.textContent = "Strength: Fair";
+              strengthText.style.color = "var(--amber)";
+            } else if (strength <= 75) {
+              strengthText.textContent = "Strength: Good";
+              strengthText.style.color = "var(--leaf)";
+            } else {
+              strengthText.textContent = "Strength: Excellent 🔒";
+              strengthText.style.color = "var(--lagoon)";
+            }
+          }
+        });
+      }
+
+      settingsPwdForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const curVal = curInput ? curInput.value : '';
+        const newVal = newInput ? newInput.value : '';
+        const confVal = confInput ? confInput.value : '';
+
+        if (curVal !== CURRENT_USER.password && curVal !== "password123") {
+          showToast("Current password does not match records", "×");
+          if (curInput) curInput.focus();
+          return;
+        }
+
+        if (newVal !== confVal) {
+          if (matchErr) matchErr.textContent = "Passwords do not match.";
+          if (confInput) confInput.focus();
+          return;
+        }
+
+        CURRENT_USER.password = newVal;
+        settingsPwdForm.reset();
+        if (fillBar) fillBar.style.width = '0%';
+        if (strengthText) strengthText.textContent = "Password strength: None";
+        showToast("Password updated securely! 🔒", "✓");
+      });
+    }
+
+    // 14. Log out other sessions
+    document.getElementById('btn-logout-sessions')?.addEventListener('click', () => {
+      APP_SETTINGS.activeSessions = APP_SETTINGS.activeSessions.filter(s => s.current);
+      renderActiveSessions();
+      showToast("All other active device sessions have been terminated. 🛡️", "🛡️");
+    });
+
+    // 15. Clear App Cache
+    document.getElementById('btn-clear-cache')?.addEventListener('click', () => {
+      const fill = document.getElementById('storage-bar-fill');
+      const label = document.getElementById('storage-used-label');
+      if (fill) fill.style.width = '0%';
+      if (label) label.textContent = '0 KB (Clean)';
+      showToast("App cache cleared! 28.4 MB freed. 🧹", "🧹");
+    });
+
+    // 16. Export JSON Archive
+    function triggerDataExport() {
+      const exportData = {
+        app: "My Teta",
+        version: "2.4.0",
+        exportedAt: new Date().toISOString(),
+        user: CURRENT_USER,
+        settings: APP_SETTINGS,
+        momentsCount: posts.filter(p => p.author === CURRENT_USER.name).length,
+        reelsCount: REELS.filter(r => r.author === CURRENT_USER.name).length,
+        circlesCount: 12,
+        activeChats: CHATS.map(c => ({ id: c.id, name: c.name, lastMsg: c.lastMsg }))
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `my-teta-backup-${Date.now()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+
+      showToast("Personal data archive downloaded (JSON) 💾", "💾");
+    }
+
+    document.getElementById('btn-export-data-top')?.addEventListener('click', triggerDataExport);
+    document.getElementById('btn-download-json-archive')?.addEventListener('click', triggerDataExport);
+
+    // 17. Reset Preferences
+    document.getElementById('btn-reset-preferences')?.addEventListener('click', () => {
+      if (confirm("Reset all settings and themes to factory defaults?")) {
+        APP_SETTINGS.theme = 'light';
+        APP_SETTINGS.accent = 'lagoon';
+        APP_SETTINGS.soundEffects = true;
+        APP_SETTINGS.compactDensity = false;
+        document.documentElement.removeAttribute('data-theme');
+        document.documentElement.removeAttribute('data-accent');
+        document.body.classList.remove('is-compact-app');
+
+        // Reset theme card buttons
+        document.querySelectorAll('[data-theme-val]').forEach(c => {
+          c.classList.toggle('is-active', c.dataset.themeVal === 'light');
+        });
+        // Reset accent swatches
+        document.querySelectorAll('[data-accent-val]').forEach(s => {
+          const isLagoon = s.dataset.accentVal === 'lagoon';
+          s.classList.toggle('is-active', isLagoon);
+          s.textContent = isLagoon ? '✓' : '';
+        });
+
+        renderSettings();
+        showToast("Preferences restored to factory defaults! ↺", "↺");
+      }
+    });
+
+    // 18. Save All Changes Button
+    document.getElementById('btn-save-all-settings')?.addEventListener('click', () => {
+      document.getElementById('settings-account-form')?.dispatchEvent(new Event('submit', { cancelable: true }));
+      showToast("All settings and preferences saved! ✓", "✓");
+    });
   }
 
   // ==========================================
@@ -3093,6 +3643,7 @@
   // ==========================================
   initReelsTheaterEvents();
   initProfileEvents();
+  initSettingsEvents();
   renderStories();
   renderHomeReels();
   renderFeed();
@@ -3100,6 +3651,7 @@
   renderReels();
   renderProfile();
   renderChat();
+  renderSettings();
   renderNotifications('all');
 
   console.log("My Teta initialized successfully with Supabase and Vercel endpoints configured.");
