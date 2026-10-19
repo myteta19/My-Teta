@@ -163,7 +163,307 @@
 
 		<section class="view-panel" id="friends-view" hidden><div class="page-heading"><p class="eyebrow">YOUR WORLD, A LITTLE WIDER</p><h1 id="friends-title">People <span>feel like home.</span></h1><p>Find your people. Keep the good ones close.</p></div><div class="friends-toolbar"><div class="segmented"><button class="is-selected" data-friend-filter="suggested" type="button">For you</button><button data-friend-filter="following" type="button">Following</button></div><span id="friend-count"></span></div><div class="people-grid" id="people-grid"></div></section>
 
-		<section class="view-panel reels-view" id="reels-view" hidden><div class="reels-heading"><div><p class="eyebrow">A QUICK CHANGE OF SCENERY</p><h1>In the <span>moment.</span></h1></div><button class="button button-primary" id="open-reel-modal" type="button">＋ Create reel</button></div><div class="reels-layout"><div class="reel-track" id="reel-track" aria-label="Vertical reels"></div><aside class="reels-note"><span>✳</span><p>Little things<br>look good on you.</p><small id="reels-counter">01 / 03</small></aside></div></section>
+		<section class="view-panel reels-view" id="reels-view" hidden>
+			<!-- Reels Topbar -->
+			<div class="reels-topbar">
+				<div class="reels-heading-wrap">
+					<div class="reels-badge-row">
+						<span class="live-pill"><span class="live-dot"></span> REELS THEATER</span>
+						<span class="reels-meta-pill" id="reels-total-count">4 Moments</span>
+					</div>
+					<h1 class="reels-main-title">In the <span>moment.</span></h1>
+					<p class="reels-subtitle">Watch immersive vertical stories, explore rhythmic soundscapes, and share your own.</p>
+				</div>
+				<div class="reels-top-actions">
+					<button class="button button-outline button-small" id="reels-toggle-studio" type="button">
+						<span>✨</span> <span id="studio-btn-text">Open Creator Studio</span>
+					</button>
+					<button class="button button-primary button-small" id="open-reel-modal" type="button">
+						＋ Upload Reel
+					</button>
+				</div>
+			</div>
+
+			<!-- Category Filter Chips -->
+			<div class="reels-filter-row" role="tablist" aria-label="Reel categories">
+				<button class="reels-chip is-active" data-reel-filter="all" type="button">All Moments</button>
+				<button class="reels-chip" data-reel-filter="atmosphere" type="button">🌧️ Atmosphere</button>
+				<button class="reels-chip" data-reel-filter="craft" type="button">🏺 Craft & Clay</button>
+				<button class="reels-chip" data-reel-filter="escapes" type="button">🌊 Ocean & Wild</button>
+				<button class="reels-chip" data-reel-filter="city" type="button">🌇 City Lights</button>
+			</div>
+
+			<!-- Main Reels Theater Layout -->
+			<div class="reels-theater-layout">
+				<!-- LEFT: REEL PLAYER COLUMN -->
+				<div class="reel-player-column">
+					<div class="reel-player-card" id="active-reel-card">
+						<!-- Video Wrapper -->
+						<div class="reel-video-wrapper" id="reel-video-wrapper">
+							<video id="active-reel-video"
+								src="https://vjs.zencdn.net/v/oceans.mp4"
+								poster="https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=600&q=80"
+								playsinline
+								loop
+								preload="auto">
+							</video>
+
+							<!-- Ambient Background Poster Layer (Fallback & Blur Glow) -->
+							<div class="reel-poster-backdrop" id="reel-poster-backdrop"></div>
+
+							<!-- Tap to Play/Pause surface -->
+							<button class="reel-tap-surface" id="reel-tap-surface" type="button" aria-label="Toggle play and pause">
+								<div class="reel-central-play-indicator" id="central-play-icon" aria-hidden="true">
+									<svg viewBox="0 0 24 24" width="44" height="44" fill="currentColor">
+										<path d="M8 5v14l11-7z"/>
+									</svg>
+								</div>
+							</button>
+
+							<!-- Video HUD Top -->
+							<div class="reel-hud-top">
+								<span class="reel-category-pill" id="player-category-pill">🌧️ Atmosphere</span>
+								<div class="reel-hud-right">
+									<div class="sound-wave-badge is-playing" id="player-soundwave" title="Audio active">
+										<span></span><span></span><span></span><span></span>
+									</div>
+									<button class="reel-hud-btn" id="player-mute-btn" type="button" aria-label="Toggle mute" title="Mute/Unmute (M)">
+										<span id="player-mute-icon">🔊</span>
+									</button>
+								</div>
+							</div>
+
+							<!-- Video HUD Bottom -->
+							<div class="reel-hud-bottom">
+								<div class="reel-author-row">
+									<img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90" alt="Maya Chen" id="player-author-avatar" class="reel-avatar">
+									<div class="reel-author-text">
+										<div class="reel-author-name-line">
+											<strong id="player-author-name">Maya Chen</strong>
+											<button class="reel-follow-btn" id="player-follow-btn" type="button">＋ Follow</button>
+										</div>
+										<span id="player-author-handle">@mayainmotion</span>
+									</div>
+								</div>
+
+								<p class="reel-caption-text" id="player-caption">Rainy afternoon in Fort Greene 🌧️ finding calm in the rhythm of the drops.</p>
+
+								<div class="reel-soundtrack-pill" id="player-soundtrack">
+									<span class="music-note-icon">♫</span>
+									<span class="music-marquee-wrap">
+										<span class="music-title" id="player-music-title">Lo-Fi Rain · Brooklyn Chill</span>
+									</span>
+								</div>
+
+								<!-- Scrub Timeline Progress Bar -->
+								<div class="reel-progress-container" id="reel-progress-container" role="progressbar" aria-label="Reel progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+									<div class="reel-progress-bar" id="reel-progress-bar"></div>
+								</div>
+								<div class="reel-time-row">
+									<span id="player-time-current">0:00</span>
+									<span id="player-time-duration">0:24</span>
+								</div>
+							</div>
+
+							<!-- Floating Side Toolbar -->
+							<div class="reel-side-toolbar" aria-label="Reel Actions">
+								<button class="reel-tool-btn" id="player-like-btn" type="button" aria-label="Like reel">
+									<span class="reel-tool-icon" id="player-like-icon">♡</span>
+									<small class="reel-tool-label" id="player-like-count">142</small>
+								</button>
+								<button class="reel-tool-btn" id="player-comment-btn" type="button" aria-label="Comments">
+									<span class="reel-tool-icon">💬</span>
+									<small class="reel-tool-label" id="player-comment-count">14</small>
+								</button>
+								<button class="reel-tool-btn" id="player-save-btn" type="button" aria-label="Save reel">
+									<span class="reel-tool-icon" id="player-save-icon">★</span>
+									<small class="reel-tool-label" id="player-save-label">Save</small>
+								</button>
+								<button class="reel-tool-btn" id="player-share-btn" type="button" aria-label="Share reel">
+									<span class="reel-tool-icon">↗</span>
+									<small class="reel-tool-label">Share</small>
+								</button>
+								<div class="reel-tool-divider"></div>
+								<button class="reel-nav-btn" id="player-prev-reel" type="button" aria-label="Previous reel" title="Previous reel (Up Arrow)">
+									▲
+								</button>
+								<button class="reel-nav-btn" id="player-next-reel" type="button" aria-label="Next reel" title="Next reel (Down Arrow)">
+									▼
+								</button>
+							</div>
+						</div>
+
+						<!-- Thumbnails Carousel Strip (Jump to any reel) -->
+						<div class="reels-strip-tray">
+							<div class="reels-strip-header">
+								<span>UP NEXT & MOMENTS</span>
+								<span class="reel-index-badge" id="player-counter">01 / 04</span>
+							</div>
+							<div class="reels-strip-scroll" id="reels-strip-scroll"></div>
+						</div>
+					</div>
+				</div>
+
+				<!-- RIGHT: CREATOR STUDIO & COMMUNITY PANEL -->
+				<div class="reels-sidebar-studio" id="reels-sidebar-studio">
+					<div class="studio-card">
+						<!-- Studio Tab Navigation -->
+						<div class="studio-tabs" role="tablist">
+							<button class="studio-tab-btn is-active" id="tab-btn-upload" data-studio-tab="upload" type="button">
+								✨ Upload Reel
+							</button>
+							<button class="studio-tab-btn" id="tab-btn-comments" data-studio-tab="comments" type="button">
+								💬 Comments (<span id="studio-comment-badge">14</span>)
+							</button>
+							<button class="studio-tab-btn" id="tab-btn-info" data-studio-tab="info" type="button">
+								ℹ️ Reel Info
+							</button>
+						</div>
+
+						<!-- TAB 1: UPLOAD REEL -->
+						<div class="studio-pane is-active" id="pane-upload">
+							<div class="pane-header">
+								<h3>Creator Studio</h3>
+								<p>Upload your vertical moment or pick a 1-click preset.</p>
+							</div>
+
+							<form id="studio-upload-form" class="studio-form">
+								<!-- Video Dropzone -->
+								<label class="studio-dropzone" for="studio-file-input" id="studio-dropzone">
+									<input type="file" id="studio-file-input" accept="video/mp4,video/webm,video/quicktime,video/*" hidden>
+									<div class="dropzone-content" id="dropzone-default">
+										<span class="dropzone-icon">⇪</span>
+										<strong>Choose a video file to upload</strong>
+										<small>MP4, WebM or MOV · Under 60 seconds</small>
+										<span class="dropzone-browse-btn">Browse files</span>
+									</div>
+									<div class="dropzone-preview" id="dropzone-preview-wrap" hidden>
+										<video id="studio-preview-video" muted loop playsinline></video>
+										<span class="preview-badge">Video ready ✓</span>
+									</div>
+								</label>
+
+								<!-- 1-Click Demo Presets -->
+								<div class="demo-moments-box">
+									<span class="demo-label">⚡ OR TRY A 1-CLICK DEMO MOMENT:</span>
+									<div class="demo-moments-grid">
+										<button type="button" class="demo-moment-chip" data-demo-id="rain">
+											🌧️ Rain on Glass
+										</button>
+										<button type="button" class="demo-moment-chip" data-demo-id="ocean">
+											🌊 Ocean Waves
+										</button>
+										<button type="button" class="demo-moment-chip" data-demo-id="flower">
+											🌸 Garden Bloom
+										</button>
+										<button type="button" class="demo-moment-chip" data-demo-id="clay">
+											🏺 Pottery Spin
+										</button>
+									</div>
+								</div>
+
+								<!-- Caption -->
+								<div class="form-group">
+									<label for="studio-caption-input">Caption & Reflections</label>
+									<textarea id="studio-caption-input" rows="3" placeholder="What made this moment special? Add thoughts and #tags..." maxlength="200" required></textarea>
+									<div class="tag-shortcuts">
+										<button type="button" class="tag-pill" data-insert-tag="#moment">#moment</button>
+										<button type="button" class="tag-pill" data-insert-tag="#mindful">#mindful</button>
+										<button type="button" class="tag-pill" data-insert-tag="#calm">#calm</button>
+										<button type="button" class="tag-pill" data-insert-tag="#theta">#theta</button>
+									</div>
+								</div>
+
+								<!-- Category & Soundtrack -->
+								<div class="form-row-2">
+									<div class="form-group">
+										<label for="studio-category-select">Category</label>
+										<select id="studio-category-select">
+											<option value="atmosphere">🌧️ Atmosphere</option>
+											<option value="craft">🏺 Craft & Clay</option>
+											<option value="escapes">🌊 Ocean & Wild</option>
+											<option value="city">🌇 City Lights</option>
+										</select>
+									</div>
+									<div class="form-group">
+										<label for="studio-soundtrack-select">Soundtrack</label>
+										<select id="studio-soundtrack-select">
+											<option value="Lo-Fi Rain · Brooklyn Chill">Lo-Fi Rain · Chill</option>
+											<option value="Ocean Mist & Waves · Ambient">Ocean Mist · Ambient</option>
+											<option value="Ceramics Ambient · Studio Vol. 2">Ceramics Ambient</option>
+											<option value="Golden Hour Glow · City Synth">City Synth · Glow</option>
+											<option value="Morning Birds · Forest Flow">Forest Birds · Flow</option>
+										</select>
+									</div>
+								</div>
+
+								<button type="submit" class="button button-primary studio-submit-btn" id="studio-publish-btn">
+									<span>🚀 Publish Reel to My Teta</span>
+								</button>
+							</form>
+						</div>
+
+						<!-- TAB 2: COMMENTS -->
+						<div class="studio-pane" id="pane-comments" hidden>
+							<div class="pane-header">
+								<h3>Discussion</h3>
+								<p id="comments-pane-subtitle">Reflections on this moment</p>
+							</div>
+
+							<div class="reel-comments-list" id="reel-comments-list"></div>
+
+							<form id="reel-comment-form" class="reel-comment-form">
+								<input type="text" id="reel-comment-input" placeholder="Add a thoughtful reflection..." autocomplete="off" required>
+								<button type="submit" class="send-comment-btn" aria-label="Send comment">↗</button>
+							</form>
+						</div>
+
+						<!-- TAB 3: DETAILS & SHORTCUTS -->
+						<div class="studio-pane" id="pane-info" hidden>
+							<div class="pane-header">
+								<h3>Moment Insights</h3>
+								<p>Details about creator, audio, and shortcuts</p>
+							</div>
+
+							<div class="info-content-card">
+								<div class="info-creator-profile">
+									<img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90" id="info-avatar" alt="Creator">
+									<div>
+										<strong id="info-name">Maya Chen</strong>
+										<p id="info-handle">@mayainmotion</p>
+									</div>
+								</div>
+								
+								<div class="info-stats-grid">
+									<div class="stat-pill">
+										<small>Total Views</small>
+										<strong id="info-views">18.4k</strong>
+									</div>
+									<div class="stat-pill">
+										<small>Appreciations</small>
+										<strong id="info-likes">142</strong>
+									</div>
+									<div class="stat-pill">
+										<small>Audio Uses</small>
+										<strong>3.2k</strong>
+									</div>
+								</div>
+
+								<div class="shortcuts-guide">
+									<h4>⌨️ Theater Controls</h4>
+									<ul>
+										<li><kbd>Space</kbd> <span>Play / Pause</span></li>
+										<li><kbd>↑</kbd> <kbd>↓</kbd> <span>Previous / Next Reel</span></li>
+										<li><kbd>M</kbd> <span>Mute / Unmute Sound</span></li>
+										<li><kbd>L</kbd> <span>Like Active Reel</span></li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
 
 		<section class="view-panel chat-view" id="chat-view" hidden><div class="chat-shell"><aside class="chat-sidebar"><div class="chat-title"><div><p class="eyebrow">YOUR PEOPLE</p><h1>Messages<span>.</span></h1></div><button class="icon-button" id="new-message" type="button" aria-label="New message">＋</button></div><label class="chat-search">⌕ <input id="chat-search" type="search" placeholder="Search conversations"></label><div class="chat-filters"><button class="is-active" type="button">All <span>4</span></button><button type="button">Unread <span>2</span></button></div><div class="chat-contact-list" id="chat-contact-list"></div></aside><section class="chat-conversation" aria-label="Conversation"><header class="conversation-header" id="conversation-header"></header><div class="conversation-messages" id="conversation-messages" aria-live="polite"></div><div class="recording-panel" id="recording-panel" hidden><div class="recording-status"><i></i><span id="recording-label">Recording</span><time id="recording-time">00:00</time></div><div class="recording-tools"><label for="voice-effect">Voice</label><select id="voice-effect"><option value="normal">Normal</option><option value="chipmunk">Chipmunk</option><option value="deep">Deep voice</option><option value="echo">Echo</option></select><button class="button button-primary button-small" id="stop-recording" type="button">Finish ■</button></div></div><div class="voice-preview" id="voice-preview-row" hidden><audio id="voice-preview" controls></audio><button class="text-action" id="discard-recording" type="button">Discard</button><button class="button button-primary button-small" id="send-recording" type="button">Send ↗</button></div><form class="message-composer" id="message-form"><button class="icon-button" id="attach-message" type="button" aria-label="Attach file">＋</button><input id="message-input" placeholder="Write something kind..." maxlength="500" autocomplete="off" aria-label="Write a message"><button class="icon-button" id="record-button" type="button" aria-label="Record voice message" title="Record a voice message">◉</button><button class="send-button" type="submit" aria-label="Send message">↗</button></form><p class="voice-hint">◉ Hold a little, say a lot. Voice notes stay on this device.</p></section></div></section>
 

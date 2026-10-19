@@ -85,11 +85,20 @@
       avatar: CURRENT_USER.avatar,
       caption: "Rainy afternoon in Fort Greene 🌧️ finding calm in the rhythm of the drops.",
       image: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=600&q=80",
+      videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
+      category: "atmosphere",
       likes: 142,
       views: "18.4k",
       duration: "0:24",
       music: "Lo-Fi Rain · Brooklyn Chill",
-      isLiked: false
+      isLiked: false,
+      isSaved: false,
+      isFollowing: false,
+      comments: [
+        { id: 1, author: "Amara Vance", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80", time: "15m ago", text: "The acoustic warmth in this capture is everything. Listened twice!" },
+        { id: 2, author: "Lucas Dubois", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80", time: "42m ago", text: "Fort Greene cobblestones look magical in the rain." },
+        { id: 3, author: "Soren Kierkegaard", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80", time: "2h ago", text: "Slowing down and letting the weather happen ☕" }
+      ]
     },
     {
       id: 2,
@@ -98,11 +107,19 @@
       avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
       caption: "Centering clay on the kick wheel ✨ pure theta state meditation.",
       image: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=600&q=80",
+      videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      category: "craft",
       likes: 219,
       views: "29.1k",
       duration: "0:36",
       music: "Ceramics Ambient · Studio Vol. 2",
-      isLiked: true
+      isLiked: true,
+      isSaved: true,
+      isFollowing: true,
+      comments: [
+        { id: 1, author: "Maya Chen", avatar: CURRENT_USER.avatar, time: "1h ago", text: "Watching hands center clay is the most peaceful thing on this earth." },
+        { id: 2, author: "Julian Lee", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80", time: "3h ago", text: "The spiral texture on the rim is gorgeous Amara." }
+      ]
     },
     {
       id: 3,
@@ -111,11 +128,18 @@
       avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
       caption: "Sunset shadow play over Brutalist facades 🌇 evening geometry.",
       image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80",
+      videoUrl: "https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_1MB.mp4",
+      category: "city",
       likes: 88,
       views: "12.7k",
       duration: "0:19",
       music: "Golden Hour Glow · City Synth",
-      isLiked: false
+      isLiked: false,
+      isSaved: false,
+      isFollowing: true,
+      comments: [
+        { id: 1, author: "Elena Rostova", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80", time: "30m ago", text: "Those angles with the golden backlight are stunning Julian!" }
+      ]
     },
     {
       id: 4,
@@ -124,13 +148,52 @@
       avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
       caption: "Hidden waterfall trail in Hudson Valley 🌿 breath of fresh mountain air.",
       image: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80",
+      videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+      category: "escapes",
       likes: 312,
       views: "42.5k",
       duration: "0:45",
       music: "Forest Stream & Birds · Nature Sound",
-      isLiked: false
+      isLiked: false,
+      isSaved: false,
+      isFollowing: false,
+      comments: [
+        { id: 1, author: "Maya Chen", avatar: CURRENT_USER.avatar, time: "4h ago", text: "Take me with you next time! Need to touch some moss." },
+        { id: 2, author: "Nadia Osei", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80", time: "5h ago", text: "The misty air through the trees is perfection." }
+      ]
     }
   ];
+
+  const DEMO_PRESETS = {
+    rain: {
+      videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
+      image: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=600&q=80",
+      caption: "Rain on Brooklyn windows 🌧️ calm evening theta rhythm.",
+      category: "atmosphere",
+      music: "Lo-Fi Rain · Brooklyn Chill"
+    },
+    ocean: {
+      videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
+      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80",
+      caption: "Evening tide roll 🌊 sync your breath with the waves.",
+      category: "escapes",
+      music: "Ocean Mist & Waves · Ambient"
+    },
+    flower: {
+      videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      image: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=600&q=80",
+      caption: "Morning bloom opening quietly 🌸 patience in blossom.",
+      category: "atmosphere",
+      music: "Morning Birds · Forest Flow"
+    },
+    clay: {
+      videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+      image: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=600&q=80",
+      caption: "Clay spinning smooth on the kick wheel 🏺 grounding flow state.",
+      category: "craft",
+      music: "Ceramics Ambient · Studio Vol. 2"
+    }
+  };
 
   const CHATS = [
     {
@@ -314,6 +377,36 @@
   // ==========================================
   function switchView(viewName) {
     if (!viewPanels[viewName]) return;
+
+    const appShell = document.querySelector('.app-shell');
+    const rightRail = document.querySelector('.right-rail');
+
+    if (viewName === 'reels') {
+      if (appShell) appShell.classList.add('is-reels-active');
+      if (rightRail) rightRail.style.display = 'none';
+      // Autoplay active reel if video exists
+      const activeVideo = document.getElementById('active-reel-video');
+      if (activeVideo && activeVideo.paused) {
+        activeVideo.play().then(() => {
+          const wrapper = document.getElementById('reel-video-wrapper');
+          if (wrapper) wrapper.classList.remove('is-paused');
+          const wave = document.getElementById('player-soundwave');
+          if (wave) wave.classList.add('is-playing');
+        }).catch(() => {});
+      }
+    } else {
+      if (appShell) appShell.classList.remove('is-reels-active');
+      if (rightRail) rightRail.style.display = '';
+      // Pause video when leaving reels view to prevent background audio
+      const activeVideo = document.getElementById('active-reel-video');
+      if (activeVideo && !activeVideo.paused) {
+        activeVideo.pause();
+        const wrapper = document.getElementById('reel-video-wrapper');
+        if (wrapper) wrapper.classList.add('is-paused');
+        const wave = document.getElementById('player-soundwave');
+        if (wave) wave.classList.remove('is-playing');
+      }
+    }
 
     Object.keys(viewPanels).forEach(key => {
       if (viewPanels[key]) {
@@ -546,12 +639,24 @@
   });
 
   // ==========================================
-  // 9. REELS VIEW & HOME REELS SHOWCASE
+  // 9. REELS THEATER & CREATOR STUDIO ENGINE
   // ==========================================
+  let currentReelIndex = 0;
+  let currentReelFilter = 'all';
+  let uploadedVideoBlobUrl = null;
+  let uploadedPosterUrl = null;
+
+  function formatTime(seconds) {
+    if (isNaN(seconds) || seconds < 0) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${String(secs).padStart(2, '0')}`;
+  }
+
   function renderHomeReels() {
     if (!homeReelsTrack) return;
-    homeReelsTrack.innerHTML = REELS.map(reel => `
-      <article class="home-reel-card" data-reel-id="${reel.id}" tabindex="0" role="button" aria-label="Watch reel by ${reel.author}">
+    homeReelsTrack.innerHTML = REELS.map((reel, idx) => `
+      <article class="home-reel-card" data-reel-id="${reel.id}" data-reel-index="${idx}" tabindex="0" role="button" aria-label="Watch reel by ${reel.author}">
         <div class="home-reel-media">
           <img src="${reel.image}" alt="${reel.caption}" loading="lazy">
           <span class="home-reel-duration">${reel.duration}</span>
@@ -584,9 +689,11 @@
       card.addEventListener('click', (e) => {
         if (e.target.closest('[data-reel-like]')) return;
         const reelId = card.dataset.reelId;
-        const reel = REELS.find(r => r.id == reelId);
-        showToast(`Playing ${reel.author}'s reel...`, '▷');
+        const idx = REELS.findIndex(r => r.id == reelId);
+        const targetIdx = idx !== -1 ? idx : 0;
         switchView('reels');
+        loadActiveReel(targetIdx, true);
+        showToast(`Playing ${REELS[targetIdx].author}'s reel in theater ▷`, '▷');
       });
     });
 
@@ -599,66 +706,508 @@
           reel.isLiked = !reel.isLiked;
           reel.likes += reel.isLiked ? 1 : -1;
           renderHomeReels();
-          renderReels();
+          loadActiveReel(currentReelIndex, false);
           showToast(reel.isLiked ? "Saved reel to your moments ♥" : "Unliked reel", reel.isLiked ? "♥" : "♡");
         }
       });
     });
   }
 
-  function renderReels() {
-    if (!reelTrack) return;
-    reelTrack.innerHTML = REELS.map(reel => `
-      <div class="reel-item" id="reel-item-${reel.id}">
-        <img src="${reel.image}" alt="${reel.caption}">
-        <div class="reel-overlay">
-          <div class="reel-author">
-            <img src="${reel.avatar}" alt="${reel.author}">
-            <div>
-              <strong>${reel.author}</strong>
-              <small style="display:block; font-size:0.75rem; color:rgba(255,255,255,0.7);">${reel.handle || ''} · ${reel.music}</small>
-            </div>
-          </div>
-          <p class="reel-caption">${reel.caption}</p>
-        </div>
-        <div class="reel-actions-side">
-          <button class="reel-side-btn ${reel.isLiked ? 'is-liked' : ''}" data-reel-like="${reel.id}" title="Like" type="button">
-            ${reel.isLiked ? '♥' : '♡'}
-          </button>
-          <button class="reel-side-btn" title="Comment" type="button">💬</button>
-          <button class="reel-side-btn" title="Share" type="button" data-reel-share="${reel.id}">↗</button>
-        </div>
+  function renderReelThumbnails() {
+    const strip = document.getElementById('reels-strip-scroll');
+    if (!strip) return;
+    strip.innerHTML = REELS.map((reel, idx) => `
+      <div class="strip-thumb-card ${idx === currentReelIndex ? 'is-active' : ''}" data-strip-idx="${idx}" title="${reel.caption}" tabindex="0" role="button">
+        <img src="${reel.image}" alt="${reel.caption}" loading="lazy">
+        <span class="strip-thumb-duration">${reel.duration}</span>
+        ${idx === currentReelIndex ? '<span class="strip-thumb-badge">▷</span>' : ''}
       </div>
     `).join('');
 
-    reelTrack.querySelectorAll('[data-reel-like]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const reelId = btn.dataset.reelLike;
-        const reel = REELS.find(r => r.id == reelId);
-        if (reel) {
-          reel.isLiked = !reel.isLiked;
-          reel.likes += reel.isLiked ? 1 : -1;
-          renderReels();
-          renderHomeReels();
-          showToast(reel.isLiked ? "Liked reel!" : "Unliked reel", "♥");
-        }
+    strip.querySelectorAll('[data-strip-idx]').forEach(card => {
+      card.addEventListener('click', () => {
+        const idx = Number(card.dataset.stripIdx);
+        loadActiveReel(idx, true);
       });
     });
+  }
 
-    reelTrack.querySelectorAll('[data-reel-share]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(window.location.href);
-          showToast("Reel link copied!", "↗");
-        } else {
-          showToast("Reel shared!", "↗");
-        }
-      });
-    });
+  function renderReelComments() {
+    const commentsList = document.getElementById('reel-comments-list');
+    const commentCountEl = document.getElementById('player-comment-count');
+    const studioBadge = document.getElementById('studio-comment-badge');
+    const currentReel = REELS[currentReelIndex];
+    if (!currentReel) return;
 
-    if (reelsCounter) {
-      reelsCounter.textContent = `01 / 0${REELS.length}`;
+    const comments = currentReel.comments || [];
+    if (commentCountEl) commentCountEl.textContent = comments.length;
+    if (studioBadge) studioBadge.textContent = comments.length;
+
+    if (!commentsList) return;
+    if (comments.length === 0) {
+      commentsList.innerHTML = `
+        <div style="text-align:center; padding:28px 12px; color:var(--ink-faint);">
+          <p style="margin:0 0 4px; font-weight:700;">No comments yet</p>
+          <small>Be the first to share a reflection on this moment.</small>
+        </div>
+      `;
+      return;
     }
+
+    commentsList.innerHTML = comments.map(c => `
+      <div class="reel-comment-item">
+        <img src="${c.avatar}" alt="${c.author}" class="comment-avatar">
+        <div class="comment-body">
+          <div class="comment-header">
+            <strong>${c.author}</strong>
+            <time>${c.time}</time>
+          </div>
+          <p class="comment-text">${c.text}</p>
+        </div>
+      </div>
+    `).join('');
+    commentsList.scrollTop = commentsList.scrollHeight;
+  }
+
+  function loadActiveReel(index, autoPlay = true) {
+    if (!REELS || REELS.length === 0) return;
+    currentReelIndex = ((index % REELS.length) + REELS.length) % REELS.length;
+    const reel = REELS[currentReelIndex];
+
+    const activeVideo = document.getElementById('active-reel-video');
+    const videoWrapper = document.getElementById('reel-video-wrapper');
+    const posterBackdrop = document.getElementById('reel-poster-backdrop');
+    const categoryPill = document.getElementById('player-category-pill');
+    const authorAvatar = document.getElementById('player-author-avatar');
+    const authorName = document.getElementById('player-author-name');
+    const authorHandle = document.getElementById('player-author-handle');
+    const followBtn = document.getElementById('player-follow-btn');
+    const captionEl = document.getElementById('player-caption');
+    const musicTitle = document.getElementById('player-music-title');
+    const likeBtn = document.getElementById('player-like-btn');
+    const likeIcon = document.getElementById('player-like-icon');
+    const likeCount = document.getElementById('player-like-count');
+    const saveBtn = document.getElementById('player-save-btn');
+    const saveLabel = document.getElementById('player-save-label');
+    const counterEl = document.getElementById('player-counter');
+    const totalCountEl = document.getElementById('reels-total-count');
+    const durationEl = document.getElementById('player-time-duration');
+    const currentEl = document.getElementById('player-time-current');
+    const progressBar = document.getElementById('reel-progress-bar');
+    const soundwave = document.getElementById('player-soundwave');
+
+    // Details tab elements
+    const infoAvatar = document.getElementById('info-avatar');
+    const infoName = document.getElementById('info-name');
+    const infoHandle = document.getElementById('info-handle');
+    const infoViews = document.getElementById('info-views');
+    const infoLikes = document.getElementById('info-likes');
+
+    if (activeVideo) {
+      activeVideo.pause();
+      activeVideo.src = reel.videoUrl;
+      activeVideo.poster = reel.image;
+      activeVideo.load();
+    }
+    if (posterBackdrop) {
+      posterBackdrop.style.backgroundImage = `url("${reel.image}")`;
+    }
+    if (categoryPill) {
+      const catMap = {
+        atmosphere: '🌧️ Atmosphere',
+        craft: '🏺 Craft & Clay',
+        escapes: '🌊 Ocean & Wild',
+        city: '🌇 City Lights'
+      };
+      categoryPill.textContent = catMap[reel.category] || '✨ Moment';
+    }
+    if (authorAvatar) authorAvatar.src = reel.avatar;
+    if (authorName) authorName.textContent = reel.author;
+    if (authorHandle) authorHandle.textContent = reel.handle || `@${reel.author.toLowerCase().replace(/\s+/g, '')}`;
+    if (followBtn) {
+      followBtn.textContent = reel.isFollowing ? 'Following ✓' : '＋ Follow';
+      followBtn.classList.toggle('is-following', !!reel.isFollowing);
+    }
+    if (captionEl) captionEl.textContent = reel.caption;
+    if (musicTitle) musicTitle.textContent = reel.music;
+    if (likeCount) likeCount.textContent = reel.likes;
+    if (likeIcon) likeIcon.textContent = reel.isLiked ? '♥' : '♡';
+    if (likeBtn) likeBtn.classList.toggle('is-liked', !!reel.isLiked);
+    if (saveBtn) saveBtn.classList.toggle('is-saved', !!reel.isSaved);
+    if (saveLabel) saveLabel.textContent = reel.isSaved ? 'Saved' : 'Save';
+    if (counterEl) counterEl.textContent = `0${currentReelIndex + 1} / 0${REELS.length}`;
+    if (totalCountEl) totalCountEl.textContent = `${REELS.length} Moments`;
+    if (durationEl) durationEl.textContent = reel.duration || "0:24";
+    if (currentEl) currentEl.textContent = "0:00";
+    if (progressBar) progressBar.style.width = "0%";
+
+    if (infoAvatar) infoAvatar.src = reel.avatar;
+    if (infoName) infoName.textContent = reel.author;
+    if (infoHandle) infoHandle.textContent = reel.handle || `@${reel.author.toLowerCase().replace(/\s+/g, '')}`;
+    if (infoViews) infoViews.textContent = reel.views || "18.4k";
+    if (infoLikes) infoLikes.textContent = reel.likes;
+
+    renderReelComments();
+    renderReelThumbnails();
+
+    if (autoPlay && activeVideo) {
+      activeVideo.play().then(() => {
+        if (videoWrapper) videoWrapper.classList.remove('is-paused');
+        if (soundwave) soundwave.classList.add('is-playing');
+      }).catch(() => {
+        if (videoWrapper) videoWrapper.classList.add('is-paused');
+        if (soundwave) soundwave.classList.remove('is-playing');
+      });
+    }
+  }
+
+  function togglePlayPause() {
+    const activeVideo = document.getElementById('active-reel-video');
+    const videoWrapper = document.getElementById('reel-video-wrapper');
+    const soundwave = document.getElementById('player-soundwave');
+    if (!activeVideo) return;
+
+    if (activeVideo.paused) {
+      activeVideo.play().then(() => {
+        if (videoWrapper) videoWrapper.classList.remove('is-paused');
+        if (soundwave) soundwave.classList.add('is-playing');
+      }).catch(() => {});
+    } else {
+      activeVideo.pause();
+      if (videoWrapper) videoWrapper.classList.add('is-paused');
+      if (soundwave) soundwave.classList.remove('is-playing');
+    }
+  }
+
+  function toggleMute() {
+    const activeVideo = document.getElementById('active-reel-video');
+    const muteIcon = document.getElementById('player-mute-icon');
+    if (!activeVideo) return;
+    activeVideo.muted = !activeVideo.muted;
+    if (muteIcon) muteIcon.textContent = activeVideo.muted ? '🔇' : '🔊';
+    showToast(activeVideo.muted ? "Audio muted" : "Audio playing 🔊", "♫");
+  }
+
+  function nextReel() {
+    loadActiveReel(currentReelIndex + 1, true);
+  }
+
+  function prevReel() {
+    loadActiveReel(currentReelIndex - 1, true);
+  }
+
+  function switchStudioTab(tabName) {
+    document.querySelectorAll('[data-studio-tab]').forEach(btn => {
+      btn.classList.toggle('is-active', btn.dataset.studioTab === tabName);
+    });
+    const panes = {
+      upload: document.getElementById('pane-upload'),
+      comments: document.getElementById('pane-comments'),
+      info: document.getElementById('pane-info')
+    };
+    Object.keys(panes).forEach(k => {
+      if (panes[k]) panes[k].hidden = (k !== tabName);
+    });
+  }
+
+  // Set up Reels Theater event handlers once
+  function initReelsTheaterEvents() {
+    const activeVideo = document.getElementById('active-reel-video');
+    const progressBar = document.getElementById('reel-progress-bar');
+    const timeCurrent = document.getElementById('player-time-current');
+    const timeDuration = document.getElementById('player-time-duration');
+    const progressContainer = document.getElementById('reel-progress-container');
+
+    if (activeVideo) {
+      activeVideo.addEventListener('timeupdate', () => {
+        if (!activeVideo.duration) return;
+        const pct = (activeVideo.currentTime / activeVideo.duration) * 100;
+        if (progressBar) progressBar.style.width = `${pct}%`;
+        if (timeCurrent) timeCurrent.textContent = formatTime(activeVideo.currentTime);
+        if (timeDuration) timeDuration.textContent = formatTime(activeVideo.duration);
+      });
+      activeVideo.addEventListener('ended', () => {
+        activeVideo.currentTime = 0;
+        activeVideo.play().catch(() => {});
+      });
+    }
+
+    if (progressContainer && activeVideo) {
+      progressContainer.addEventListener('click', (e) => {
+        const rect = progressContainer.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        if (activeVideo.duration) {
+          activeVideo.currentTime = pos * activeVideo.duration;
+        }
+      });
+    }
+
+    // Controls
+    document.getElementById('reel-tap-surface')?.addEventListener('click', togglePlayPause);
+    document.getElementById('player-mute-btn')?.addEventListener('click', toggleMute);
+    document.getElementById('player-prev-reel')?.addEventListener('click', prevReel);
+    document.getElementById('player-next-reel')?.addEventListener('click', nextReel);
+
+    // Like
+    document.getElementById('player-like-btn')?.addEventListener('click', () => {
+      const reel = REELS[currentReelIndex];
+      if (reel) {
+        reel.isLiked = !reel.isLiked;
+        reel.likes += reel.isLiked ? 1 : -1;
+        loadActiveReel(currentReelIndex, false);
+        renderHomeReels();
+        showToast(reel.isLiked ? "Saved to your liked moments ♥" : "Unliked reel", reel.isLiked ? "♥" : "♡");
+      }
+    });
+
+    // Follow
+    document.getElementById('player-follow-btn')?.addEventListener('click', () => {
+      const reel = REELS[currentReelIndex];
+      if (reel) {
+        reel.isFollowing = !reel.isFollowing;
+        loadActiveReel(currentReelIndex, false);
+        showToast(reel.isFollowing ? `Following ${reel.author} ✓` : `Unfollowed ${reel.author}`, "♧");
+      }
+    });
+
+    // Save
+    document.getElementById('player-save-btn')?.addEventListener('click', () => {
+      const reel = REELS[currentReelIndex];
+      if (reel) {
+        reel.isSaved = !reel.isSaved;
+        loadActiveReel(currentReelIndex, false);
+        showToast(reel.isSaved ? "Moment bookmarked ★" : "Removed bookmark", "★");
+      }
+    });
+
+    // Comments button opens comments tab
+    document.getElementById('player-comment-btn')?.addEventListener('click', () => {
+      switchStudioTab('comments');
+      document.getElementById('reel-comment-input')?.focus();
+    });
+
+    // Share button
+    document.getElementById('player-share-btn')?.addEventListener('click', () => {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(window.location.href);
+        showToast("Reel link copied to clipboard! ↗", "↗");
+      } else {
+        showToast("Reel link shared! ↗", "↗");
+      }
+    });
+
+    // Studio tabs
+    document.querySelectorAll('[data-studio-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        switchStudioTab(btn.dataset.studioTab);
+      });
+    });
+
+    // Toggle Studio launcher button in topbar
+    const toggleStudioBtn = document.getElementById('reels-toggle-studio');
+    if (toggleStudioBtn) {
+      toggleStudioBtn.addEventListener('click', () => {
+        switchStudioTab('upload');
+        const studioEl = document.getElementById('reels-sidebar-studio');
+        if (studioEl) studioEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    }
+
+    // File input & preview
+    const studioFileInput = document.getElementById('studio-file-input');
+    const studioPreviewVideo = document.getElementById('studio-preview-video');
+    const dropzoneDefault = document.getElementById('dropzone-default');
+    const dropzonePreviewWrap = document.getElementById('dropzone-preview-wrap');
+
+    if (studioFileInput) {
+      studioFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          uploadedVideoBlobUrl = URL.createObjectURL(file);
+          uploadedPosterUrl = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80";
+          if (studioPreviewVideo) {
+            studioPreviewVideo.src = uploadedVideoBlobUrl;
+            studioPreviewVideo.play().catch(() => {});
+          }
+          if (dropzoneDefault) dropzoneDefault.hidden = true;
+          if (dropzonePreviewWrap) dropzonePreviewWrap.hidden = false;
+          showToast(`Loaded ${file.name} ready to publish!`, "⇪");
+        }
+      });
+    }
+
+    // 1-Click Demo Presets
+    document.querySelectorAll('.demo-moment-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const demoId = chip.dataset.demoId;
+        const preset = DEMO_PRESETS[demoId];
+        if (preset) {
+          uploadedVideoBlobUrl = preset.videoUrl;
+          uploadedPosterUrl = preset.image;
+          if (studioPreviewVideo) {
+            studioPreviewVideo.src = preset.videoUrl;
+            studioPreviewVideo.play().catch(() => {});
+          }
+          if (dropzoneDefault) dropzoneDefault.hidden = true;
+          if (dropzonePreviewWrap) dropzonePreviewWrap.hidden = false;
+
+          const captionInput = document.getElementById('studio-caption-input');
+          if (captionInput) captionInput.value = preset.caption;
+
+          const catSelect = document.getElementById('studio-category-select');
+          if (catSelect) catSelect.value = preset.category;
+
+          const sndSelect = document.getElementById('studio-soundtrack-select');
+          if (sndSelect) sndSelect.value = preset.music;
+
+          showToast(`Preset "${chip.textContent.trim()}" selected!`, "✨");
+        }
+      });
+    });
+
+    // Tag pills
+    document.querySelectorAll('[data-insert-tag]').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const tag = pill.dataset.insertTag;
+        const captionInput = document.getElementById('studio-caption-input');
+        if (captionInput) {
+          captionInput.value = (captionInput.value.trim() ? captionInput.value.trim() + ' ' : '') + tag + ' ';
+          captionInput.focus();
+        }
+      });
+    });
+
+    // Studio Publish Submit
+    const studioUploadForm = document.getElementById('studio-upload-form');
+    if (studioUploadForm) {
+      studioUploadForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const captionInput = document.getElementById('studio-caption-input');
+        const catSelect = document.getElementById('studio-category-select');
+        const sndSelect = document.getElementById('studio-soundtrack-select');
+
+        const caption = captionInput && captionInput.value.trim() ? captionInput.value.trim() : "New moment on My Teta ✨";
+        const category = catSelect ? catSelect.value : "atmosphere";
+        const soundtrack = sndSelect ? sndSelect.value : "Lo-Fi Rain · Brooklyn Chill";
+        const videoUrl = uploadedVideoBlobUrl || "https://vjs.zencdn.net/v/oceans.mp4";
+        const posterImg = uploadedPosterUrl || "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=600&q=80";
+
+        const newReel = {
+          id: Date.now(),
+          author: CURRENT_USER.name,
+          handle: CURRENT_USER.handle,
+          avatar: CURRENT_USER.avatar,
+          caption: caption,
+          image: posterImg,
+          videoUrl: videoUrl,
+          category: category,
+          likes: 1,
+          views: "1",
+          duration: "0:24",
+          music: soundtrack,
+          isLiked: true,
+          isSaved: false,
+          isFollowing: false,
+          comments: [
+            {
+              id: 1,
+              author: CURRENT_USER.name,
+              avatar: CURRENT_USER.avatar,
+              time: "Just now",
+              text: "Freshly uploaded reel! Welcome to this moment 🌿"
+            }
+          ]
+        };
+
+        REELS.unshift(newReel);
+        renderHomeReels();
+        loadActiveReel(0, true);
+
+        // Reset form
+        studioUploadForm.reset();
+        uploadedVideoBlobUrl = null;
+        uploadedPosterUrl = null;
+        if (dropzoneDefault) dropzoneDefault.hidden = false;
+        if (dropzonePreviewWrap) dropzonePreviewWrap.hidden = true;
+
+        showToast("Reel uploaded & now playing in theater! 🚀", "▷");
+      });
+    }
+
+    // Comment Form Submit
+    const reelCommentForm = document.getElementById('reel-comment-form');
+    const reelCommentInput = document.getElementById('reel-comment-input');
+    if (reelCommentForm && reelCommentInput) {
+      reelCommentForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const text = reelCommentInput.value.trim();
+        if (!text) return;
+
+        const reel = REELS[currentReelIndex];
+        if (reel) {
+          reel.comments = reel.comments || [];
+          reel.comments.push({
+            id: Date.now(),
+            author: CURRENT_USER.name,
+            avatar: CURRENT_USER.avatar,
+            time: "Just now",
+            text: text
+          });
+          reelCommentInput.value = "";
+          renderReelComments();
+          showToast("Reflection posted! 💬", "💬");
+        }
+      });
+    }
+
+    // Category Filter Chips
+    document.querySelectorAll('[data-reel-filter]').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('[data-reel-filter]').forEach(c => c.classList.remove('is-active'));
+        chip.classList.add('is-active');
+        const filter = chip.dataset.reelFilter;
+        currentReelFilter = filter;
+        if (filter !== 'all') {
+          const matchIdx = REELS.findIndex(r => r.category === filter);
+          if (matchIdx !== -1) {
+            loadActiveReel(matchIdx, true);
+          } else {
+            showToast(`No reels found in ${chip.textContent.trim()}`, "ℹ");
+          }
+        } else {
+          loadActiveReel(0, true);
+        }
+      });
+    });
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      const reelsPanel = document.getElementById('reels-view');
+      if (!reelsPanel || reelsPanel.hidden) return;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        togglePlayPause();
+      } else if (e.code === 'ArrowDown' || e.key === 'j') {
+        e.preventDefault();
+        nextReel();
+      } else if (e.code === 'ArrowUp' || e.key === 'k') {
+        e.preventDefault();
+        prevReel();
+      } else if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
+        toggleMute();
+      } else if (e.key === 'l' || e.key === 'L') {
+        e.preventDefault();
+        document.getElementById('player-like-btn')?.click();
+      }
+    });
+  }
+
+  function renderReels() {
+    loadActiveReel(currentReelIndex, false);
+    renderReelThumbnails();
   }
 
   // ==========================================
@@ -1080,6 +1629,71 @@
     });
   }
 
+  // Modal Reel Upload Handling
+  const reelFile = document.getElementById('reel-file');
+  const reelUploadPreview = document.getElementById('reel-upload-preview');
+  const uploadLabel = document.getElementById('upload-label');
+  const publishReelBtn = document.getElementById('publish-reel');
+  const reelForm = document.getElementById('reel-form');
+  const reelCaption = document.getElementById('reel-caption');
+  let modalUploadedBlobUrl = null;
+
+  if (reelFile && reelUploadPreview) {
+    reelFile.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        modalUploadedBlobUrl = URL.createObjectURL(file);
+        reelUploadPreview.src = modalUploadedBlobUrl;
+        reelUploadPreview.hidden = false;
+        if (uploadLabel) uploadLabel.textContent = file.name;
+        if (publishReelBtn) publishReelBtn.disabled = false;
+        showToast(`Ready to share ${file.name}!`, "⇪");
+      }
+    });
+  }
+
+  if (reelForm) {
+    reelForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const caption = (reelCaption && reelCaption.value.trim()) ? reelCaption.value.trim() : "A moment in the making ✨";
+      const newReel = {
+        id: Date.now(),
+        author: CURRENT_USER.name,
+        handle: CURRENT_USER.handle,
+        avatar: CURRENT_USER.avatar,
+        caption: caption,
+        image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+        videoUrl: modalUploadedBlobUrl || "https://vjs.zencdn.net/v/oceans.mp4",
+        category: "atmosphere",
+        likes: 1,
+        views: "1",
+        duration: "0:24",
+        music: "Lo-Fi Rain · Brooklyn Chill",
+        isLiked: true,
+        isSaved: false,
+        isFollowing: false,
+        comments: [
+          { id: 1, author: CURRENT_USER.name, avatar: CURRENT_USER.avatar, time: "Just now", text: "Fresh reel shared via studio modal 🌿" }
+        ]
+      };
+
+      REELS.unshift(newReel);
+      renderHomeReels();
+      if (reelModal) reelModal.hidden = true;
+      reelForm.reset();
+      if (reelUploadPreview) {
+        reelUploadPreview.src = "";
+        reelUploadPreview.hidden = true;
+      }
+      if (uploadLabel) uploadLabel.textContent = "Choose a video";
+      if (publishReelBtn) publishReelBtn.disabled = true;
+
+      switchView('reels');
+      loadActiveReel(0, true);
+      showToast("Reel shared & now playing in theater! 🚀", "▷");
+    });
+  }
+
   // Quick action: Share moment buttons (topbar, greeting row, mobile nav)
   document.querySelectorAll('[data-action="write-post"]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1133,6 +1747,7 @@
   // ==========================================
   // 13. INITIALIZATION
   // ==========================================
+  initReelsTheaterEvents();
   renderStories();
   renderHomeReels();
   renderFeed();
