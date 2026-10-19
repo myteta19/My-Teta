@@ -157,9 +157,11 @@ body {
   background: var(--surface-subtle);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  padding: 8px 16px;
+  padding: 8px 14px;
   width: 100%;
-  max-width: 360px;
+  max-width: 300px;
+  min-width: 120px;
+  flex: 0 1 280px;
   color: var(--ink-muted);
   cursor: text;
   transition: all 0.2s ease;
@@ -200,22 +202,24 @@ body {
 .primary-nav {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  flex-shrink: 0;
 }
 .nav-tab {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 18px;
+  gap: 6px;
+  padding: 7px 14px;
   border-radius: var(--radius-full);
   background: transparent;
   border: 1px solid transparent;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--ink-muted);
   cursor: pointer;
   position: relative;
+  white-space: nowrap;
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .nav-icon {
@@ -261,8 +265,9 @@ body {
 .topbar-actions {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   position: relative;
+  flex-shrink: 0;
 }
 .topbar-share-btn {
   background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%) !important;
@@ -270,26 +275,35 @@ body {
   border: none !important;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
   transition: all 0.2s ease !important;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .topbar-share-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4) !important;
 }
 .icon-button {
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-full);
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  max-width: 40px !important;
+  max-height: 40px !important;
+  aspect-ratio: 1 / 1 !important;
+  flex-shrink: 0 !important;
+  border-radius: 50% !important;
   border: 1px solid var(--border);
   background: #fff;
   color: var(--ink-soft);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   cursor: pointer;
   position: relative;
-  font-size: 1rem;
   transition: all 0.18s ease;
   box-shadow: var(--shadow-sm);
+  padding: 0 !important;
+  box-sizing: border-box !important;
 }
 .icon-button:hover {
   background: var(--surface-subtle);
@@ -299,54 +313,93 @@ body {
 .notif-bell-icon {
   display: block;
   stroke: currentColor;
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
 .icon-button:hover .notif-bell-icon {
-  transform: rotate(14deg);
+  transform: scale(1.12);
 }
 .notification-dot {
   position: absolute;
-  top: 9px;
-  right: 9px;
-  width: 9px;
-  height: 9px;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
   background: #f43f5e;
   border-radius: 50%;
   border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(244, 63, 94, 0.4);
+  pointer-events: none;
 }
 .notification-dot.is-hidden {
   display: none !important;
 }
 .profile-trigger {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  max-width: 40px !important;
+  max-height: 40px !important;
+  aspect-ratio: 1 / 1 !important;
+  flex-shrink: 0 !important;
+  border-radius: 50% !important;
   border: none;
   background: transparent;
-  padding: 0;
+  padding: 0 !important;
   cursor: pointer;
   position: relative;
-  display: flex;
-  align-items: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
 }
 .profile-trigger img {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  max-width: 40px !important;
+  max-height: 40px !important;
+  aspect-ratio: 1 / 1 !important;
+  flex-shrink: 0 !important;
+  border-radius: 50% !important;
   object-fit: cover;
   border: 2px solid #6366f1;
   transition: transform 0.2s;
+  display: block;
 }
 .profile-trigger:hover img {
   transform: scale(1.05);
 }
 .status-online {
   position: absolute;
-  bottom: 1px;
-  right: 1px;
-  width: 11px;
-  height: 11px;
+  bottom: 0px;
+  right: 0px;
+  width: 10px;
+  height: 10px;
   background: #10b981;
   border-radius: 50%;
   border: 2px solid #fff;
   box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+  pointer-events: none;
+}
+
+@media (max-width: 1280px) {
+  .search-box {
+    max-width: 180px;
+  }
+  .nav-tab {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+}
+@media (max-width: 1100px) {
+  .search-box {
+    display: none;
+  }
 }
 
 /* ==========================================================================
