@@ -3746,16 +3746,7 @@
       });
     }
 
-    // 4. Diagnostics toggle
-    const diagToggle = document.getElementById('contact-include-diagnostics');
-    const diagBadges = document.getElementById('diagnostics-badges');
-    if (diagToggle && diagBadges) {
-      diagToggle.addEventListener('change', () => {
-        diagBadges.style.opacity = diagToggle.checked ? '1' : '0.35';
-      });
-    }
-
-    // 5. Contact Form Submission
+    // 4. Contact Form Submission
     const contactForm = document.getElementById('contact-support-form');
     const successState = document.getElementById('contact-success-state');
     const submitBtn = document.getElementById('contact-submit-btn');
