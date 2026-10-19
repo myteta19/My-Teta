@@ -2725,7 +2725,6 @@
   const btnTabSignup = document.getElementById('btn-tab-signup');
   const pageLoginForm = document.getElementById('page-login-form');
   const pageSignupForm = document.getElementById('page-signup-form');
-  const btnDemoQuickLogin = document.getElementById('btn-demo-quick-login');
 
   function setAuthPageTab(mode = 'login') {
     if (mode === 'signup') {
@@ -2778,25 +2777,6 @@
   // Inline Switch links
   document.getElementById('link-goto-signup')?.addEventListener('click', () => setAuthPageTab('signup'));
   document.getElementById('link-goto-login')?.addEventListener('click', () => setAuthPageTab('login'));
-
-  // 1-Click Demo Login
-  if (btnDemoQuickLogin) {
-    btnDemoQuickLogin.addEventListener('click', () => {
-      const emailField = document.getElementById('page-login-email');
-      const pwdField = document.getElementById('page-login-password');
-      if (emailField) emailField.value = "maya@teta.mindful";
-      if (pwdField) pwdField.value = "password123";
-
-      btnDemoQuickLogin.textContent = "Entering...";
-      showToast("Accessing demo profile as Maya Chen (@mayainmotion)...", "⚡");
-
-      setTimeout(() => {
-        btnDemoQuickLogin.textContent = "1-Click Fill & Enter ↗";
-        showToast("Welcome back, Maya Chen! ✨", "✨");
-        switchView('home');
-      }, 400);
-    });
-  }
 
   // Password Visibility Toggles
   document.querySelectorAll('.pwd-toggle-btn').forEach(btn => {

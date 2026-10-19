@@ -6626,62 +6626,6 @@ input:checked + .slider:before {
   box-shadow: 0 2px 10px rgba(99, 102, 241, 0.15);
 }
 
-/* Quick 1-Click Demo Fill Banner */
-.auth-demo-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
-  border: 1px dashed rgba(99, 102, 241, 0.4);
-  border-radius: 16px;
-  padding: 12px 16px;
-}
-
-.demo-banner-content {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.demo-badge-icon {
-  font-size: 1.2rem;
-  line-height: 1;
-}
-
-.demo-banner-content strong {
-  display: block;
-  font-size: 0.84rem;
-  font-weight: 700;
-  color: #6366f1;
-}
-
-.demo-banner-content small {
-  font-size: 0.74rem;
-  color: var(--ink-muted);
-}
-
-.demo-auto-btn {
-  background: #6366f1;
-  color: #ffffff;
-  border: none;
-  padding: 6px 13px;
-  border-radius: var(--radius-full);
-  font-family: inherit;
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.18s ease;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
-}
-
-.demo-auto-btn:hover {
-  background: #4f46e5;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
-}
-
 /* OAuth Social Row */
 .auth-oauth-group {
   display: grid;
