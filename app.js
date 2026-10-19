@@ -1445,7 +1445,7 @@
         if (person) {
           person.following = !person.following;
           renderFriends(filter);
-          showToast(person.following ? `Connected with ${person.name}!` : `Removed connection`, "♧");
+          showToast(person.following ? `Connected with ${person.name}!` : `Removed connection`, "✨");
         }
       });
     });
@@ -1787,7 +1787,7 @@
       if (reel) {
         reel.isFollowing = !reel.isFollowing;
         loadActiveReel(currentReelIndex, false);
-        showToast(reel.isFollowing ? `Following ${reel.author} ✓` : `Unfollowed ${reel.author}`, "♧");
+        showToast(reel.isFollowing ? `Following ${reel.author} ✓` : `Unfollowed ${reel.author}`, "✨");
       }
     });
 
@@ -2155,20 +2155,14 @@
           </div>
         </div>
         <div class="conversation-header-actions">
-          <button class="chat-action-btn" type="button" id="chat-call-btn" title="Audio call">📞</button>
-          <button class="chat-action-btn" type="button" id="chat-video-btn" title="Video call">📹</button>
-          <button class="chat-action-btn" type="button" id="chat-info-btn" title="Conversation info">ⓘ</button>
+          <button class="chat-action-btn" type="button" id="chat-info-btn" title="Conversation info" aria-label="Conversation info">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          </button>
         </div>
       `;
 
-      document.getElementById('chat-call-btn')?.addEventListener('click', () => {
-        showToast(`Starting voice call with ${currentChat.name}...`, "📞");
-      });
-      document.getElementById('chat-video-btn')?.addEventListener('click', () => {
-        showToast(`Connecting video stream with ${currentChat.name}...`, "📹");
-      });
       document.getElementById('chat-info-btn')?.addEventListener('click', () => {
-        showToast(`${currentChat.name} · ${currentChat.status}`, "ℹ");
+        showToast(`${currentChat.name} · ${currentChat.status || 'Active now'}`, "ℹ");
       });
     }
 
@@ -2369,7 +2363,7 @@
       if (friendRequests.length === 0) {
         notifPopBody.innerHTML = `
           <div class="notif-empty-state">
-            <span class="notif-empty-icon">♧</span>
+            <span class="notif-empty-icon">👥</span>
             <p>No pending friend requests</p>
             <small>When people want to connect with you, they'll appear here.</small>
           </div>
@@ -2381,7 +2375,7 @@
         <div class="notif-item request-item" data-request-id="${req.id}">
           <div class="notif-avatar-col">
             <img src="${req.avatar}" alt="${req.name}" class="notif-avatar">
-            <span class="notif-badge-icon req-icon">♧</span>
+            <span class="notif-badge-icon req-icon">👥</span>
           </div>
           <div class="notif-content-col">
             <div class="notif-meta-row">
@@ -2422,7 +2416,7 @@
           <div class="notif-item request-item ${notif.read ? 'is-read' : 'is-unread'}" data-request-id="${req.id}">
             <div class="notif-avatar-col">
               <img src="${req.avatar}" alt="${req.name}" class="notif-avatar">
-              <span class="notif-badge-icon req-icon">♧</span>
+              <span class="notif-badge-icon req-icon">👥</span>
             </div>
             <div class="notif-content-col">
               <div class="notif-meta-row">
@@ -2503,7 +2497,7 @@
 
     renderFriends('following');
     renderNotifications(activeNotifFilter);
-    showToast(`Connected with ${req.name}! ♧`, '♧');
+    showToast(`Connected with ${req.name}!`, '✨');
   }
 
   function declineFriendRequest(reqId) {
@@ -3799,7 +3793,7 @@
           const categoryLabels = {
             bug: "🐛 Bug or Glitch",
             account: "🔐 Account & Security",
-            media: "▷ Reels & Playback",
+            media: "🎬 Reels & Playback",
             chat: "💬 Chat & Messages",
             privacy: "🛡️ Privacy & Safety",
             feature: "💡 Feedback & Idea"

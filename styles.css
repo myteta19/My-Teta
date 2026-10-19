@@ -188,6 +188,15 @@ body {
   color: var(--ink-faint);
 }
 
+.search-icon-svg {
+  flex-shrink: 0;
+  color: var(--ink-faint);
+  transition: color 0.18s ease;
+}
+.search-box:focus-within .search-icon-svg {
+  color: #6366f1;
+}
+
 .primary-nav {
   display: flex;
   align-items: center;
@@ -209,9 +218,18 @@ body {
   position: relative;
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
+.nav-icon {
+  flex-shrink: 0;
+  stroke: currentColor;
+  display: inline-block;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
 .nav-tab:hover {
   color: var(--ink);
   background: rgba(255, 255, 255, 0.8);
+}
+.nav-tab:hover .nav-icon {
+  transform: translateY(-1px);
 }
 .nav-tab.is-active {
   color: #6366f1;
@@ -277,6 +295,14 @@ body {
   background: var(--surface-subtle);
   border-color: #6366f1;
   transform: translateY(-1px);
+}
+.notif-bell-icon {
+  display: block;
+  stroke: currentColor;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.icon-button:hover .notif-bell-icon {
+  transform: rotate(14deg);
 }
 .notification-dot {
   position: absolute;
@@ -742,9 +768,18 @@ body {
   text-align: left;
   transition: all 0.15s;
 }
+.rail-icon {
+  flex-shrink: 0;
+  stroke: currentColor;
+  display: inline-block;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
 .rail-link:hover {
   background: #fff;
   color: var(--ink);
+}
+.rail-link:hover .rail-icon {
+  transform: scale(1.1);
 }
 .rail-link.is-active {
   background: #fff;
@@ -834,7 +869,14 @@ body {
   color: var(--ink-soft);
   line-height: 1.45;
   display: flex;
+  align-items: flex-start;
   gap: 10px;
+}
+.rail-note svg {
+  color: #6366f1;
+  stroke: currentColor;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 .rail-note span {
   color: #6366f1;
@@ -3515,6 +3557,14 @@ body {
   transform: scale(1.08);
   box-shadow: 0 5px 14px rgba(13, 148, 136, 0.45);
 }
+.chat-composer-btn svg {
+  stroke: currentColor;
+  display: block;
+}
+.send-button svg {
+  stroke: #fff;
+  display: block;
+}
 
 /* Chat Mobile Responsive */
 @media (max-width: 768px) {
@@ -4520,6 +4570,18 @@ input:checked + .slider:before {
     font-size: 1.25rem;
     color: var(--ink-muted);
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    transition: color 0.15s, transform 0.15s;
+  }
+  .mobile-nav button svg {
+    stroke: currentColor;
+    display: block;
+  }
+  .mobile-nav button:hover {
+    transform: scale(1.08);
   }
   .mobile-nav button.is-active {
     color: #6366f1;
@@ -4534,6 +4596,12 @@ input:checked + .slider:before {
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    border: none;
+    cursor: pointer;
+  }
+  .mobile-create svg {
+    stroke: #fff;
+    display: block;
   }
 
   /* Profile responsive alignment */

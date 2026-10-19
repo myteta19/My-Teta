@@ -11,6 +11,7 @@
 	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
 	<script src="https://cdn.tailwindcss.com"></script>
 	<script>tailwind.config={theme:{extend:{colors:{ink:'#0f172a',lagoon:'#0d9488',leaf:'#059669',iris:'#6366f1'},fontFamily:{sans:['DM Sans','sans-serif'],display:['Manrope','sans-serif'],editorial:['Newsreader','serif']}}}};</script>
+	<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='40' y2='40'%3E%3Cstop offset='0%25' stop-color='%236366f1'/%3E%3Cstop offset='50%25' stop-color='%2306b6d4'/%3E%3Cstop offset='100%25' stop-color='%230d9488'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='40' height='40' rx='12' fill='%230f172a'/%3E%3Cpath d='M20 20C23.3 14 28.5 14 28.5 20C28.5 26 23.3 26 20 20C16.7 14 11.5 14 11.5 20C11.5 26 16.7 26 20 20Z' stroke='url(%23g)' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Ccircle cx='20' cy='20' r='2' fill='%2306b6d4'/%3E%3C/svg%3E">
 	<link rel="stylesheet" href="styles.css">
 	<script src="app.js" defer></script>
 </head>
@@ -18,46 +19,39 @@
 	<a class="skip-link" href="#main-content">Skip to content</a>
 	<header class="topbar">
 		<a class="brand" href="#home" aria-label="My Teta home">
-			<svg class="brand-mind-icon" viewBox="0 0 40 40" width="38" height="38" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+			<svg class="brand-mind-icon" viewBox="0 0 40 40" width="38" height="38" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="My Teta Logo">
 				<defs>
-					<linearGradient id="mindGrad" x1="2" y1="2" x2="38" y2="38" gradientUnits="userSpaceOnUse">
+					<linearGradient id="tetaGrad" x1="4" y1="4" x2="36" y2="36" gradientUnits="userSpaceOnUse">
 						<stop offset="0%" stop-color="#6366f1"/>
-						<stop offset="50%" stop-color="#06b6d4"/>
+						<stop offset="55%" stop-color="#06b6d4"/>
 						<stop offset="100%" stop-color="#0d9488"/>
 					</linearGradient>
-					<linearGradient id="mindGlow" x1="4" y1="4" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-						<stop offset="0%" stop-color="#818cf8" stop-opacity="0.28"/>
-						<stop offset="100%" stop-color="#06b6d4" stop-opacity="0.12"/>
+					<linearGradient id="tetaGlow" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+						<stop offset="0%" stop-color="#6366f1" stop-opacity="0.14"/>
+						<stop offset="100%" stop-color="#06b6d4" stop-opacity="0.08"/>
 					</linearGradient>
 				</defs>
-				<rect width="40" height="40" rx="12" fill="url(#mindGlow)"/>
-				<rect x="0.5" y="0.5" width="39" height="39" rx="11.5" stroke="url(#mindGrad)" stroke-opacity="0.35"/>
-				<path d="M19 8C14.5 8 10 11.2 10 16.5C10 18.2 10.6 19.8 11.6 21C10.6 22.4 10 24.2 10 26.2C10 29.8 13 32.5 16.8 32.8C17.6 32.9 18.3 33 19 33" stroke="url(#mindGrad)" stroke-width="2.3" stroke-linecap="round"/>
-				<path d="M21 8C25.5 8 30 11.2 30 16.5C30 18.2 29.4 19.8 28.4 21C29.4 22.4 30 24.2 30 26.2C30 29.8 27 32.5 23.2 32.8C22.4 32.9 21.7 33 21 33" stroke="url(#mindGrad)" stroke-width="2.3" stroke-linecap="round"/>
-				<path d="M14 16.2C15.5 14.5 17.5 15 18.5 16.5C17.2 18.2 15.2 18.8 13.5 18" stroke="url(#mindGrad)" stroke-width="1.8" stroke-linecap="round"/>
-				<path d="M13.5 24.5C15.2 23.2 17.2 24 18.5 22.8" stroke="url(#mindGrad)" stroke-width="1.8" stroke-linecap="round"/>
-				<path d="M26 16.2C24.5 14.5 22.5 15 21.5 16.5C22.8 18.2 24.8 18.8 26.5 18" stroke="url(#mindGrad)" stroke-width="1.8" stroke-linecap="round"/>
-				<path d="M26.5 24.5C24.8 23.2 22.8 24 21.5 22.8" stroke="url(#mindGrad)" stroke-width="1.8" stroke-linecap="round"/>
-				<path d="M15 20.2C16.8 17.2 18.2 23.2 20 20.2C21.8 17.2 23.2 23.2 25 20.2" stroke="#06b6d4" stroke-width="2.2" stroke-linecap="round"/>
-				<circle cx="20" cy="11.5" r="1.6" fill="#6366f1"/>
-				<circle cx="20" cy="28.5" r="1.6" fill="#0d9488"/>
-				<circle cx="12" cy="21" r="1.2" fill="#06b6d4"/>
-				<circle cx="28" cy="21" r="1.2" fill="#6366f1"/>
+				<rect width="40" height="40" rx="12" fill="url(#tetaGlow)"/>
+				<rect x="0.6" y="0.6" width="38.8" height="38.8" rx="11.4" stroke="url(#tetaGrad)" stroke-opacity="0.32" stroke-width="1.2"/>
+				<path d="M20 20C23.3 14 28.5 14 28.5 20C28.5 26 23.3 26 20 20C16.7 14 11.5 14 11.5 20C11.5 26 16.7 26 20 20Z" stroke="url(#tetaGrad)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+				<circle cx="20" cy="20" r="1.8" fill="#06b6d4"/>
+				<circle cx="15" cy="20" r="1.2" fill="#6366f1" fill-opacity="0.8"/>
+				<circle cx="25" cy="20" r="1.2" fill="#0d9488" fill-opacity="0.8"/>
 			</svg>
 			<span class="brand-text">my <span class="brand-teta">teta</span><span class="brand-dot">.</span></span>
 		</a>
-		<label class="search-box" aria-label="Search"><span>⌕</span><input id="global-search" type="search" placeholder="Find a moment, idea, person..."><kbd>/</kbd></label>
+		<label class="search-box" aria-label="Search"><svg class="search-icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><input id="global-search" type="search" placeholder="Find a moment, idea, person..."><kbd>/</kbd></label>
 		<nav class="primary-nav" aria-label="Main navigation">
-			<button class="nav-tab is-active" data-view="home" type="button"><span>⌂</span>Home</button>
-			<button class="nav-tab" data-view="friends" type="button"><span>♧</span>Friends</button>
-			<button class="nav-tab" data-view="reels" type="button"><span>▷</span>Reels<i class="nav-pill-badge">HOT</i></button>
-			<button class="nav-tab" data-view="chat" type="button"><span>◌</span>Chat<i class="nav-badge">2</i></button>
-			<button class="nav-tab" data-view="settings" type="button"><span>⚙</span>Settings</button>
-			<button class="nav-tab" data-view="contact" type="button"><span>✉</span>Contact</button>
+			<button class="nav-tab is-active" data-view="home" type="button"><svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>Home</button>
+			<button class="nav-tab" data-view="friends" type="button"><svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>Friends</button>
+			<button class="nav-tab" data-view="reels" type="button"><svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"></rect><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon></svg>Reels<i class="nav-pill-badge">HOT</i></button>
+			<button class="nav-tab" data-view="chat" type="button"><svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>Chat<i class="nav-badge">2</i></button>
+			<button class="nav-tab" data-view="settings" type="button"><svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>Settings</button>
+			<button class="nav-tab" data-view="contact" type="button"><svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Contact</button>
 		</nav>
 		<div class="topbar-actions">
 			<button class="button button-primary button-small topbar-share-btn" data-action="write-post" type="button"><b>＋</b> Share</button>
-			<button class="icon-button" id="notifications" type="button" aria-label="Notifications" title="Notifications" aria-expanded="false" aria-controls="notifications-popup">♧<i class="notification-dot" id="notif-dot"></i></button>
+			<button class="icon-button" id="notifications" type="button" aria-label="Notifications" title="Notifications" aria-expanded="false" aria-controls="notifications-popup"><svg class="notif-bell-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><i class="notification-dot" id="notif-dot"></i></button>
 			<button class="profile-trigger" data-view="profile" type="button" aria-label="Open profile"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&h=96&q=85" alt="Maya Chen"><i class="status-online"></i></button>
 
 			<!-- NOTIFICATIONS & FRIEND REQUESTS POPUP -->
@@ -87,14 +81,14 @@
 		<aside class="left-rail">
 			<button class="rail-profile" data-view="profile" type="button"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&h=96&q=85" alt=""><span><strong>Maya Chen</strong><small>@mayainmotion</small></span><b>···</b></button>
 			<p class="rail-label">YOUR SPACE</p>
-			<button class="rail-link is-active" data-view="home" type="button"><span>⌂</span>Feed <small>12</small></button>
-			<button class="rail-link" data-view="friends" type="button"><span>♧</span>People</button>
-			<button class="rail-link" data-view="reels" type="button"><span>▷</span>Reels <em class="pulse-em">LIVE</em></button>
-			<button class="rail-link" data-view="chat" type="button"><span>◌</span>Messages <small>2</small></button>
-			<button class="rail-link" data-view="profile" type="button"><span>◉</span>Your profile</button>
-			<button class="rail-link" data-view="settings" type="button"><span>⚙</span>Settings</button>
-			<button class="rail-link" data-view="contact" type="button"><span>✉</span>Contact Us</button>
-			<p class="rail-note"><span>✳</span>Good things happen<br>when we show up.</p>
+			<button class="rail-link is-active" data-view="home" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>Feed <small>12</small></button>
+			<button class="rail-link" data-view="friends" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>People</button>
+			<button class="rail-link" data-view="reels" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"></rect><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon></svg>Reels <em class="pulse-em">LIVE</em></button>
+			<button class="rail-link" data-view="chat" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>Messages <small>2</small></button>
+			<button class="rail-link" data-view="profile" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Your profile</button>
+			<button class="rail-link" data-view="settings" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>Settings</button>
+			<button class="rail-link" data-view="contact" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Contact Us</button>
+			<p class="rail-note"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6.4-4.8-6.4 4.8 2.4-7.2-6-4.8h7.6z"></path></svg>Good things happen<br>when we show up.</p>
 		</aside>
 
 		<section class="view-panel" id="home-view">
@@ -473,12 +467,12 @@
 							<p class="eyebrow">YOUR PEOPLE</p>
 							<h1>Messages<span>.</span></h1>
 						</div>
-						<button class="icon-button" id="new-message" type="button" aria-label="Start new conversation" title="New message">＋</button>
+						<button class="icon-button" id="new-message" type="button" aria-label="Start new conversation" title="New message"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
 					</div>
 
 					<div class="chat-search-wrap">
 						<label class="chat-search">
-							<span class="chat-search-icon">⌕</span>
+							<span class="chat-search-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
 							<input id="chat-search" type="search" placeholder="Search conversations...">
 						</label>
 					</div>
@@ -507,11 +501,11 @@
 						<span id="typing-label">Amara is typing...</span>
 					</div>
 
-					<!-- Clean Focused Message Composer -->
+					<!-- Clean Focused Message Composer (Strictly Pure Chat) -->
 					<form class="message-composer" id="message-form">
-						<button class="chat-composer-btn" id="attach-message" type="button" title="Send photo moment" aria-label="Attach photo">📎</button>
+						<button class="chat-composer-btn" id="attach-message" type="button" title="Send photo moment" aria-label="Attach photo"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
 						<input id="message-input" type="text" placeholder="Write a message to Amara..." maxlength="500" autocomplete="off" aria-label="Write a message" required>
-						<button class="send-button" type="submit" aria-label="Send message" title="Send message">↗</button>
+						<button class="send-button" type="submit" aria-label="Send message" title="Send message"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
 					</form>
 				</section>
 			</div>
@@ -541,10 +535,10 @@
 							🔒 Security
 						</button>
 						<button class="button button-outline button-small" data-view="settings" type="button">
-							⚙ Settings
+							⚙️ Settings
 						</button>
 						<button class="icon-button" id="share-profile-btn" type="button" title="Share profile" aria-label="Share profile">
-							↗
+							<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
 						</button>
 					</div>
 				</div>
@@ -597,7 +591,7 @@
 						📸 Moments (<span id="profile-moments-badge">3</span>)
 					</button>
 					<button class="profile-tab" data-profile-tab="reels" type="button">
-						▷ Reels (<span id="profile-reels-badge">2</span>)
+						🎬 Reels (<span id="profile-reels-badge">2</span>)
 					</button>
 					<button class="profile-tab" data-profile-tab="edit" type="button">
 						✏️ Edit Profile
@@ -835,7 +829,7 @@
 
 					<nav class="settings-category-menu" role="tablist" aria-label="Settings categories">
 						<button class="settings-cat-btn is-active" data-settings-tab="general" type="button">
-							<span class="cat-icon">⚙</span>
+							<span class="cat-icon">⚙️</span>
 							<span class="cat-label">General & Theme</span>
 						</button>
 						<button class="settings-cat-btn" data-settings-tab="account" type="button">
@@ -851,7 +845,7 @@
 							<span class="cat-label">Notifications & Sounds</span>
 						</button>
 						<button class="settings-cat-btn" data-settings-tab="media" type="button">
-							<span class="cat-icon">▷</span>
+							<span class="cat-icon">🎬</span>
 							<span class="cat-label">Media & Playback</span>
 						</button>
 						<button class="settings-cat-btn" data-settings-tab="security" type="button">
@@ -1599,7 +1593,7 @@
 										</span>
 									</button>
 									<button type="button" class="category-chip" data-category="media">
-										<span class="chip-icon">▷</span>
+										<span class="chip-icon">🎬</span>
 										<span class="chip-text">
 											<strong>Reels & Playback</strong>
 											<small>Video stalled, audio out of sync</small>
@@ -1765,7 +1759,15 @@
 		</section>
 
 		<aside class="right-rail"><section class="weather-note"><span>☼</span><div><p class="eyebrow">A GOOD DAY TO</p><strong>Take the long way.</strong><small>Brooklyn · 68° and bright</small></div></section><section class="right-section"><div class="section-heading"><div><p class="eyebrow">AROUND YOU</p><h2>People to know</h2></div><button class="text-action" data-view="friends" type="button">More ↗</button></div><div class="suggestion-list" id="suggestion-list"></div></section><section class="birthday-note"><span>✿</span><div><p class="eyebrow">A LITTLE REMINDER</p><strong>Two birthdays this week</strong><button class="text-action" id="birthday-note" type="button">Send a little love ↗</button></div></section><footer class="right-footer"><button class="footer-link-btn" data-view="home" type="button">About</button> · <button class="footer-link-btn" data-view="settings" type="button">Privacy</button> · <button class="footer-link-btn" data-view="contact" type="button">Contact Us</button> · © 2026 My Teta</footer></aside>
-		<nav class="mobile-nav" aria-label="Mobile navigation"><button class="is-active" data-view="home" aria-label="Home" type="button">⌂</button><button data-view="friends" aria-label="Friends" type="button">♧</button><button class="mobile-create" data-action="write-post" aria-label="Share a moment" type="button">＋</button><button data-view="reels" aria-label="Reels" type="button">▷</button><button data-view="chat" aria-label="Chat" type="button">◌</button><button data-view="settings" aria-label="Settings" type="button">⚙</button><button data-view="contact" aria-label="Contact Us" type="button">✉</button></nav>
+		<nav class="mobile-nav" aria-label="Mobile navigation">
+			<button class="is-active" data-view="home" aria-label="Home" type="button"><svg class="mobile-nav-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></button>
+			<button data-view="friends" aria-label="Friends" type="button"><svg class="mobile-nav-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></button>
+			<button class="mobile-create" data-action="write-post" aria-label="Share a moment" type="button"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+			<button data-view="reels" aria-label="Reels" type="button"><svg class="mobile-nav-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"></rect><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon></svg></button>
+			<button data-view="chat" aria-label="Chat" type="button"><svg class="mobile-nav-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></button>
+			<button data-view="settings" aria-label="Settings" type="button"><svg class="mobile-nav-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button>
+			<button data-view="contact" aria-label="Contact Us" type="button"><svg class="mobile-nav-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+		</nav>
 	</main>
 
 	<!-- STORY PLAYER THEATER MODAL -->
@@ -1899,7 +1901,7 @@
 		</section>
 	</div>
 
-	<div class="modal-backdrop" id="auth-modal" hidden><section class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-title"><button class="modal-close" data-close-modal type="button" aria-label="Close">×</button><div class="modal-brand"><svg class="brand-mind-icon" viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="mindGradModal" x1="2" y1="2" x2="38" y2="38" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#6366f1"/><stop offset="50%" stop-color="#06b6d4"/><stop offset="100%" stop-color="#0d9488"/></linearGradient></defs><rect width="40" height="40" rx="12" fill="rgba(99, 102, 241, 0.12)"/><path d="M19 8C14.5 8 10 11.2 10 16.5C10 18.2 10.6 19.8 11.6 21C10.6 22.4 10 24.2 10 26.2C10 29.8 13 32.5 16.8 32.8C17.6 32.9 18.3 33 19 33" stroke="url(#mindGradModal)" stroke-width="2.3" stroke-linecap="round"/><path d="M21 8C25.5 8 30 11.2 30 16.5C30 18.2 29.4 19.8 28.4 21C29.4 22.4 30 24.2 30 26.2C30 29.8 27 32.5 23.2 32.8C22.4 32.9 21.7 33 21 33" stroke="url(#mindGradModal)" stroke-width="2.3" stroke-linecap="round"/><path d="M15 20.2C16.8 17.2 18.2 23.2 20 20.2C21.8 17.2 23.2 23.2 25 20.2" stroke="#06b6d4" stroke-width="2.2" stroke-linecap="round"/><circle cx="20" cy="11.5" r="1.6" fill="#6366f1"/><circle cx="20" cy="28.5" r="1.6" fill="#0d9488"/></svg><span class="brand-text">my <span class="brand-teta">teta</span><span class="brand-dot">.</span></span></div><p class="eyebrow">A PLACE FOR YOUR PEOPLE</p><h2 id="auth-title">Come on in.</h2><p class="modal-subtitle">A little more you, a little more together.</p><div class="auth-tabs"><button id="auth-signin-tab" class="is-selected" type="button">Sign in</button><button id="auth-signup-tab" type="button">Create account</button></div><form id="auth-form" novalidate><label class="form-field">Email address<input id="auth-email" type="email" autocomplete="email" placeholder="you@example.com" required></label><label class="form-field">Password<input id="auth-password" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters" required></label><p class="form-error" id="auth-error" role="alert"></p><button class="button button-primary auth-submit" id="auth-submit" type="submit">Sign in ↗</button></form><div class="auth-divider">OR, KEEP IT SIMPLE</div><div class="oauth-row"><button class="oauth-button" data-oauth="Apple" type="button">● Apple</button><button class="oauth-button" data-oauth="Google" type="button"><b>G</b> Google</button></div><p class="demo-note">Frontend demo only. Account services are not connected.</p></section></div>
+	<div class="modal-backdrop" id="auth-modal" hidden><section class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-title"><button class="modal-close" data-close-modal type="button" aria-label="Close">×</button><div class="modal-brand"><svg class="brand-mind-icon" viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="My Teta Logo"><defs><linearGradient id="mindGradModal" x1="4" y1="4" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#6366f1"/><stop offset="55%" stop-color="#06b6d4"/><stop offset="100%" stop-color="#0d9488"/></linearGradient></defs><rect width="40" height="40" rx="12" fill="rgba(99, 102, 241, 0.12)"/><rect x="0.6" y="0.6" width="38.8" height="38.8" rx="11.4" stroke="url(#mindGradModal)" stroke-opacity="0.32" stroke-width="1.2"/><path d="M20 20C23.3 14 28.5 14 28.5 20C28.5 26 23.3 26 20 20C16.7 14 11.5 14 11.5 20C11.5 26 16.7 26 20 20Z" stroke="url(#mindGradModal)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="20" r="1.8" fill="#06b6d4"/><circle cx="15" cy="20" r="1.2" fill="#6366f1" fill-opacity="0.8"/><circle cx="25" cy="20" r="1.2" fill="#0d9488" fill-opacity="0.8"/></svg><span class="brand-text">my <span class="brand-teta">teta</span><span class="brand-dot">.</span></span></div><p class="eyebrow">A PLACE FOR YOUR PEOPLE</p><h2 id="auth-title">Come on in.</h2><p class="modal-subtitle">A little more you, a little more together.</p><div class="auth-tabs"><button id="auth-signin-tab" class="is-selected" type="button">Sign in</button><button id="auth-signup-tab" type="button">Create account</button></div><form id="auth-form" novalidate><label class="form-field">Email address<input id="auth-email" type="email" autocomplete="email" placeholder="you@example.com" required></label><label class="form-field">Password<input id="auth-password" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters" required></label><p class="form-error" id="auth-error" role="alert"></p><button class="button button-primary auth-submit" id="auth-submit" type="submit">Sign in ↗</button></form><div class="auth-divider">OR, KEEP IT SIMPLE</div><div class="oauth-row"><button class="oauth-button" data-oauth="Apple" type="button">● Apple</button><button class="oauth-button" data-oauth="Google" type="button"><b>G</b> Google</button></div><p class="demo-note">Frontend demo only. Account services are not connected.</p></section></div>
 
 	<div class="modal-backdrop" id="reel-modal" hidden><section class="modal" role="dialog" aria-modal="true" aria-labelledby="reel-modal-title"><button class="modal-close" data-close-modal type="button" aria-label="Close">×</button><p class="eyebrow">A SMALL WINDOW INTO YOUR DAY</p><h2 id="reel-modal-title">Make a reel.</h2><p class="modal-subtitle">The in-between bits are the best bits.</p><form id="reel-form"><label class="upload-zone" for="reel-file"><input id="reel-file" type="file" accept="video/*" hidden><b>↥</b><strong id="upload-label">Choose a video</strong><small>MP4, MOV · keep it under 60 seconds</small></label><video id="reel-upload-preview" controls playsinline hidden></video><label class="form-field">Add a caption<textarea id="reel-caption" maxlength="180" rows="3" placeholder="A moment worth keeping..."></textarea></label><label class="sensitivity-toggle"><span><strong>18+ sensitivity</strong><small>Blur the cover for sensitive moments</small></span><input type="checkbox" id="sensitive-toggle"><i></i></label><button class="button button-primary auth-submit" id="publish-reel" type="submit" disabled>Share reel ↗</button></form></section></div>
 	<div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
