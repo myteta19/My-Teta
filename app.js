@@ -598,7 +598,8 @@
     chat: document.getElementById('chat-view'),
     profile: document.getElementById('profile-view'),
     settings: document.getElementById('settings-view'),
-    contact: document.getElementById('contact-view')
+    contact: document.getElementById('contact-view'),
+    auth: document.getElementById('auth-view')
   };
 
   const navTabs = document.querySelectorAll('.nav-tab, .rail-link, .mobile-nav button[data-view], [data-view]');
@@ -711,7 +712,7 @@
     } else if (viewName === 'contact') {
       if (appShell) {
         appShell.classList.add('is-contact-active');
-        appShell.classList.remove('is-reels-active', 'is-chat-active', 'is-settings-active');
+        appShell.classList.remove('is-reels-active', 'is-chat-active', 'is-settings-active', 'is-auth-active');
       }
       if (rightRail) rightRail.style.display = 'none';
       // Pause video when leaving reels view
@@ -724,9 +725,24 @@
         if (wave) wave.classList.remove('is-playing');
       }
       if (typeof renderContactView === 'function') renderContactView();
+    } else if (viewName === 'auth') {
+      if (appShell) {
+        appShell.classList.add('is-auth-active');
+        appShell.classList.remove('is-reels-active', 'is-chat-active', 'is-settings-active', 'is-contact-active');
+      }
+      if (rightRail) rightRail.style.display = 'none';
+      // Pause video when leaving reels view
+      const activeVideo = document.getElementById('active-reel-video');
+      if (activeVideo && !activeVideo.paused) {
+        activeVideo.pause();
+        const wrapper = document.getElementById('reel-video-wrapper');
+        if (wrapper) wrapper.classList.add('is-paused');
+        const wave = document.getElementById('player-soundwave');
+        if (wave) wave.classList.remove('is-playing');
+      }
     } else {
       if (appShell) {
-        appShell.classList.remove('is-reels-active', 'is-chat-active', 'is-settings-active', 'is-contact-active');
+        appShell.classList.remove('is-reels-active', 'is-chat-active', 'is-settings-active', 'is-contact-active', 'is-auth-active');
       }
       if (rightRail) rightRail.style.display = '';
       // Pause video when leaving reels view to prevent background audio
@@ -753,6 +769,11 @@
         tab.classList.remove('is-active');
       }
     });
+
+    const topbarLoginBtn = document.getElementById('topbar-login-btn');
+    const topbarSignupBtn = document.getElementById('topbar-signup-btn');
+    if (topbarLoginBtn) topbarLoginBtn.classList.toggle('is-active', viewName === 'auth');
+    if (topbarSignupBtn) topbarSignupBtn.classList.toggle('is-active', viewName === 'auth');
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -2699,9 +2720,219 @@
     }
   }
 
-  document.getElementById('topbar-login-btn')?.addEventListener('click', () => openAuthModal('signin'));
-  document.getElementById('topbar-signup-btn')?.addEventListener('click', () => openAuthModal('signup'));
-  document.getElementById('rail-auth-btn')?.addEventListener('click', () => openAuthModal('signin'));
+  // DEDICATED AUTH PAGE INTERACTION & STATE
+  const btnTabLogin = document.getElementById('btn-tab-login');
+  const btnTabSignup = document.getElementById('btn-tab-signup');
+  const pageLoginForm = document.getElementById('page-login-form');
+  const pageSignupForm = document.getElementById('page-signup-form');
+  const btnDemoQuickLogin = document.getElementById('btn-demo-quick-login');
+
+  function setAuthPageTab(mode = 'login') {
+    if (mode === 'signup') {
+      btnTabSignup?.classList.add('is-active');
+      btnTabSignup?.setAttribute('aria-selected', 'true');
+      btnTabLogin?.classList.remove('is-active');
+      btnTabLogin?.setAttribute('aria-selected', 'false');
+
+      if (pageSignupForm) pageSignupForm.hidden = false;
+      if (pageLoginForm) pageLoginForm.hidden = true;
+
+      setTimeout(() => {
+        document.getElementById('page-signup-fullname')?.focus();
+      }, 100);
+    } else {
+      btnTabLogin?.classList.add('is-active');
+      btnTabLogin?.setAttribute('aria-selected', 'true');
+      btnTabSignup?.classList.remove('is-active');
+      btnTabSignup?.setAttribute('aria-selected', 'false');
+
+      if (pageLoginForm) pageLoginForm.hidden = false;
+      if (pageSignupForm) pageSignupForm.hidden = true;
+
+      setTimeout(() => {
+        document.getElementById('page-login-email')?.focus();
+      }, 100);
+    }
+  }
+
+  // Topbar and Rail Navigation to Auth Page
+  document.getElementById('topbar-login-btn')?.addEventListener('click', () => {
+    switchView('auth');
+    setAuthPageTab('login');
+  });
+
+  document.getElementById('topbar-signup-btn')?.addEventListener('click', () => {
+    switchView('auth');
+    setAuthPageTab('signup');
+  });
+
+  document.getElementById('rail-auth-btn')?.addEventListener('click', () => {
+    switchView('auth');
+    setAuthPageTab('login');
+  });
+
+  // Tab buttons on Auth Page
+  btnTabLogin?.addEventListener('click', () => setAuthPageTab('login'));
+  btnTabSignup?.addEventListener('click', () => setAuthPageTab('signup'));
+
+  // Inline Switch links
+  document.getElementById('link-goto-signup')?.addEventListener('click', () => setAuthPageTab('signup'));
+  document.getElementById('link-goto-login')?.addEventListener('click', () => setAuthPageTab('login'));
+
+  // 1-Click Demo Login
+  if (btnDemoQuickLogin) {
+    btnDemoQuickLogin.addEventListener('click', () => {
+      const emailField = document.getElementById('page-login-email');
+      const pwdField = document.getElementById('page-login-password');
+      if (emailField) emailField.value = "maya@teta.mindful";
+      if (pwdField) pwdField.value = "password123";
+
+      btnDemoQuickLogin.textContent = "Entering...";
+      showToast("Accessing demo profile as Maya Chen (@mayainmotion)...", "⚡");
+
+      setTimeout(() => {
+        btnDemoQuickLogin.textContent = "1-Click Fill & Enter ↗";
+        showToast("Welcome back, Maya Chen! ✨", "✨");
+        switchView('home');
+      }, 400);
+    });
+  }
+
+  // Password Visibility Toggles
+  document.querySelectorAll('.pwd-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.dataset.target;
+      const input = document.getElementById(targetId);
+      if (!input) return;
+
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+
+      btn.innerHTML = isPassword
+        ? `<svg class="pwd-eye-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`
+        : `<svg class="pwd-eye-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    });
+  });
+
+  // Live Password Strength Meter
+  const signupPwdInput = document.getElementById('page-signup-password');
+  const meterText = document.getElementById('meter-text');
+  const meterBar1 = document.getElementById('meter-bar-1');
+  const meterBar2 = document.getElementById('meter-bar-2');
+  const meterBar3 = document.getElementById('meter-bar-3');
+  const meterBar4 = document.getElementById('meter-bar-4');
+
+  if (signupPwdInput) {
+    signupPwdInput.addEventListener('input', () => {
+      const val = signupPwdInput.value;
+      const bars = [meterBar1, meterBar2, meterBar3, meterBar4];
+      bars.forEach(b => {
+        if (b) {
+          b.style.backgroundColor = 'var(--border)';
+        }
+      });
+
+      if (!val) {
+        if (meterText) meterText.textContent = "Password strength: at least 8 characters";
+        return;
+      }
+
+      let score = 0;
+      if (val.length >= 6) score++;
+      if (val.length >= 8) score++;
+      if (/[A-Z]/.test(val) && /[a-z]/.test(val) && /\d/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val) || val.length >= 12) score++;
+
+      if (score === 1) {
+        if (meterBar1) meterBar1.style.backgroundColor = '#ef4444';
+        if (meterText) meterText.textContent = "Weak password (add numbers or make longer)";
+      } else if (score === 2) {
+        if (meterBar1) meterBar1.style.backgroundColor = '#f97316';
+        if (meterBar2) meterBar2.style.backgroundColor = '#f97316';
+        if (meterText) meterText.textContent = "Fair password (add uppercase or symbols)";
+      } else if (score === 3) {
+        if (meterBar1) meterBar1.style.backgroundColor = '#06b6d4';
+        if (meterBar2) meterBar2.style.backgroundColor = '#06b6d4';
+        if (meterBar3) meterBar3.style.backgroundColor = '#06b6d4';
+        if (meterText) meterText.textContent = "Good password 👍";
+      } else if (score >= 4) {
+        bars.forEach(b => { if (b) b.style.backgroundColor = '#10b981'; });
+        if (meterText) meterText.textContent = "Strong password! ✨";
+      }
+    });
+  }
+
+  // Forgot Password Link
+  document.getElementById('btn-forgot-password-link')?.addEventListener('click', () => {
+    const emailVal = document.getElementById('page-login-email')?.value.trim();
+    showToast(`Password reset link dispatched to ${emailVal || 'your email'} ✉️`, "✉️");
+  });
+
+  // Dedicated Page Log In Form Submit
+  if (pageLoginForm) {
+    pageLoginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('page-login-email')?.value.trim();
+      const submitBtn = document.getElementById('btn-execute-page-login');
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        const textSpan = submitBtn.querySelector('.btn-text');
+        if (textSpan) textSpan.textContent = "Authenticating...";
+      }
+
+      setTimeout(() => {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          const textSpan = submitBtn.querySelector('.btn-text');
+          if (textSpan) textSpan.textContent = "Log In to My Teta";
+        }
+
+        const namePart = email ? email.split('@')[0] : 'friend';
+        showToast(`Welcome back, ${namePart}! ✨`, "✨");
+        switchView('home');
+      }, 450);
+    });
+  }
+
+  // Dedicated Page Sign Up Form Submit
+  if (pageSignupForm) {
+    pageSignupForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const fullName = document.getElementById('page-signup-fullname')?.value.trim() || 'New Member';
+      const handle = document.getElementById('page-signup-handle')?.value.trim() || 'newmember';
+      const email = document.getElementById('page-signup-email')?.value.trim();
+      const submitBtn = document.getElementById('btn-execute-page-signup');
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        const textSpan = submitBtn.querySelector('.btn-text');
+        if (textSpan) textSpan.textContent = "Setting up your circle...";
+      }
+
+      setTimeout(() => {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          const textSpan = submitBtn.querySelector('.btn-text');
+          if (textSpan) textSpan.textContent = "Create Free Account ✨";
+        }
+
+        CURRENT_USER.name = fullName;
+        CURRENT_USER.handle = handle.startsWith('@') ? handle : `@${handle}`;
+
+        // Update greeting in Home view
+        const greetingHeader = document.querySelector('.greeting-row h1');
+        if (greetingHeader) {
+          greetingHeader.innerHTML = `A little closer, <span>${fullName.split(' ')[0]}.</span>`;
+        }
+
+        showToast(`Account created! Welcome to My Teta, ${fullName}! 🎉`, "🎉");
+        switchView('home');
+      }, 500);
+    });
+  }
+
+  // Modal Fallback listeners
   authSigninTab?.addEventListener('click', () => switchAuthMode('signin'));
   authSignupTab?.addEventListener('click', () => switchAuthMode('signup'));
 
@@ -2712,7 +2943,8 @@
       setTimeout(() => {
         if (authModal) authModal.hidden = true;
         showToast(`Connected successfully with ${provider}!`, "✨");
-      }, 1000);
+        switchView('home');
+      }, 700);
     });
   });
 
@@ -2743,6 +2975,7 @@
       } else {
         showToast(`Welcome back, ${email.split('@')[0]}!`, "✨");
       }
+      switchView('home');
     });
   }
 

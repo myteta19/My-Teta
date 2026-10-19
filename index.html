@@ -40,7 +40,7 @@
 			</svg>
 			<span class="brand-text">my <span class="brand-teta">teta</span><span class="brand-dot">.</span></span>
 		</a>
-		<label class="search-box" aria-label="Search"><svg class="search-icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><input id="global-search" type="search" placeholder="Find a moment, idea, person..."><kbd>/</kbd></label>
+		<label class="search-box" aria-label="Search"><svg class="search-icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><input id="global-search" type="search" placeholder="Search..."><kbd>/</kbd></label>
 		<nav class="primary-nav" aria-label="Main navigation">
 			<button class="nav-tab is-active" data-view="home" type="button"><svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>Home</button>
 			<button class="nav-tab" data-view="friends" type="button"><svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>Friends</button>
@@ -50,8 +50,10 @@
 			<button class="nav-tab" data-view="contact" type="button"><svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Contact</button>
 		</nav>
 		<div class="topbar-actions">
-			<button class="topbar-auth-btn" id="topbar-login-btn" type="button" aria-label="Log in" title="Log in"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg><span>Log in</span></button>
-			<button class="topbar-auth-btn is-signup" id="topbar-signup-btn" type="button" aria-label="Sign up" title="Sign up"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg><span>Sign up</span></button>
+			<div class="topbar-auth-group">
+				<button class="topbar-auth-btn" id="topbar-login-btn" data-view="auth" data-auth-mode="signin" type="button" aria-label="Log in" title="Log in"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg><span>Log in</span></button>
+				<button class="topbar-auth-btn is-signup" id="topbar-signup-btn" data-view="auth" data-auth-mode="signup" type="button" aria-label="Sign up" title="Sign up"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg><span>Sign up</span></button>
+			</div>
 			<button class="button button-primary button-small topbar-share-btn" data-action="write-post" type="button"><b>＋</b> Share</button>
 			<button class="icon-button" id="notifications" type="button" aria-label="Notifications" title="Notifications" aria-expanded="false" aria-controls="notifications-popup"><svg class="notif-bell-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><i class="notification-dot" id="notif-dot"></i></button>
 			<button class="profile-trigger" data-view="profile" type="button" aria-label="Open profile"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&h=96&q=85" alt="Maya Chen"><i class="status-online"></i></button>
@@ -90,7 +92,7 @@
 			<button class="rail-link" data-view="profile" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Your profile</button>
 			<button class="rail-link" data-view="settings" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>Settings</button>
 			<button class="rail-link" data-view="contact" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Contact Us</button>
-			<button class="rail-link rail-auth-btn" id="rail-auth-btn" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>Log in / Sign up</button>
+			<button class="rail-link rail-auth-btn" id="rail-auth-btn" data-view="auth" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>Log in / Sign up</button>
 			<p class="rail-note"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6.4-4.8-6.4 4.8 2.4-7.2-6-4.8h7.6z"></path></svg>Good things happen<br>when we show up.</p>
 		</aside>
 
@@ -1756,6 +1758,246 @@
 								</button>
 							</div>
 						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ==========================================================================
+		     AUTHENTICATION VIEW PANEL (DEDICATED LOG IN & SIGN UP PAGE)
+		     ========================================================================== -->
+		<section class="view-panel auth-page-view" id="auth-view" hidden>
+			<div class="auth-page-container">
+				<!-- Top Bar with Back Nav & Security Badge -->
+				<div class="auth-top-nav">
+					<button class="auth-back-btn" data-view="home" type="button">
+						<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+						<span>Back to Home Feed</span>
+					</button>
+					<div class="auth-security-badge">
+						<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+						<span>256-bit encrypted authentication</span>
+					</div>
+				</div>
+
+				<div class="auth-grid-shell">
+					<!-- LEFT HERO COLUMN -->
+					<div class="auth-hero-card">
+						<div class="auth-hero-header">
+							<div class="auth-brand-pill">
+								<svg viewBox="0 0 40 40" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+									<rect width="40" height="40" rx="10" fill="#0f172a"/>
+									<path d="M20 20C23.3 14 28.5 14 28.5 20C28.5 26 23.3 26 20 20C16.7 14 11.5 14 11.5 20C11.5 26 16.7 26 20 20Z" stroke="url(#tetaGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+									<circle cx="20" cy="20" r="1.8" fill="#06b6d4"/>
+								</svg>
+								<span>My Teta Membership</span>
+							</div>
+							<h1 class="auth-hero-heading">A calmer, deeper social space.</h1>
+							<p class="auth-hero-lead">Where real friends, mindful moments, and genuine stories matter more than infinite viral noise.</p>
+						</div>
+
+						<div class="auth-pillars-list">
+							<div class="auth-pillar-item">
+								<div class="pillar-icon-box">
+									<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+								</div>
+								<div class="pillar-content">
+									<strong>Intimate Circles &amp; Moments</strong>
+									<span>Choose exactly who sees each memory. Share openly with close friends without public anxiety.</span>
+								</div>
+							</div>
+
+							<div class="auth-pillar-item">
+								<div class="pillar-icon-box">
+									<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+								</div>
+								<div class="pillar-content">
+									<strong>Chronological &amp; Ad-Free</strong>
+									<span>Zero engagement bait. No algorithms designed to outrage you. Just your friends' honest days.</span>
+								</div>
+							</div>
+
+							<div class="auth-pillar-item">
+								<div class="pillar-icon-box">
+									<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+								</div>
+								<div class="pillar-content">
+									<strong>Mindful Pacing &amp; Audio Spaces</strong>
+									<span>Ambient soundscapes, gentle notification batching, and space to unplug whenever you wish.</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="auth-community-card">
+							<p class="auth-quote">“My Teta feels like stepping into a sunlit courtyard with good friends after hours in loud, crowded rooms. It brought genuine warmth back to my digital life.”</p>
+							<div class="auth-author-row">
+								<img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=80&h=80&q=80" alt="Dr. Clara Vance" class="author-avatar">
+								<div>
+									<strong class="author-name">Dr. Clara Vance</strong>
+									<span class="author-meta">Cognitive Architect · Brooklyn Circle</span>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- RIGHT FORM CARD (TABS: LOG IN / SIGN UP) -->
+					<div class="auth-card-panel">
+						<!-- Tab Switcher -->
+						<div class="auth-tab-bar" role="tablist">
+							<button class="auth-switch-tab is-active" id="btn-tab-login" role="tab" aria-selected="true" type="button">
+								<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+								<span>Log In</span>
+							</button>
+							<button class="auth-switch-tab" id="btn-tab-signup" role="tab" aria-selected="false" type="button">
+								<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+								<span>Create Account</span>
+							</button>
+						</div>
+
+						<!-- Quick 1-Click Demo Fill & Enter Banner -->
+						<div class="auth-demo-banner" id="auth-demo-banner">
+							<div class="demo-banner-content">
+								<span class="demo-badge-icon">⚡</span>
+								<div>
+									<strong>Instant Demo Account</strong>
+									<small>Experience full access as Maya Chen (@mayainmotion)</small>
+								</div>
+							</div>
+							<button class="demo-auto-btn" id="btn-demo-quick-login" type="button">1-Click Fill &amp; Enter ↗</button>
+						</div>
+
+						<!-- Social OAuth Row -->
+						<div class="auth-oauth-group">
+							<button class="oauth-quick-btn" data-oauth="Google" type="button">
+								<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16c1.8 3.7 5.6 7 10.1 7z"/></svg>
+								<span>Google</span>
+							</button>
+							<button class="oauth-quick-btn" data-oauth="Apple" type="button">
+								<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 0.92-2.87-.92.04-2.02.62-2.67 1.37-.56.65-1.06 1.71-.93 2.74 1.03.08 2.07-.49 2.68-1.24z"/></svg>
+								<span>Apple</span>
+							</button>
+						</div>
+
+						<div class="auth-sep-line">
+							<span>or continue with email</span>
+						</div>
+
+						<!-- 1. DEDICATED LOG IN FORM -->
+						<form class="auth-interactive-form" id="page-login-form">
+							<div class="auth-form-head">
+								<h2>Welcome back</h2>
+								<p>Enter your email and password to return to your circle.</p>
+							</div>
+
+							<div class="auth-input-group">
+								<label for="page-login-email">Email Address</label>
+								<div class="auth-field-wrapper">
+									<svg class="auth-field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+									<input type="email" id="page-login-email" required placeholder="you@domain.com" value="maya@teta.mindful" autocomplete="email">
+								</div>
+							</div>
+
+							<div class="auth-input-group">
+								<div class="label-split-row">
+									<label for="page-login-password">Password</label>
+									<button class="auth-sub-link" id="btn-forgot-password-link" type="button">Forgot password?</button>
+								</div>
+								<div class="auth-field-wrapper">
+									<svg class="auth-field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+									<input type="password" id="page-login-password" required placeholder="Enter password" value="password123" autocomplete="current-password">
+									<button class="pwd-toggle-btn" type="button" aria-label="Toggle password visibility" data-target="page-login-password">
+										<svg class="pwd-eye-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+									</button>
+								</div>
+							</div>
+
+							<div class="auth-check-row">
+								<label class="auth-checkbox-label">
+									<input type="checkbox" id="login-remember-device" checked>
+									<span>Remember this device for 30 days</span>
+								</label>
+							</div>
+
+							<button type="submit" class="button button-primary auth-submit-btn" id="btn-execute-page-login">
+								<span class="btn-text">Log In to My Teta</span>
+								<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+							</button>
+
+							<p class="auth-bottom-switch">
+								Don't have an account yet? <button class="auth-inline-link" id="link-goto-signup" type="button">Create your free account ↗</button>
+							</p>
+						</form>
+
+						<!-- 2. DEDICATED SIGN UP FORM -->
+						<form class="auth-interactive-form" id="page-signup-form" hidden>
+							<div class="auth-form-head">
+								<h2>Create your account</h2>
+								<p>Join a community committed to mindful, authentic connection.</p>
+							</div>
+
+							<div class="auth-two-col-inputs">
+								<div class="auth-input-group">
+									<label for="page-signup-fullname">Full Name</label>
+									<div class="auth-field-wrapper">
+										<svg class="auth-field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+										<input type="text" id="page-signup-fullname" required placeholder="e.g. Kai Rivera" autocomplete="name">
+									</div>
+								</div>
+
+								<div class="auth-input-group">
+									<label for="page-signup-handle">Username</label>
+									<div class="auth-field-wrapper">
+										<span class="auth-handle-at">@</span>
+										<input type="text" id="page-signup-handle" required placeholder="kairivera" autocomplete="username">
+									</div>
+								</div>
+							</div>
+
+							<div class="auth-input-group">
+								<label for="page-signup-email">Email Address</label>
+								<div class="auth-field-wrapper">
+									<svg class="auth-field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+									<input type="email" id="page-signup-email" required placeholder="you@domain.com" autocomplete="email">
+								</div>
+							</div>
+
+							<div class="auth-input-group">
+								<label for="page-signup-password">Create Password</label>
+								<div class="auth-field-wrapper">
+									<svg class="auth-field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+									<input type="password" id="page-signup-password" required placeholder="At least 8 characters" autocomplete="new-password">
+									<button class="pwd-toggle-btn" type="button" aria-label="Toggle password visibility" data-target="page-signup-password">
+										<svg class="pwd-eye-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+									</button>
+								</div>
+								<!-- Live Password Strength Meter -->
+								<div class="auth-pwd-meter" id="auth-pwd-meter">
+									<div class="meter-bars">
+										<span class="meter-bar" id="meter-bar-1"></span>
+										<span class="meter-bar" id="meter-bar-2"></span>
+										<span class="meter-bar" id="meter-bar-3"></span>
+										<span class="meter-bar" id="meter-bar-4"></span>
+									</div>
+									<small class="meter-text" id="meter-text">Password strength: at least 8 characters</small>
+								</div>
+							</div>
+
+							<div class="auth-check-row">
+								<label class="auth-checkbox-label">
+									<input type="checkbox" id="signup-agree-rules" required checked>
+									<span>I agree to the <a href="#privacy" class="auth-legal-link">Community Honor Code</a> &amp; <a href="#privacy" class="auth-legal-link">Privacy Pledge</a></span>
+								</label>
+							</div>
+
+							<button type="submit" class="button button-primary auth-submit-btn" id="btn-execute-page-signup">
+								<span class="btn-text">Create Free Account ✨</span>
+								<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+							</button>
+
+							<p class="auth-bottom-switch">
+								Already have an account? <button class="auth-inline-link" id="link-goto-login" type="button">Log in here ↗</button>
+							</p>
+						</form>
 					</div>
 				</div>
 			</div>
