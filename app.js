@@ -27,12 +27,162 @@
   };
 
   const STORIES = [
-    { id: 1, name: "Your story", avatar: CURRENT_USER.avatar, isSelf: true },
-    { id: 2, name: "Soren K.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" },
-    { id: 3, name: "Amara V.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80" },
-    { id: 4, name: "Lucas D.", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80" },
-    { id: 5, name: "Priya P.", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80" },
-    { id: 6, name: "Mateo R.", avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80" }
+    {
+      id: 1,
+      name: "Your story",
+      author: "Maya Chen",
+      handle: "@mayainmotion",
+      avatar: CURRENT_USER.avatar,
+      isSelf: true,
+      hasUnseen: true,
+      slides: [
+        {
+          id: "maya_s1",
+          url: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1080&q=85",
+          caption: "Morning light in the studio corner ☕ ceramics drying peacefully.",
+          circle: "Studio people",
+          time: "42m ago",
+          music: "Quiet Studio · Acoustic Calm",
+          duration: 5
+        },
+        {
+          id: "maya_s2",
+          url: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=1080&q=85",
+          caption: "Rain tapping on the skylight 🌧️ taking 5 deep breaths.",
+          circle: "Little escapes",
+          time: "15m ago",
+          music: "Rain on Glass · Ambient Tape",
+          duration: 5
+        }
+      ]
+    },
+    {
+      id: 2,
+      name: "Soren K.",
+      author: "Soren Kierkegaard",
+      handle: "@soren_k",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
+      isSelf: false,
+      hasUnseen: true,
+      slides: [
+        {
+          id: "soren_s1",
+          url: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1080&q=85",
+          caption: "First bake of the week: rosemary sourdough boule with crunchy crust 🥖✨",
+          circle: "Sunday table",
+          time: "1h ago",
+          music: "Warm Oven · Morning Acoustic",
+          duration: 5
+        },
+        {
+          id: "soren_s2",
+          url: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=1080&q=85",
+          caption: "Hand-ground pour-over Ethiopian beans. Slow mornings are the best mornings.",
+          circle: "Sunday table",
+          time: "35m ago",
+          music: "Coffeehouse Lo-Fi",
+          duration: 5
+        }
+      ]
+    },
+    {
+      id: 3,
+      name: "Amara V.",
+      author: "Amara Vance",
+      handle: "@amarav",
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
+      isSelf: false,
+      hasUnseen: true,
+      slides: [
+        {
+          id: "amara_s1",
+          url: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=1080&q=85",
+          caption: "Centering raw terracotta on the kick wheel. Clay teaches pure patience 🏺",
+          circle: "Studio people",
+          time: "2h ago",
+          music: "Wheel & Water · Ambient Chimes",
+          duration: 5
+        },
+        {
+          id: "amara_s2",
+          url: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=1080&q=85",
+          caption: "Celadon glaze test tiles straight out of kiln cooling! That soft seafoam hue 🌊",
+          circle: "Studio people",
+          time: "1h ago",
+          music: "Kiln Glow · Gentle Synths",
+          duration: 5
+        }
+      ]
+    },
+    {
+      id: 4,
+      name: "Lucas D.",
+      author: "Lucas Dubois",
+      handle: "@lucas_d",
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
+      isSelf: false,
+      hasUnseen: true,
+      slides: [
+        {
+          id: "lucas_s1",
+          url: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1080&q=85",
+          caption: "Deep in the Hudson Valley pines. Zero notifications, just hemlock scent 🌲",
+          circle: "Little escapes",
+          time: "3h ago",
+          music: "Mountain Stream Sounds",
+          duration: 5
+        },
+        {
+          id: "lucas_s2",
+          url: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1080&q=85",
+          caption: "Morning fog clearing above the ridge. Felt good to unplug.",
+          circle: "Little escapes",
+          time: "2h ago",
+          music: "Misty Sunrise · Acoustic",
+          duration: 5
+        }
+      ]
+    },
+    {
+      id: 5,
+      name: "Priya P.",
+      author: "Priya Patel",
+      handle: "@priyap",
+      avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80",
+      isSelf: false,
+      hasUnseen: true,
+      slides: [
+        {
+          id: "priya_s1",
+          url: "https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=1080&q=85",
+          caption: "Golden hour sun hitting the botanical greenhouse leaves 🌿 sunshine therapy.",
+          circle: "Little escapes",
+          time: "4h ago",
+          music: "Sunlight Reflections",
+          duration: 5
+        }
+      ]
+    },
+    {
+      id: 6,
+      name: "Mateo R.",
+      author: "Mateo Rossi",
+      handle: "@mateorossi",
+      avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80",
+      isSelf: false,
+      hasUnseen: true,
+      slides: [
+        {
+          id: "mateo_s1",
+          url: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1080&q=85",
+          caption: "Evening negroni & pasta under the grapevine arbor with good friends 🍷",
+          circle: "Sunday table",
+          time: "5h ago",
+          music: "Italian Summer Evening",
+          duration: 5
+        }
+      ]
+    }
   ];
 
   let posts = [
@@ -502,25 +652,502 @@
   });
 
   // ==========================================
-  // 5. RENDER STORIES
+  // 5. RENDER STORIES & STORY PLAYER THEATER
   // ==========================================
+  let activeStoryUserIdx = -1;
+  let activeStorySlideIdx = 0;
+  let isStoryPaused = false;
+  let isStoryMuted = false;
+  let storyTimerInterval = null;
+  let storySlideStartTime = 0;
+  let storySlideElapsed = 0;
+  const STORY_SLIDE_DURATION = 5000;
+  let storyViewerInitialized = false;
+
   function renderStories() {
     if (!storyList) return;
-    storyList.innerHTML = STORIES.map(s => `
-      <div class="story-card" data-story-id="${s.id}">
-        <div class="story-ring">
+    storyList.innerHTML = STORIES.map((s, idx) => `
+      <div class="story-card" data-story-index="${idx}" tabindex="0" role="button" aria-label="Watch ${s.name}'s story">
+        <div class="story-ring ${s.hasUnseen ? '' : 'is-seen'}">
           <img src="${s.avatar}" alt="${s.name}">
+          ${s.isSelf ? '<span class="story-self-add-badge" title="Add moment to story">＋</span>' : ''}
         </div>
         <span class="story-name">${s.name}</span>
       </div>
     `).join('');
 
     storyList.querySelectorAll('.story-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const id = card.dataset.storyId;
-        const story = STORIES.find(s => s.id == id);
-        showToast(`Opening ${story.name}'s story...`, '▷');
+      card.addEventListener('click', (e) => {
+        const idx = parseInt(card.dataset.storyIndex, 10);
+        if (e.target.closest('.story-self-add-badge')) {
+          e.stopPropagation();
+          openAddStoryModal();
+          return;
+        }
+        openStoryViewer(idx, 0);
       });
+    });
+
+    const allStoriesBtn = document.getElementById('all-stories');
+    if (allStoriesBtn) {
+      allStoriesBtn.onclick = () => {
+        openStoryViewer(0, 0);
+      };
+    }
+
+    if (!storyViewerInitialized) {
+      initStoryViewerEvents();
+      storyViewerInitialized = true;
+    }
+  }
+
+  function openStoryViewer(userIdx, slideIdx = 0) {
+    if (userIdx < 0 || userIdx >= STORIES.length) return;
+    const storyModal = document.getElementById('story-modal');
+    if (storyModal) {
+      storyModal.hidden = false;
+      storyModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+    loadStorySlide(userIdx, slideIdx);
+  }
+
+  function closeStoryViewer() {
+    clearStoryTimer();
+    activeStoryUserIdx = -1;
+    activeStorySlideIdx = 0;
+    isStoryPaused = false;
+
+    const storyModal = document.getElementById('story-modal');
+    if (storyModal) {
+      storyModal.hidden = true;
+      storyModal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+  }
+
+  function clearStoryTimer() {
+    if (storyTimerInterval) {
+      clearInterval(storyTimerInterval);
+      storyTimerInterval = null;
+    }
+  }
+
+  function loadStorySlide(userIdx, slideIdx) {
+    clearStoryTimer();
+
+    if (userIdx < 0) {
+      closeStoryViewer();
+      return;
+    }
+    if (userIdx >= STORIES.length) {
+      closeStoryViewer();
+      showToast("You're all caught up with your circle's stories! ✨", "✓");
+      return;
+    }
+
+    const story = STORIES[userIdx];
+    if (!story.slides || story.slides.length === 0) {
+      if (story.isSelf) {
+        openAddStoryModal();
+      }
+      closeStoryViewer();
+      return;
+    }
+
+    if (slideIdx < 0) slideIdx = 0;
+    if (slideIdx >= story.slides.length) {
+      openStoryViewer(userIdx + 1, 0);
+      return;
+    }
+
+    activeStoryUserIdx = userIdx;
+    activeStorySlideIdx = slideIdx;
+    story.hasUnseen = false;
+    renderStories();
+
+    const slide = story.slides[slideIdx];
+
+    // 1. Segmented Progress Bars
+    const progressBarsContainer = document.getElementById('story-progress-bars');
+    if (progressBarsContainer) {
+      progressBarsContainer.innerHTML = story.slides.map((_, i) => `
+        <div class="story-progress-seg ${i < slideIdx ? 'is-completed' : ''}" data-seg-index="${i}">
+          <div class="story-progress-fill" style="width: ${i < slideIdx ? '100%' : '0%'}"></div>
+        </div>
+      `).join('');
+    }
+
+    // 2. Author Header
+    const avatar = document.getElementById('story-player-avatar');
+    const name = document.getElementById('story-player-name');
+    const circle = document.getElementById('story-player-circle');
+    const time = document.getElementById('story-player-time');
+
+    if (avatar) avatar.src = story.avatar;
+    if (name) name.textContent = story.name;
+    if (circle) circle.textContent = slide.circle || "Circle";
+    if (time) time.textContent = slide.time || "Today";
+
+    // 3. Media Image
+    const img = document.getElementById('story-slide-img');
+    if (img) {
+      img.style.opacity = '0.3';
+      img.src = slide.url;
+      img.onload = () => { img.style.opacity = '1'; };
+    }
+
+    // 4. Music and Caption
+    const musicTag = document.getElementById('story-music-tag');
+    const musicTitle = document.getElementById('story-music-title');
+    const caption = document.getElementById('story-slide-caption');
+
+    if (caption) caption.textContent = slide.caption || "";
+    if (musicTag && musicTitle) {
+      if (slide.music && !isStoryMuted) {
+        musicTag.hidden = false;
+        musicTitle.textContent = slide.music;
+      } else {
+        musicTag.hidden = true;
+      }
+    }
+
+    // 5. Footers
+    const friendFooter = document.getElementById('story-friend-footer');
+    const selfFooter = document.getElementById('story-self-footer');
+    const replyInput = document.getElementById('story-reply-input');
+
+    if (story.isSelf) {
+      if (friendFooter) friendFooter.hidden = true;
+      if (selfFooter) selfFooter.hidden = false;
+    } else {
+      if (friendFooter) friendFooter.hidden = false;
+      if (selfFooter) selfFooter.hidden = true;
+      if (replyInput) replyInput.placeholder = `Reply to ${story.name}...`;
+    }
+
+    // Reset hold indicator
+    const holdInd = document.getElementById('story-hold-indicator');
+    if (holdInd) holdInd.classList.remove('is-visible');
+
+    // 6. Start Timer
+    storySlideStartTime = Date.now();
+    storySlideElapsed = 0;
+    isStoryPaused = false;
+    const pauseBtn = document.getElementById('story-pause-play-btn');
+    if (pauseBtn) pauseBtn.textContent = '❚❚';
+
+    startStoryTimer();
+  }
+
+  function startStoryTimer() {
+    clearStoryTimer();
+    const intervalMs = 30;
+
+    storyTimerInterval = setInterval(() => {
+      if (isStoryPaused) return;
+
+      storySlideElapsed += intervalMs;
+      const progressPercent = Math.min(100, (storySlideElapsed / STORY_SLIDE_DURATION) * 100);
+
+      const currentFill = document.querySelector(`.story-progress-seg[data-seg-index="${activeStorySlideIdx}"] .story-progress-fill`);
+      if (currentFill) {
+        currentFill.style.width = `${progressPercent}%`;
+      }
+
+      if (storySlideElapsed >= STORY_SLIDE_DURATION) {
+        clearStoryTimer();
+        advanceStorySlide();
+      }
+    }, intervalMs);
+  }
+
+  function advanceStorySlide() {
+    const currentStory = STORIES[activeStoryUserIdx];
+    if (!currentStory) return;
+
+    if (activeStorySlideIdx + 1 < currentStory.slides.length) {
+      loadStorySlide(activeStoryUserIdx, activeStorySlideIdx + 1);
+    } else {
+      if (activeStoryUserIdx + 1 < STORIES.length) {
+        openStoryViewer(activeStoryUserIdx + 1, 0);
+      } else {
+        closeStoryViewer();
+        showToast("You've viewed all recent circle moments! ✨", "✓");
+      }
+    }
+  }
+
+  function prevStorySlide() {
+    if (activeStorySlideIdx > 0) {
+      loadStorySlide(activeStoryUserIdx, activeStorySlideIdx - 1);
+    } else if (activeStoryUserIdx > 0) {
+      const prevStory = STORIES[activeStoryUserIdx - 1];
+      const lastSlideIdx = prevStory.slides ? prevStory.slides.length - 1 : 0;
+      openStoryViewer(activeStoryUserIdx - 1, Math.max(0, lastSlideIdx));
+    }
+  }
+
+  function toggleStoryPause() {
+    isStoryPaused = !isStoryPaused;
+    const pauseBtn = document.getElementById('story-pause-play-btn');
+    const holdInd = document.getElementById('story-hold-indicator');
+
+    if (isStoryPaused) {
+      if (pauseBtn) pauseBtn.textContent = '▶';
+      if (holdInd) holdInd.classList.add('is-visible');
+    } else {
+      if (pauseBtn) pauseBtn.textContent = '❚❚';
+      if (holdInd) holdInd.classList.remove('is-visible');
+    }
+  }
+
+  function spawnFloatingEmoji(emoji, originEl) {
+    const card = document.getElementById('story-player-card');
+    if (!card) return;
+
+    const floater = document.createElement('div');
+    floater.className = 'story-flying-emoji';
+    floater.textContent = emoji;
+
+    const cardRect = card.getBoundingClientRect();
+    if (originEl) {
+      const rect = originEl.getBoundingClientRect();
+      floater.style.left = `${rect.left - cardRect.left + 8}px`;
+      floater.style.bottom = '80px';
+    } else {
+      floater.style.left = '50%';
+      floater.style.bottom = '80px';
+    }
+
+    card.appendChild(floater);
+    setTimeout(() => floater.remove(), 1200);
+  }
+
+  function openAddStoryModal() {
+    const modal = document.getElementById('story-add-modal');
+    if (modal) {
+      modal.hidden = false;
+      modal.style.display = 'flex';
+      if (activeStoryUserIdx !== -1) {
+        isStoryPaused = true;
+        const pauseBtn = document.getElementById('story-pause-play-btn');
+        if (pauseBtn) pauseBtn.textContent = '▶';
+      }
+    }
+  }
+
+  function closeAddStoryModal() {
+    const modal = document.getElementById('story-add-modal');
+    if (modal) {
+      modal.hidden = true;
+      modal.style.display = 'none';
+    }
+  }
+
+  function initStoryViewerEvents() {
+    // 1. Tap Zones
+    document.getElementById('story-tap-prev')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      prevStorySlide();
+    });
+    document.getElementById('story-tap-next')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      advanceStorySlide();
+    });
+
+    // 2. Nav arrows
+    document.getElementById('story-prev-user')?.addEventListener('click', () => {
+      if (activeStoryUserIdx > 0) openStoryViewer(activeStoryUserIdx - 1, 0);
+    });
+    document.getElementById('story-next-user')?.addEventListener('click', () => {
+      if (activeStoryUserIdx + 1 < STORIES.length) openStoryViewer(activeStoryUserIdx + 1, 0);
+    });
+
+    // 3. Controls
+    document.getElementById('story-close-btn')?.addEventListener('click', closeStoryViewer);
+    document.getElementById('story-pause-play-btn')?.addEventListener('click', toggleStoryPause);
+
+    const muteBtn = document.getElementById('story-mute-btn');
+    if (muteBtn) {
+      muteBtn.addEventListener('click', () => {
+        isStoryMuted = !isStoryMuted;
+        muteBtn.textContent = isStoryMuted ? '🔇' : '🔊';
+        const musicTag = document.getElementById('story-music-tag');
+        if (musicTag) musicTag.hidden = isStoryMuted;
+        showToast(isStoryMuted ? "Story music muted" : "Story soundtrack playing ♫", "♫");
+      });
+    }
+
+    // 4. Hold down to pause
+    const card = document.getElementById('story-player-card');
+    const holdInd = document.getElementById('story-hold-indicator');
+
+    if (card) {
+      const handleHoldStart = (e) => {
+        if (e.target.closest('button, input, form')) return;
+        isStoryPaused = true;
+        if (holdInd) holdInd.classList.add('is-visible');
+      };
+      const handleHoldEnd = (e) => {
+        if (e.target.closest('button, input, form')) return;
+        isStoryPaused = false;
+        if (holdInd) holdInd.classList.remove('is-visible');
+      };
+
+      card.addEventListener('mousedown', handleHoldStart);
+      card.addEventListener('mouseup', handleHoldEnd);
+      card.addEventListener('mouseleave', handleHoldEnd);
+
+      card.addEventListener('touchstart', handleHoldStart, { passive: true });
+      card.addEventListener('touchend', handleHoldEnd);
+    }
+
+    // 5. Emoji Reactions
+    document.querySelectorAll('.story-emoji-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const emoji = btn.dataset.storyEmoji || "❤️";
+        spawnFloatingEmoji(emoji, btn);
+
+        const currentStory = STORIES[activeStoryUserIdx];
+        if (currentStory) {
+          showToast(`Sent ${emoji} to ${currentStory.name}!`, "✨");
+          if (typeof chatContacts !== 'undefined') {
+            const contact = chatContacts.find(c => c.name.toLowerCase().includes(currentStory.name.toLowerCase().split(' ')[0]));
+            if (contact) {
+              contact.messages.push({
+                id: `msg_react_${Date.now()}`,
+                sender: 'me',
+                type: 'text',
+                text: `Reacted with ${emoji} to your story "${currentStory.slides[activeStorySlideIdx]?.caption || ''}"`,
+                time: 'Just now'
+              });
+            }
+          }
+        }
+      });
+    });
+
+    // 6. Reply Form
+    const replyForm = document.getElementById('story-reply-form');
+    if (replyForm) {
+      replyForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = document.getElementById('story-reply-input');
+        const text = input ? input.value.trim() : "";
+        if (!text) return;
+
+        const currentStory = STORIES[activeStoryUserIdx];
+        if (currentStory) {
+          showToast(`Reply sent to ${currentStory.name} ↗`, "↗");
+          if (typeof chatContacts !== 'undefined') {
+            const contact = chatContacts.find(c => c.name.toLowerCase().includes(currentStory.name.toLowerCase().split(' ')[0]));
+            if (contact) {
+              contact.messages.push({
+                id: `msg_reply_${Date.now()}`,
+                sender: 'me',
+                type: 'text',
+                text: `Replied to story: ${text}`,
+                time: 'Just now'
+              });
+              contact.lastMessage = `You: ${text}`;
+              contact.time = 'Just now';
+              if (typeof renderChat === 'function') renderChat();
+            }
+          }
+        }
+
+        if (input) input.value = "";
+      });
+    }
+
+    // 7. Add to Story from Player
+    document.getElementById('story-open-add-btn')?.addEventListener('click', () => {
+      openAddStoryModal();
+    });
+    document.getElementById('close-story-add-modal')?.addEventListener('click', () => {
+      closeAddStoryModal();
+      if (activeStoryUserIdx !== -1) {
+        isStoryPaused = false;
+        const pauseBtn = document.getElementById('story-pause-play-btn');
+        if (pauseBtn) pauseBtn.textContent = '❚❚';
+      }
+    });
+
+    // 8. Preset Selection for Add Story Modal
+    let selectedPresetImg = "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1080&q=85";
+    document.querySelectorAll('.story-preset-card').forEach(pBtn => {
+      pBtn.addEventListener('click', () => {
+        document.querySelectorAll('.story-preset-card').forEach(b => b.classList.remove('is-active'));
+        pBtn.classList.add('is-active');
+
+        selectedPresetImg = pBtn.dataset.presetImg;
+        const capInput = document.getElementById('story-caption-input');
+        const musInput = document.getElementById('story-music-input');
+        const circleSelect = document.getElementById('story-circle-select');
+        const customUrl = document.getElementById('story-custom-img-url');
+
+        if (capInput) capInput.value = pBtn.dataset.presetCap || "";
+        if (musInput) musInput.value = pBtn.dataset.presetMusic || "";
+        if (circleSelect) circleSelect.value = pBtn.dataset.presetCircle || "Sunday table";
+        if (customUrl) customUrl.value = "";
+      });
+    });
+
+    // 9. Add Story Form Submit
+    const addStoryForm = document.getElementById('story-add-form');
+    if (addStoryForm) {
+      addStoryForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const customUrl = document.getElementById('story-custom-img-url')?.value.trim();
+        const captionVal = document.getElementById('story-caption-input')?.value.trim();
+        const musicVal = document.getElementById('story-music-input')?.value.trim();
+        const circleVal = document.getElementById('story-circle-select')?.value;
+
+        const newSlide = {
+          id: `maya_s_${Date.now()}`,
+          url: customUrl || selectedPresetImg,
+          caption: captionVal || "A quiet moment worth keeping ✨",
+          circle: circleVal || "Studio people",
+          time: "Just now",
+          music: musicVal || "Acoustic Morning",
+          duration: 5
+        };
+
+        STORIES[0].slides.push(newSlide);
+        STORIES[0].hasUnseen = true;
+        renderStories();
+
+        closeAddStoryModal();
+        showToast("Moment shared to your story! ✨", "✓");
+
+        openStoryViewer(0, STORIES[0].slides.length - 1);
+      });
+    }
+
+    // 10. Global Keyboard Navigation
+    document.addEventListener('keydown', (e) => {
+      const storyModal = document.getElementById('story-modal');
+      if (!storyModal || storyModal.hidden || storyModal.style.display === 'none') return;
+
+      if (e.key === 'Escape') {
+        closeStoryViewer();
+      } else if (e.key === 'ArrowRight') {
+        advanceStorySlide();
+      } else if (e.key === 'ArrowLeft') {
+        prevStorySlide();
+      } else if (e.key === ' ' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        toggleStoryPause();
+      }
+    });
+
+    // Close when clicking outside card
+    document.getElementById('story-modal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'story-modal' || e.target.classList.contains('story-viewer-container')) {
+        closeStoryViewer();
+      }
     });
   }
 
