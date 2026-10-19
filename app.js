@@ -597,7 +597,8 @@
     reels: document.getElementById('reels-view'),
     chat: document.getElementById('chat-view'),
     profile: document.getElementById('profile-view'),
-    settings: document.getElementById('settings-view')
+    settings: document.getElementById('settings-view'),
+    contact: document.getElementById('contact-view')
   };
 
   const navTabs = document.querySelectorAll('.nav-tab, .rail-link, .mobile-nav button[data-view], [data-view]');
@@ -694,7 +695,7 @@
     } else if (viewName === 'settings') {
       if (appShell) {
         appShell.classList.add('is-settings-active');
-        appShell.classList.remove('is-reels-active', 'is-chat-active');
+        appShell.classList.remove('is-reels-active', 'is-chat-active', 'is-contact-active');
       }
       if (rightRail) rightRail.style.display = 'none';
       // Pause video when leaving reels view
@@ -707,9 +708,25 @@
         if (wave) wave.classList.remove('is-playing');
       }
       if (typeof renderSettings === 'function') renderSettings();
+    } else if (viewName === 'contact') {
+      if (appShell) {
+        appShell.classList.add('is-contact-active');
+        appShell.classList.remove('is-reels-active', 'is-chat-active', 'is-settings-active');
+      }
+      if (rightRail) rightRail.style.display = 'none';
+      // Pause video when leaving reels view
+      const activeVideo = document.getElementById('active-reel-video');
+      if (activeVideo && !activeVideo.paused) {
+        activeVideo.pause();
+        const wrapper = document.getElementById('reel-video-wrapper');
+        if (wrapper) wrapper.classList.add('is-paused');
+        const wave = document.getElementById('player-soundwave');
+        if (wave) wave.classList.remove('is-playing');
+      }
+      if (typeof renderContactView === 'function') renderContactView();
     } else {
       if (appShell) {
-        appShell.classList.remove('is-reels-active', 'is-chat-active', 'is-settings-active');
+        appShell.classList.remove('is-reels-active', 'is-chat-active', 'is-settings-active', 'is-contact-active');
       }
       if (rightRail) rightRail.style.display = '';
       // Pause video when leaving reels view to prevent background audio
@@ -748,6 +765,18 @@
         switchView(view);
       }
     });
+  });
+
+  // Global delegation for dynamic/footer/badge [data-view] buttons
+  document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('[data-view]');
+    if (trigger) {
+      const view = trigger.dataset.view;
+      if (view && viewPanels[view]) {
+        e.preventDefault();
+        switchView(view);
+      }
+    }
   });
 
   // ==========================================
@@ -3625,11 +3654,322 @@
   }
 
   // ==========================================
-  // 14. INITIALIZATION
+  // 14. CONTACT US & PROBLEM REPORT SYSTEM
+  // ==========================================
+  let supportTickets = [
+    {
+      id: "TETA-49182",
+      subject: "Audio out of sync on reel player in Chrome",
+      category: "🐛 Bug or Glitch",
+      urgency: "⚡ Medium",
+      status: "Resolved",
+      time: "2 days ago",
+      resolved: true
+    },
+    {
+      id: "TETA-53094",
+      subject: "Dark mode accent color preference request",
+      category: "💡 Feedback & Idea",
+      urgency: "🌱 Low",
+      status: "In Review",
+      time: "Yesterday",
+      resolved: false
+    }
+  ];
+
+  // Try loading tickets from localStorage
+  try {
+    const savedTickets = localStorage.getItem('myteta_support_tickets');
+    if (savedTickets) {
+      const parsed = JSON.parse(savedTickets);
+      if (Array.isArray(parsed) && parsed.length) {
+        supportTickets = parsed;
+      }
+    }
+  } catch (e) {}
+
+  function renderContactView() {
+    // 1. Sync User info into inputs if empty
+    const nameInput = document.getElementById('contact-name');
+    const emailInput = document.getElementById('contact-email');
+
+    if (nameInput && !nameInput.value) {
+      nameInput.value = CURRENT_USER.name || "Maya Chen";
+    }
+    if (emailInput && !emailInput.value) {
+      const cleanHandle = (CURRENT_USER.handle || '@mayainmotion').replace(/^@/, '');
+      emailInput.value = `${cleanHandle}@teta.mindful`;
+    }
+
+    renderTicketHistory();
+  }
+
+  function renderTicketHistory() {
+    const ticketListEl = document.getElementById('ticket-history-list');
+    const ticketCountEl = document.getElementById('ticket-history-count');
+    if (ticketCountEl) {
+      ticketCountEl.textContent = supportTickets.length;
+    }
+    if (!ticketListEl) return;
+
+    if (supportTickets.length === 0) {
+      ticketListEl.innerHTML = `
+        <div style="text-align:center; padding:20px; color:var(--ink-faint); font-size:0.85rem;">
+          No active support tickets. We're here if anything comes up!
+        </div>
+      `;
+      return;
+    }
+
+    ticketListEl.innerHTML = supportTickets.map(t => `
+      <div class="ticket-item">
+        <div class="ticket-item-top">
+          <span class="ticket-ref">#${t.id}</span>
+          <span class="ticket-status-pill ${t.resolved ? 'status-resolved' : 'status-open'}">
+            ${t.resolved ? '✓ Resolved' : '● ' + t.status}
+          </span>
+        </div>
+        <strong>${t.subject}</strong>
+        <div class="ticket-item-meta">
+          <span>${t.category}</span>
+          <span>${t.time}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  let contactEventsInitialized = false;
+  function initContactEvents() {
+    if (contactEventsInitialized) return;
+    contactEventsInitialized = true;
+
+    // 1. Category Chips selection
+    const chipsContainer = document.getElementById('contact-category-chips');
+    const categoryHiddenInput = document.getElementById('contact-category-value');
+    if (chipsContainer && categoryHiddenInput) {
+      chipsContainer.querySelectorAll('.category-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          chipsContainer.querySelectorAll('.category-chip').forEach(c => c.classList.remove('is-selected'));
+          chip.classList.add('is-selected');
+          categoryHiddenInput.value = chip.dataset.category || 'bug';
+        });
+      });
+    }
+
+    // 2. Character counter for message textarea
+    const msgTextarea = document.getElementById('contact-message');
+    const charCounter = document.getElementById('contact-char-count');
+    if (msgTextarea && charCounter) {
+      msgTextarea.addEventListener('input', () => {
+        const len = msgTextarea.value.length;
+        charCounter.textContent = `${len} / 1500`;
+        if (len >= 1400) {
+          charCounter.style.color = '#f43f5e';
+        } else {
+          charCounter.style.color = 'var(--ink-faint)';
+        }
+      });
+    }
+
+    // 3. Dropzone Mock Attachments
+    const btnAddMockFile = document.getElementById('btn-add-mock-file');
+    const dropzoneDefault = document.getElementById('dropzone-default');
+    const dropzonePreview = document.getElementById('dropzone-preview');
+    const btnRemoveAttachment = document.getElementById('btn-remove-attachment');
+    const contactFileInput = document.getElementById('contact-file-input');
+    const previewFileName = document.getElementById('preview-file-name');
+    const previewFileSize = document.getElementById('preview-file-size');
+
+    if (btnAddMockFile && dropzoneDefault && dropzonePreview) {
+      btnAddMockFile.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropzoneDefault.hidden = true;
+        dropzonePreview.hidden = false;
+        if (previewFileName) previewFileName.textContent = "error_diagnostic_screen.png";
+        if (previewFileSize) previewFileSize.textContent = "1.4 MB · Ready to upload";
+        showToast("Sample screenshot attached! 📎", "📎");
+      });
+    }
+
+    if (btnRemoveAttachment && dropzoneDefault && dropzonePreview) {
+      btnRemoveAttachment.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropzonePreview.hidden = true;
+        dropzoneDefault.hidden = false;
+        if (contactFileInput) contactFileInput.value = '';
+        showToast("Attachment removed.", "×");
+      });
+    }
+
+    if (contactFileInput) {
+      contactFileInput.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (file && dropzoneDefault && dropzonePreview) {
+          dropzoneDefault.hidden = true;
+          dropzonePreview.hidden = false;
+          if (previewFileName) previewFileName.textContent = file.name;
+          if (previewFileSize) previewFileSize.textContent = `${(file.size / (1024 * 1024)).toFixed(1)} MB · Ready to upload`;
+          showToast(`Attached ${file.name} 📎`, "📎");
+        }
+      });
+    }
+
+    // 4. Diagnostics toggle
+    const diagToggle = document.getElementById('contact-include-diagnostics');
+    const diagBadges = document.getElementById('diagnostics-badges');
+    if (diagToggle && diagBadges) {
+      diagToggle.addEventListener('change', () => {
+        diagBadges.style.opacity = diagToggle.checked ? '1' : '0.35';
+      });
+    }
+
+    // 5. Contact Form Submission
+    const contactForm = document.getElementById('contact-support-form');
+    const successState = document.getElementById('contact-success-state');
+    const submitBtn = document.getElementById('contact-submit-btn');
+
+    if (contactForm) {
+      contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const nameVal = document.getElementById('contact-name')?.value.trim();
+        const emailVal = document.getElementById('contact-email')?.value.trim();
+        const subjectVal = document.getElementById('contact-subject')?.value.trim();
+        const categoryVal = document.getElementById('contact-category-value')?.value || 'bug';
+        const urgencyVal = document.getElementById('contact-urgency')?.value || 'medium';
+        const messageVal = document.getElementById('contact-message')?.value.trim();
+
+        if (!nameVal || !emailVal) {
+          showToast("Please provide your name and email address.", "×");
+          return;
+        }
+
+        if (!subjectVal) {
+          showToast("Please provide a short summary/title of the issue.", "×");
+          document.getElementById('contact-subject')?.focus();
+          return;
+        }
+
+        if (!messageVal || messageVal.length < 15) {
+          showToast("Please provide more detail in the description (at least 15 characters).", "×");
+          document.getElementById('contact-message')?.focus();
+          return;
+        }
+
+        // Show spinner state
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          const textSpan = submitBtn.querySelector('.btn-text');
+          if (textSpan) textSpan.textContent = "Routing to Support Engineers...";
+        }
+
+        setTimeout(() => {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            const textSpan = submitBtn.querySelector('.btn-text');
+            if (textSpan) textSpan.textContent = "Submit Problem Report ↗";
+          }
+
+          const ticketNum = Math.floor(10000 + Math.random() * 90000);
+          const ticketId = `TETA-${ticketNum}`;
+
+          const categoryLabels = {
+            bug: "🐛 Bug or Glitch",
+            account: "🔐 Account & Security",
+            media: "▷ Reels & Playback",
+            chat: "💬 Chat & Messages",
+            privacy: "🛡️ Privacy & Safety",
+            feature: "💡 Feedback & Idea"
+          };
+
+          const urgencyLabels = {
+            low: "🌱 Low",
+            medium: "⚡ Medium",
+            high: "🔥 High",
+            critical: "🚨 Critical"
+          };
+
+          const newTicket = {
+            id: ticketId,
+            subject: subjectVal,
+            category: categoryLabels[categoryVal] || "🐛 Bug or Glitch",
+            urgency: urgencyLabels[urgencyVal] || "⚡ Medium",
+            status: "In Review",
+            time: "Just now",
+            resolved: false
+          };
+
+          supportTickets.unshift(newTicket);
+          try {
+            localStorage.setItem('myteta_support_tickets', JSON.stringify(supportTickets));
+          } catch (err) {}
+
+          // Update Receipt Card
+          const rTicketId = document.getElementById('receipt-ticket-id');
+          const rSubject = document.getElementById('receipt-subject');
+          const rCat = document.getElementById('receipt-category');
+          const rUrgency = document.getElementById('receipt-urgency');
+          const rEmail = document.getElementById('receipt-reply-email');
+
+          if (rTicketId) rTicketId.textContent = `#${ticketId}`;
+          if (rSubject) rSubject.textContent = subjectVal;
+          if (rCat) rCat.textContent = newTicket.category;
+          if (rUrgency) rUrgency.textContent = newTicket.urgency;
+          if (rEmail) rEmail.textContent = emailVal;
+
+          // Hide Form & Show Success State
+          contactForm.hidden = true;
+          if (successState) successState.hidden = false;
+
+          renderTicketHistory();
+          showToast(`Problem report submitted (#${ticketId})! Our engineers are on it.`, "✓");
+        }, 500);
+      });
+    }
+
+    // 6. Submit Another Button
+    const btnSubmitAnother = document.getElementById('btn-submit-another');
+    if (btnSubmitAnother && contactForm && successState) {
+      btnSubmitAnother.addEventListener('click', () => {
+        contactForm.reset();
+        if (charCounter) charCounter.textContent = '0 / 1500';
+        if (dropzonePreview) dropzonePreview.hidden = true;
+        if (dropzoneDefault) dropzoneDefault.hidden = false;
+
+        successState.hidden = true;
+        contactForm.hidden = false;
+        renderContactView();
+        document.getElementById('contact-subject')?.focus();
+      });
+    }
+
+    // 7. FAQ Accordion Click Handlers
+    document.querySelectorAll('.faq-question').forEach(qBtn => {
+      qBtn.addEventListener('click', () => {
+        const item = qBtn.closest('.faq-item');
+        if (!item) return;
+        const isOpen = item.classList.contains('is-open');
+        document.querySelectorAll('.faq-item').forEach(i => {
+          i.classList.remove('is-open');
+          const icon = i.querySelector('.faq-toggle-icon');
+          if (icon) icon.textContent = '＋';
+        });
+        if (!isOpen) {
+          item.classList.add('is-open');
+          const icon = item.querySelector('.faq-toggle-icon');
+          if (icon) icon.textContent = '−';
+        }
+      });
+    });
+  }
+
+  // ==========================================
+  // 15. INITIALIZATION
   // ==========================================
   initReelsTheaterEvents();
   initProfileEvents();
   initSettingsEvents();
+  initContactEvents();
   renderStories();
   renderHomeReels();
   renderFeed();
@@ -3638,6 +3978,7 @@
   renderProfile();
   renderChat();
   renderSettings();
+  renderContactView();
   renderNotifications('all');
 
   console.log("My Teta initialized successfully with Supabase and Vercel endpoints configured.");

@@ -53,6 +53,7 @@
 			<button class="nav-tab" data-view="reels" type="button"><span>▷</span>Reels<i class="nav-pill-badge">HOT</i></button>
 			<button class="nav-tab" data-view="chat" type="button"><span>◌</span>Chat<i class="nav-badge">2</i></button>
 			<button class="nav-tab" data-view="settings" type="button"><span>⚙</span>Settings</button>
+			<button class="nav-tab" data-view="contact" type="button"><span>✉</span>Contact</button>
 		</nav>
 		<div class="topbar-actions">
 			<button class="button button-primary button-small topbar-share-btn" data-action="write-post" type="button"><b>＋</b> Share</button>
@@ -92,6 +93,7 @@
 			<button class="rail-link" data-view="chat" type="button"><span>◌</span>Messages <small>2</small></button>
 			<button class="rail-link" data-view="profile" type="button"><span>◉</span>Your profile</button>
 			<button class="rail-link" data-view="settings" type="button"><span>⚙</span>Settings</button>
+			<button class="rail-link" data-view="contact" type="button"><span>✉</span>Contact Us</button>
 			<p class="rail-note"><span>✳</span>Good things happen<br>when we show up.</p>
 		</aside>
 
@@ -868,6 +870,9 @@
 							<strong>My Teta App v2.4.0</strong>
 						</div>
 						<p>Crafted for peaceful, mindful connection.</p>
+						<button class="button button-outline button-small" data-view="contact" type="button" style="width:100%; margin-top:8px;">
+							Need Help? Contact Us ↗
+						</button>
 					</div>
 				</aside>
 
@@ -1514,8 +1519,377 @@
 			</div>
 		</section>
 
-		<aside class="right-rail"><section class="weather-note"><span>☼</span><div><p class="eyebrow">A GOOD DAY TO</p><strong>Take the long way.</strong><small>Brooklyn · 68° and bright</small></div></section><section class="right-section"><div class="section-heading"><div><p class="eyebrow">AROUND YOU</p><h2>People to know</h2></div><button class="text-action" data-view="friends" type="button">More ↗</button></div><div class="suggestion-list" id="suggestion-list"></div></section><section class="birthday-note"><span>✿</span><div><p class="eyebrow">A LITTLE REMINDER</p><strong>Two birthdays this week</strong><button class="text-action" id="birthday-note" type="button">Send a little love ↗</button></div></section><footer class="right-footer">About　Privacy　Community　© 2026 My Teta</footer></aside>
-		<nav class="mobile-nav" aria-label="Mobile navigation"><button class="is-active" data-view="home" aria-label="Home" type="button">⌂</button><button data-view="friends" aria-label="Friends" type="button">♧</button><button class="mobile-create" data-action="write-post" aria-label="Share a moment" type="button">＋</button><button data-view="reels" aria-label="Reels" type="button">▷</button><button data-view="chat" aria-label="Chat" type="button">◌</button><button data-view="settings" aria-label="Settings" type="button">⚙</button></nav>
+		<!-- ==========================================
+		     CONTACT US & SUPPORT VIEW
+		     ========================================== -->
+		<section class="view-panel contact-view" id="contact-view" hidden>
+			<!-- Contact Header Banner -->
+			<div class="contact-header-card">
+				<div class="contact-header-content">
+					<div class="contact-header-tag-row">
+						<span class="contact-badge-pill">
+							<span class="pulse-dot"></span> 24/7 Support Desk
+						</span>
+						<span class="contact-status-chip">
+							<span class="dot-online"></span> Support Engineers Online · Average response &lt; 2 hrs
+						</span>
+					</div>
+					<h1>Have a problem? <span>We're here to help.</span></h1>
+					<p class="contact-subtitle">
+						Whether something isn't working right, you spotted a bug, need help with your account, or have a suggestion to make My Teta better — tell us below and our support team will investigate right away.
+					</p>
+				</div>
+				<div class="contact-header-metrics">
+					<div class="contact-metric-card">
+						<span class="metric-icon">⚡</span>
+						<div>
+							<strong>&lt; 2 hrs</strong>
+							<small>Avg. First Response</small>
+						</div>
+					</div>
+					<div class="contact-metric-card">
+						<span class="metric-icon">🛡️</span>
+						<div>
+							<strong>99.8%</strong>
+							<small>Resolution Rate</small>
+						</div>
+					</div>
+					<div class="contact-metric-card">
+						<span class="metric-icon">🌱</span>
+						<div>
+							<strong>Mindful Care</strong>
+							<small>Human Support Team</small>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Main Contact Layout (Two Columns: Form on Left, Tickets & FAQ on Right) -->
+			<div class="contact-grid">
+				<!-- Left: Problem Report Form Container -->
+				<div class="contact-form-column">
+					<div class="contact-card" id="contact-form-card">
+						<div class="contact-card-header">
+							<div>
+								<h2>Report an Issue or Send a Message</h2>
+								<p class="muted">Fill in the details below. We'll automatically route your ticket to the right engineer or team.</p>
+							</div>
+							<span class="form-step-badge">Direct Line</span>
+						</div>
+
+						<form id="contact-support-form" novalidate>
+							<!-- 1. Category Quick Selector -->
+							<div class="form-group">
+								<label class="form-label-bold">
+									What type of problem are you experiencing? <span class="required-star">*</span>
+								</label>
+								<div class="contact-category-chips" id="contact-category-chips" role="radiogroup" aria-label="Problem Category">
+									<button type="button" class="category-chip is-selected" data-category="bug">
+										<span class="chip-icon">🐛</span>
+										<span class="chip-text">
+											<strong>Bug or Glitch</strong>
+											<small>Feed, reels, or buttons not working</small>
+										</span>
+									</button>
+									<button type="button" class="category-chip" data-category="account">
+										<span class="chip-icon">🔐</span>
+										<span class="chip-text">
+											<strong>Account & Security</strong>
+											<small>Password, login, 2FA, or profile</small>
+										</span>
+									</button>
+									<button type="button" class="category-chip" data-category="media">
+										<span class="chip-icon">▷</span>
+										<span class="chip-text">
+											<strong>Reels & Playback</strong>
+											<small>Video stalled, audio out of sync</small>
+										</span>
+									</button>
+									<button type="button" class="category-chip" data-category="chat">
+										<span class="chip-icon">💬</span>
+										<span class="chip-text">
+											<strong>Chat & Messages</strong>
+											<small>Sending failed or notification issue</small>
+										</span>
+									</button>
+									<button type="button" class="category-chip" data-category="privacy">
+										<span class="chip-icon">🛡️</span>
+										<span class="chip-text">
+											<strong>Privacy & Safety</strong>
+											<small>Report content or circle permissions</small>
+										</span>
+									</button>
+									<button type="button" class="category-chip" data-category="feature">
+										<span class="chip-icon">💡</span>
+										<span class="chip-text">
+											<strong>Feedback & Idea</strong>
+											<small>Feature suggestion or design feedback</small>
+										</span>
+									</button>
+								</div>
+								<input type="hidden" id="contact-category-value" value="bug" required>
+							</div>
+
+							<!-- 2. User Info Row -->
+							<div class="form-grid-2">
+								<div class="form-group">
+									<label for="contact-name">Your Full Name <span class="required-star">*</span></label>
+									<input type="text" id="contact-name" class="contact-input" placeholder="e.g. Maya Chen" required>
+								</div>
+								<div class="form-group">
+									<label for="contact-email">Email to Receive Reply <span class="required-star">*</span></label>
+									<input type="email" id="contact-email" class="contact-input" placeholder="maya@teta.mindful" required>
+								</div>
+							</div>
+
+							<!-- 3. Subject Line & Urgency Row -->
+							<div class="form-grid-2">
+								<div class="form-group">
+									<label for="contact-subject">Summary / Short Title <span class="required-star">*</span></label>
+									<input type="text" id="contact-subject" class="contact-input" placeholder="e.g. Reel upload stalls at 95% on Chrome" maxlength="120" required>
+								</div>
+								<div class="form-group">
+									<label for="contact-urgency">Impact / Urgency Level</label>
+									<div class="select-wrapper">
+										<select id="contact-urgency" class="contact-select">
+											<option value="low">🌱 Low — Minor question or visual glitch</option>
+											<option value="medium" selected>⚡ Medium — Feature impaired but usable</option>
+											<option value="high">🔥 High — Important feature completely broken</option>
+											<option value="critical">🚨 Critical — Blocked from account or security alert</option>
+										</select>
+									</div>
+								</div>
+							</div>
+
+							<!-- 4. Detailed Description Textarea -->
+							<div class="form-group">
+								<div class="label-with-meta">
+									<label for="contact-message">
+										Detailed Description: Tell us what's the problem <span class="required-star">*</span>
+									</label>
+									<span class="char-counter" id="contact-char-count">0 / 1500</span>
+								</div>
+								<textarea id="contact-message" class="contact-textarea" rows="6" maxlength="1500" placeholder="Please describe what happened in as much detail as possible:&#10;1. What were you trying to do?&#10;2. What went wrong or what did you see?&#10;3. Any specific error message or steps to reproduce it?" required></textarea>
+								<p class="field-hint">The more details you provide, the faster our engineering team can isolate and fix the problem for you.</p>
+							</div>
+
+							<!-- 5. Attachment & Screenshot Upload Simulation -->
+							<div class="form-group">
+								<label class="form-label-bold">Add Screenshot or Supporting File (Optional)</label>
+								<div class="contact-dropzone" id="contact-dropzone">
+									<div class="dropzone-content" id="dropzone-default">
+										<span class="dropzone-icon">📷</span>
+										<p><strong>Click to attach a screenshot</strong> or drag and drop image here</p>
+										<small class="muted">PNG, JPG, MP4 or Log files up to 25MB</small>
+										<button type="button" class="button button-outline button-small" id="btn-add-mock-file" style="margin-top:10px;">
+											＋ Attach Sample Screenshot
+										</button>
+									</div>
+									<div class="dropzone-preview" id="dropzone-preview" hidden>
+										<div class="preview-file-item">
+											<span class="preview-file-icon">🖼️</span>
+											<div class="preview-file-info">
+												<strong id="preview-file-name">screenshot-issue.png</strong>
+												<small id="preview-file-size">1.2 MB · Ready to upload</small>
+											</div>
+											<button type="button" class="preview-remove-btn" id="btn-remove-attachment" aria-label="Remove attachment">×</button>
+										</div>
+									</div>
+									<input type="file" id="contact-file-input" hidden accept="image/*,.pdf,.txt,.log">
+								</div>
+							</div>
+
+							<!-- 6. Diagnostic Information Box -->
+							<div class="contact-diagnostics-box">
+								<div class="diagnostics-toggle-row">
+									<label class="toggle-checkbox-label">
+										<input type="checkbox" id="contact-include-diagnostics" checked>
+										<span class="toggle-switch-visual"></span>
+										<span class="toggle-label-text">
+											<strong>Include Anonymous Environment Diagnostics</strong>
+											<small>Helps us understand your OS and browser environment to pinpoint bugs immediately.</small>
+										</span>
+									</label>
+								</div>
+								<div class="diagnostics-badges" id="diagnostics-badges">
+									<span class="diag-badge"><span class="badge-dot"></span> OS: Windows 11</span>
+									<span class="diag-badge"><span class="badge-dot"></span> Browser: Modern WebKit / Blink</span>
+									<span class="diag-badge"><span class="badge-dot"></span> Version: My Teta v2.4.0</span>
+									<span class="diag-badge"><span class="badge-dot"></span> Display: 1920 × 1080</span>
+									<span class="diag-badge"><span class="badge-dot"></span> Theme: Active (Saved)</span>
+								</div>
+							</div>
+
+							<!-- 7. Submit Action Row -->
+							<div class="contact-submit-row">
+								<button type="submit" class="button button-primary contact-submit-btn" id="contact-submit-btn">
+									<span class="btn-text">Submit Problem Report ↗</span>
+									<span class="btn-spinner" hidden></span>
+								</button>
+								<p class="privacy-note">
+									🔒 Your report is encrypted and private. We will strictly use your contact info to resolve this ticket.
+								</p>
+							</div>
+						</form>
+
+						<!-- Success Resolution State Card (shown after submit) -->
+						<div class="contact-success-state" id="contact-success-state" hidden>
+							<div class="success-icon-wrap">
+								<span class="success-sparkle">✓</span>
+							</div>
+							<h3>Problem Report Received!</h3>
+							<p class="success-subtitle">
+								Thank you for letting us know. A support ticket has been created and dispatched to our engineering team.
+							</p>
+							
+							<div class="ticket-receipt-card">
+								<div class="receipt-header">
+									<span>Support Ticket Reference</span>
+									<span class="ticket-id-badge" id="receipt-ticket-id">#TETA-89102</span>
+								</div>
+								<div class="receipt-details">
+									<div class="receipt-row">
+										<span class="r-label">Subject:</span>
+										<strong class="r-val" id="receipt-subject">Audio lag on reel theater</strong>
+									</div>
+									<div class="receipt-row">
+										<span class="r-label">Category:</span>
+										<span class="r-val" id="receipt-category">🐛 Bug or Glitch</span>
+									</div>
+									<div class="receipt-row">
+										<span class="r-label">Urgency:</span>
+										<span class="r-val" id="receipt-urgency">Medium</span>
+									</div>
+									<div class="receipt-row">
+										<span class="r-label">Status:</span>
+										<span class="ticket-status-pill status-open">● In Review · Assigned to Engineer</span>
+									</div>
+									<div class="receipt-row">
+										<span class="r-label">Reply Destination:</span>
+										<span class="r-val" id="receipt-reply-email">maya@teta.mindful</span>
+									</div>
+								</div>
+							</div>
+
+							<div class="success-actions">
+								<button type="button" class="button button-primary" id="btn-submit-another">
+									Submit Another Ticket ＋
+								</button>
+								<button type="button" class="button button-outline" data-view="home">
+									Return to Home Feed ⌂
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Right Column: Support Tickets History & FAQ & Direct Help -->
+				<div class="contact-side-column">
+					<!-- Recent Support Tickets Tracker -->
+					<div class="contact-card ticket-history-card">
+						<div class="side-card-header">
+							<div>
+								<h3>Your Support Tickets</h3>
+								<small class="muted">Track reports you've submitted</small>
+							</div>
+							<span class="ticket-count-badge" id="ticket-history-count">2</span>
+						</div>
+						<div class="ticket-history-list" id="ticket-history-list">
+							<!-- Tickets rendered dynamically -->
+						</div>
+					</div>
+
+					<!-- Direct Contact & Hours Card -->
+					<div class="contact-card direct-channels-card">
+						<div class="side-card-header">
+							<div>
+								<h3>Direct Channels</h3>
+								<small class="muted">Reach us directly</small>
+							</div>
+							<span class="status-indicator-live">● Live</span>
+						</div>
+						<ul class="direct-channels-list">
+							<li>
+								<div class="channel-icon-wrap" style="background: rgba(99, 102, 241, 0.12); color: #6366f1;">✉</div>
+								<div class="channel-details">
+									<strong>Direct Support Email</strong>
+									<p>help@myteta.app</p>
+									<small>Best for logs or screen recordings</small>
+								</div>
+							</li>
+							<li>
+								<div class="channel-icon-wrap" style="background: rgba(6, 182, 212, 0.12); color: #06b6d4;">💬</div>
+								<div class="channel-details">
+									<strong>Live Community Chat</strong>
+									<p><a href="#chat" data-view="chat" class="channel-link">Open Mindful Chat ↗</a></p>
+									<small>Connect with moderators and friends</small>
+								</div>
+							</li>
+							<li>
+								<div class="channel-icon-wrap" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">🛡️</div>
+								<div class="channel-details">
+									<strong>Safety &amp; Privacy Desk</strong>
+									<p>safety@myteta.app</p>
+									<small>Immediate urgent protections</small>
+								</div>
+							</li>
+						</ul>
+					</div>
+
+					<!-- Frequently Asked Questions Accordion -->
+					<div class="contact-card faq-card">
+						<div class="side-card-header">
+							<div>
+								<h3>Quick Solutions & FAQs</h3>
+								<small class="muted">Common questions resolved in seconds</small>
+							</div>
+							<span class="faq-icon-top">💡</span>
+						</div>
+						<div class="faq-accordion" id="faq-accordion">
+							<div class="faq-item is-open">
+								<button type="button" class="faq-question">
+									<span>How do I change my password or activate 2FA?</span>
+									<span class="faq-toggle-icon">−</span>
+								</button>
+								<div class="faq-answer">
+									<p>You can change your password anytime under <a href="#settings" data-view="settings" class="faq-link">Settings &gt; Security &amp; Devices</a>. In the same tab, toggle on Two-Factor Authentication (2FA) for extra account security.</p>
+								</div>
+							</div>
+							<div class="faq-item">
+								<button type="button" class="faq-question">
+									<span>Why is audio muted or video paused on reels?</span>
+									<span class="faq-toggle-icon">＋</span>
+								</button>
+								<div class="faq-answer">
+									<p>To provide a calm, peaceful atmosphere, reels start muted. Press the sound icon or tap <kbd>M</kbd> on your keyboard to toggle audio. Tap <kbd>Space</kbd> or click the video to play/pause anytime.</p>
+								</div>
+							</div>
+							<div class="faq-item">
+								<button type="button" class="faq-question">
+									<span>How do I make my account private?</span>
+									<span class="faq-toggle-icon">＋</span>
+								</button>
+								<div class="faq-answer">
+									<p>Navigate to <a href="#settings" data-view="settings" class="faq-link">Settings &gt; Privacy &amp; Circles</a> and toggle "Private Account". When enabled, only approved friends can see your moments and stories.</p>
+								</div>
+							</div>
+							<div class="faq-item">
+								<button type="button" class="faq-question">
+									<span>How do I download a copy of all my data?</span>
+									<span class="faq-toggle-icon">＋</span>
+								</button>
+								<div class="faq-answer">
+									<p>Go to <a href="#settings" data-view="settings" class="faq-link">Settings &gt; Data &amp; Storage</a> and click "Download Complete JSON Archive" to instantly receive your full account export.</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<aside class="right-rail"><section class="weather-note"><span>☼</span><div><p class="eyebrow">A GOOD DAY TO</p><strong>Take the long way.</strong><small>Brooklyn · 68° and bright</small></div></section><section class="right-section"><div class="section-heading"><div><p class="eyebrow">AROUND YOU</p><h2>People to know</h2></div><button class="text-action" data-view="friends" type="button">More ↗</button></div><div class="suggestion-list" id="suggestion-list"></div></section><section class="birthday-note"><span>✿</span><div><p class="eyebrow">A LITTLE REMINDER</p><strong>Two birthdays this week</strong><button class="text-action" id="birthday-note" type="button">Send a little love ↗</button></div></section><footer class="right-footer"><button class="footer-link-btn" data-view="home" type="button">About</button> · <button class="footer-link-btn" data-view="settings" type="button">Privacy</button> · <button class="footer-link-btn" data-view="contact" type="button">Contact Us</button> · © 2026 My Teta</footer></aside>
+		<nav class="mobile-nav" aria-label="Mobile navigation"><button class="is-active" data-view="home" aria-label="Home" type="button">⌂</button><button data-view="friends" aria-label="Friends" type="button">♧</button><button class="mobile-create" data-action="write-post" aria-label="Share a moment" type="button">＋</button><button data-view="reels" aria-label="Reels" type="button">▷</button><button data-view="chat" aria-label="Chat" type="button">◌</button><button data-view="settings" aria-label="Settings" type="button">⚙</button><button data-view="contact" aria-label="Contact Us" type="button">✉</button></nav>
 	</main>
 
 	<!-- STORY PLAYER THEATER MODAL -->
