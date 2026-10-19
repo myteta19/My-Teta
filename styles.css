@@ -5429,10 +5429,9 @@ input:checked + .slider:before {
 
 /* Contact Grid */
 .contact-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
-  gap: 24px;
-  align-items: start;
+  display: block;
+  max-width: 920px;
+  margin: 0 auto;
 }
 
 .contact-card {
@@ -6071,9 +6070,6 @@ input:checked + .slider:before {
   .contact-header-metrics {
     width: 100%;
     justify-content: space-between;
-  }
-  .contact-grid {
-    grid-template-columns: 1fr;
   }
 }
 

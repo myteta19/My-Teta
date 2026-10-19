@@ -3656,38 +3656,6 @@
   // ==========================================
   // 14. CONTACT US & PROBLEM REPORT SYSTEM
   // ==========================================
-  let supportTickets = [
-    {
-      id: "TETA-49182",
-      subject: "Audio out of sync on reel player in Chrome",
-      category: "🐛 Bug or Glitch",
-      urgency: "⚡ Medium",
-      status: "Resolved",
-      time: "2 days ago",
-      resolved: true
-    },
-    {
-      id: "TETA-53094",
-      subject: "Dark mode accent color preference request",
-      category: "💡 Feedback & Idea",
-      urgency: "🌱 Low",
-      status: "In Review",
-      time: "Yesterday",
-      resolved: false
-    }
-  ];
-
-  // Try loading tickets from localStorage
-  try {
-    const savedTickets = localStorage.getItem('myteta_support_tickets');
-    if (savedTickets) {
-      const parsed = JSON.parse(savedTickets);
-      if (Array.isArray(parsed) && parsed.length) {
-        supportTickets = parsed;
-      }
-    }
-  } catch (e) {}
-
   function renderContactView() {
     // 1. Sync User info into inputs if empty
     const nameInput = document.getElementById('contact-name');
@@ -3700,42 +3668,6 @@
       const cleanHandle = (CURRENT_USER.handle || '@mayainmotion').replace(/^@/, '');
       emailInput.value = `${cleanHandle}@teta.mindful`;
     }
-
-    renderTicketHistory();
-  }
-
-  function renderTicketHistory() {
-    const ticketListEl = document.getElementById('ticket-history-list');
-    const ticketCountEl = document.getElementById('ticket-history-count');
-    if (ticketCountEl) {
-      ticketCountEl.textContent = supportTickets.length;
-    }
-    if (!ticketListEl) return;
-
-    if (supportTickets.length === 0) {
-      ticketListEl.innerHTML = `
-        <div style="text-align:center; padding:20px; color:var(--ink-faint); font-size:0.85rem;">
-          No active support tickets. We're here if anything comes up!
-        </div>
-      `;
-      return;
-    }
-
-    ticketListEl.innerHTML = supportTickets.map(t => `
-      <div class="ticket-item">
-        <div class="ticket-item-top">
-          <span class="ticket-ref">#${t.id}</span>
-          <span class="ticket-status-pill ${t.resolved ? 'status-resolved' : 'status-open'}">
-            ${t.resolved ? '✓ Resolved' : '● ' + t.status}
-          </span>
-        </div>
-        <strong>${t.subject}</strong>
-        <div class="ticket-item-meta">
-          <span>${t.category}</span>
-          <span>${t.time}</span>
-        </div>
-      </div>
-    `).join('');
   }
 
   let contactEventsInitialized = false;
@@ -3921,7 +3853,6 @@
           contactForm.hidden = true;
           if (successState) successState.hidden = false;
 
-          renderTicketHistory();
           showToast(`Problem report submitted (#${ticketId})! Our engineers are on it.`, "✓");
         }, 500);
       });
