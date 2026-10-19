@@ -16,13 +16,13 @@
     cover: "linear-gradient(135deg, #0d9488, #6366f1, #059669)",
     location: "Brooklyn, NY",
     website: "https://mayachen.studio",
-    bio: "Collecting little things: good light, long walks, and meals that turn into stories. ✳",
+    bio: "Collecting little things: good light, long walks, and meals that turn into stories.",
     password: "password123",
     is2FA: false,
     isPrivate: false,
     friendsCount: 248,
-    momentsCount: 86,
-    reelsCount: 14,
+    momentsCount: 3,
+    reelsCount: 2,
     circlesCount: 12
   };
 
@@ -206,6 +206,26 @@
       comments: [
         { id: 1, author: "Maya Chen", avatar: CURRENT_USER.avatar, time: "4h ago", text: "Take me with you next time! Need to touch some moss." },
         { id: 2, author: "Nadia Osei", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80", time: "5h ago", text: "The misty air through the trees is perfection." }
+      ]
+    },
+    {
+      id: 5,
+      author: "Maya Chen",
+      handle: "@mayainmotion",
+      avatar: CURRENT_USER.avatar,
+      caption: "Morning espresso & slow light streaming through the studio windows ☕✨ finding stillness in daily rituals.",
+      image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80",
+      videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
+      category: "atmosphere",
+      likes: 198,
+      views: "24.6k",
+      duration: "0:30",
+      music: "Studio Morning · Warm Acoustic",
+      isLiked: true,
+      isSaved: false,
+      isFollowing: false,
+      comments: [
+        { id: 1, author: "Amara Vance", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80", time: "25m ago", text: "That golden morning light is unmatched Maya!" }
       ]
     }
   ];
@@ -1816,7 +1836,10 @@
       website.textContent = CURRENT_USER.website.replace(/^https?:\/\//, '') + ' ↗';
       website.href = CURRENT_USER.website;
     }
-    if (bioText) bioText.innerHTML = `${CURRENT_USER.bio} <span>✳</span>`;
+    if (bioText) {
+      const cleanBio = CURRENT_USER.bio.replace(/[✳\s]+$/, '');
+      bioText.innerHTML = `${cleanBio} <span>✳</span>`;
+    }
 
     // 2. Global Sync (Left Rail, Header Avatar)
     const railAvatar = document.querySelector('.rail-profile img');
@@ -1849,8 +1872,8 @@
     if (locationInput) locationInput.value = CURRENT_USER.location;
     if (websiteInput) websiteInput.value = CURRENT_USER.website;
     if (bioInput) {
-      bioInput.value = CURRENT_USER.bio;
-      if (bioCharCount) bioCharCount.textContent = CURRENT_USER.bio.length;
+      bioInput.value = CURRENT_USER.bio.replace(/[✳\s]+$/, '');
+      if (bioCharCount) bioCharCount.textContent = bioInput.value.length;
     }
 
     renderProfileMoments();
@@ -1861,11 +1884,13 @@
     const profileFeedList = document.getElementById('profile-feed-list');
     const momentsBadge = document.getElementById('profile-moments-badge');
     const statMomentsCount = document.getElementById('stat-moments-count');
+    const statMomentsLabel = document.getElementById('stat-moments-label');
 
     const myPosts = posts.filter(p => p.author === CURRENT_USER.name);
 
     if (momentsBadge) momentsBadge.textContent = myPosts.length;
     if (statMomentsCount) statMomentsCount.textContent = myPosts.length;
+    if (statMomentsLabel) statMomentsLabel.textContent = myPosts.length === 1 ? 'moment' : 'moments';
 
     if (!profileFeedList) return;
     if (myPosts.length === 0) {
@@ -1887,11 +1912,13 @@
     const reelsGrid = document.getElementById('profile-reels-grid');
     const reelsBadge = document.getElementById('profile-reels-badge');
     const statReelsCount = document.getElementById('stat-reels-count');
+    const statReelsLabel = document.getElementById('stat-reels-label');
 
     const myReels = REELS.filter(r => r.author === CURRENT_USER.name);
 
     if (reelsBadge) reelsBadge.textContent = myReels.length;
     if (statReelsCount) statReelsCount.textContent = myReels.length;
+    if (statReelsLabel) statReelsLabel.textContent = myReels.length === 1 ? 'reel' : 'reels';
 
     if (!reelsGrid) return;
     if (myReels.length === 0) {

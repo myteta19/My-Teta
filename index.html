@@ -521,21 +521,21 @@
 
 				<!-- Stats Row -->
 				<div class="profile-stats">
-					<div class="stat-box" data-view="friends" role="button" tabindex="0">
+					<div class="stat-box" data-view="friends" role="button" tabindex="0" title="View friends & connections">
 						<strong id="stat-friends-count">248</strong>
-						<small>friends</small>
+						<small id="stat-friends-label">friends</small>
 					</div>
-					<div class="stat-box">
-						<strong id="stat-moments-count">86</strong>
-						<small>moments</small>
+					<div class="stat-box" data-profile-tab="moments" role="button" tabindex="0" title="View moments archive">
+						<strong id="stat-moments-count">3</strong>
+						<small id="stat-moments-label">moments</small>
 					</div>
-					<div class="stat-box">
-						<strong id="stat-reels-count">14</strong>
-						<small>reels</small>
+					<div class="stat-box" data-profile-tab="reels" role="button" tabindex="0" title="View reels">
+						<strong id="stat-reels-count">2</strong>
+						<small id="stat-reels-label">reels</small>
 					</div>
-					<div class="stat-box">
+					<div class="stat-box" title="12 active circles">
 						<strong id="stat-circles-count">12</strong>
-						<small>circles</small>
+						<small id="stat-circles-label">circles</small>
 					</div>
 				</div>
 
@@ -545,13 +545,13 @@
 						📸 Moments (<span id="profile-moments-badge">3</span>)
 					</button>
 					<button class="profile-tab" data-profile-tab="reels" type="button">
-						▷ My Reels (<span id="profile-reels-badge">2</span>)
+						▷ Reels (<span id="profile-reels-badge">2</span>)
 					</button>
 					<button class="profile-tab" data-profile-tab="edit" type="button">
 						✏️ Edit Profile
 					</button>
 					<button class="profile-tab" data-profile-tab="password" type="button">
-						🔒 Change Password & Security
+						🔒 Security
 					</button>
 				</div>
 			</div>
@@ -666,8 +666,8 @@
 						<!-- Bio -->
 						<div class="form-group">
 							<label for="edit-bio-input">About You (Bio)</label>
-							<textarea id="edit-bio-input" rows="3" maxlength="220" placeholder="Tell people what brings you calm...">Collecting little things: good light, long walks, and meals that turn into stories. ✳</textarea>
-							<small class="character-count"><span id="bio-char-count">83</span> / 220 characters</small>
+							<textarea id="edit-bio-input" rows="3" maxlength="220" placeholder="Tell people what brings you calm...">Collecting little things: good light, long walks, and meals that turn into stories.</textarea>
+							<small class="character-count"><span id="bio-char-count">81</span> / 220 characters</small>
 						</div>
 
 						<div class="settings-form-actions">
