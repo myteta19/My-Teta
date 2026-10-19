@@ -55,8 +55,29 @@
 		</nav>
 		<div class="topbar-actions">
 			<button class="button button-primary button-small topbar-share-btn" data-action="write-post" type="button"><b>＋</b> Share</button>
-			<button class="icon-button" id="notifications" type="button" aria-label="Notifications" title="Notifications">♧<i class="notification-dot"></i></button>
+			<button class="icon-button" id="notifications" type="button" aria-label="Notifications" title="Notifications" aria-expanded="false" aria-controls="notifications-popup">♧<i class="notification-dot" id="notif-dot"></i></button>
 			<button class="profile-trigger" data-view="profile" type="button" aria-label="Open profile"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&h=96&q=85" alt="Maya Chen"><i class="status-online"></i></button>
+
+			<!-- NOTIFICATIONS & FRIEND REQUESTS POPUP -->
+			<div class="notifications-popup" id="notifications-popup" hidden role="dialog" aria-label="Notifications and Friend Requests">
+				<div class="notif-pop-header">
+					<div class="notif-pop-title">
+						<h3>Notifications</h3>
+						<span class="notif-unread-badge" id="notif-unread-badge">3 new</span>
+					</div>
+					<button class="notif-read-btn" id="mark-all-read" type="button">Mark all read</button>
+				</div>
+				<div class="notif-pop-nav">
+					<button class="notif-nav-btn is-active" data-notif-filter="all" type="button">All <span class="notif-tab-pill" id="badge-all-count">5</span></button>
+					<button class="notif-nav-btn" data-notif-filter="requests" type="button">Friend Requests <span class="notif-tab-pill request-pill" id="badge-req-count">2</span></button>
+				</div>
+				<div class="notif-pop-body" id="notif-pop-body">
+					<!-- Notifications & Friend Requests rendered dynamically -->
+				</div>
+				<div class="notif-pop-footer">
+					<button class="notif-footer-link" data-view="friends" type="button">View all connections & suggestions ↗</button>
+				</div>
+			</div>
 		</div>
 	</header>
 

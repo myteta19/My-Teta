@@ -163,6 +163,98 @@
   let activeChatId = 1;
 
   // ==========================================
+  // NOTIFICATIONS & FRIEND REQUESTS DATA
+  // ==========================================
+  let friendRequests = [
+    {
+      id: "req_1",
+      name: "Elena Rostova",
+      handle: "@elenar",
+      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80",
+      role: "Ceramicist & Sculptor",
+      mutual: "6 mutual friends",
+      time: "12m ago"
+    },
+    {
+      id: "req_2",
+      name: "Marcus Vance",
+      handle: "@marcus_v",
+      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80",
+      role: "Ambient Sound Designer",
+      mutual: "11 mutual friends",
+      time: "2h ago"
+    },
+    {
+      id: "req_3",
+      name: "Kaelen Thorne",
+      handle: "@kaelenthorne",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+      role: "Visual Poet & Typographer",
+      mutual: "4 mutual friends",
+      time: "1d ago"
+    }
+  ];
+
+  let notifications = [
+    {
+      id: "notif_1",
+      type: "like",
+      icon: "♥",
+      iconClass: "icon-like",
+      actor: "Amara Vance",
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
+      text: "loved your moment from Fort Greene rain",
+      time: "8m ago",
+      read: false
+    },
+    {
+      id: "notif_req_1",
+      type: "request",
+      isRequest: true,
+      requestId: "req_1",
+      read: false
+    },
+    {
+      id: "notif_2",
+      type: "comment",
+      icon: "💬",
+      iconClass: "icon-comment",
+      actor: "Lucas Dubois",
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
+      text: "commented: \"The lighting in this ceramic studio capture is magic ✨\"",
+      time: "45m ago",
+      read: false
+    },
+    {
+      id: "notif_req_2",
+      type: "request",
+      isRequest: true,
+      requestId: "req_2",
+      read: false
+    },
+    {
+      id: "notif_3",
+      type: "circle",
+      icon: "✳",
+      iconClass: "icon-circle",
+      actor: "Soren Kierkegaard",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
+      text: "invited you to join the Sunday table circle",
+      time: "3h ago",
+      read: true
+    },
+    {
+      id: "notif_req_3",
+      type: "request",
+      isRequest: true,
+      requestId: "req_3",
+      read: true
+    }
+  ];
+
+  let activeNotifFilter = 'all';
+
+  // ==========================================
   // 2. DOM ELEMENTS
   // ==========================================
   const viewPanels = {
@@ -184,6 +276,17 @@
   const reelTrack = document.getElementById('reel-track');
   const reelsCounter = document.getElementById('reels-counter');
   const toastRegion = document.getElementById('toast-region');
+
+  // Notifications popup elements
+  const notificationsBtn = document.getElementById('notifications');
+  const notificationsPopup = document.getElementById('notifications-popup');
+  const notifPopBody = document.getElementById('notif-pop-body');
+  const notifDot = document.getElementById('notif-dot');
+  const notifUnreadBadge = document.getElementById('notif-unread-badge');
+  const badgeAllCount = document.getElementById('badge-all-count');
+  const badgeReqCount = document.getElementById('badge-req-count');
+  const markAllReadBtn = document.getElementById('mark-all-read');
+  const notifNavBtns = document.querySelectorAll('[data-notif-filter]');
 
   // Modals
   const authModal = document.getElementById('auth-modal');
@@ -699,7 +802,270 @@
   }
 
   // ==========================================
-  // 11. MODALS & TRIGGERS
+  // 11. NOTIFICATIONS & FRIEND REQUESTS SYSTEM
+  // ==========================================
+  function updateNotificationBadges() {
+    const unreadCount = notifications.filter(n => !n.read).length;
+    if (notifUnreadBadge) {
+      notifUnreadBadge.textContent = unreadCount > 0 ? `${unreadCount} new` : "All read";
+    }
+    if (notifDot) {
+      if (unreadCount > 0 || friendRequests.length > 0) {
+        notifDot.classList.remove('is-hidden');
+      } else {
+        notifDot.classList.add('is-hidden');
+      }
+    }
+    if (badgeAllCount) {
+      badgeAllCount.textContent = notifications.length;
+    }
+    if (badgeReqCount) {
+      badgeReqCount.textContent = friendRequests.length;
+    }
+  }
+
+  function attachRequestActionListeners(container) {
+    container.querySelectorAll('[data-accept-id]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const reqId = btn.dataset.acceptId;
+        acceptFriendRequest(reqId);
+      });
+    });
+
+    container.querySelectorAll('[data-decline-id]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const reqId = btn.dataset.declineId;
+        declineFriendRequest(reqId);
+      });
+    });
+  }
+
+  function renderNotifications(filter = activeNotifFilter) {
+    if (!notifPopBody) return;
+    activeNotifFilter = filter;
+
+    // Update active tab buttons
+    notifNavBtns.forEach(btn => {
+      if (btn.dataset.notifFilter === filter) {
+        btn.classList.add('is-active');
+      } else {
+        btn.classList.remove('is-active');
+      }
+    });
+
+    updateNotificationBadges();
+
+    if (filter === 'requests') {
+      if (friendRequests.length === 0) {
+        notifPopBody.innerHTML = `
+          <div class="notif-empty-state">
+            <span class="notif-empty-icon">♧</span>
+            <p>No pending friend requests</p>
+            <small>When people want to connect with you, they'll appear here.</small>
+          </div>
+        `;
+        return;
+      }
+
+      notifPopBody.innerHTML = friendRequests.map(req => `
+        <div class="notif-item request-item" data-request-id="${req.id}">
+          <div class="notif-avatar-col">
+            <img src="${req.avatar}" alt="${req.name}" class="notif-avatar">
+            <span class="notif-badge-icon req-icon">♧</span>
+          </div>
+          <div class="notif-content-col">
+            <div class="notif-meta-row">
+              <strong>${req.name}</strong>
+              <time>${req.time}</time>
+            </div>
+            <p class="notif-text">sent you a connection request</p>
+            <span class="notif-subtext">${req.mutual} · ${req.role}</span>
+            <div class="notif-actions-row">
+              <button class="button button-primary button-small notif-accept-btn" data-accept-id="${req.id}" type="button">Confirm</button>
+              <button class="button button-outline button-small notif-decline-btn" data-decline-id="${req.id}" type="button">Delete</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      attachRequestActionListeners(notifPopBody);
+      return;
+    }
+
+    // Filter === 'all'
+    if (notifications.length === 0) {
+      notifPopBody.innerHTML = `
+        <div class="notif-empty-state">
+          <span class="notif-empty-icon">✓</span>
+          <p>You're all caught up!</p>
+          <small>No recent notifications or updates.</small>
+        </div>
+      `;
+      return;
+    }
+
+    notifPopBody.innerHTML = notifications.map(notif => {
+      if (notif.isRequest) {
+        const req = friendRequests.find(r => r.id === notif.requestId);
+        if (!req) return '';
+        return `
+          <div class="notif-item request-item ${notif.read ? 'is-read' : 'is-unread'}" data-request-id="${req.id}">
+            <div class="notif-avatar-col">
+              <img src="${req.avatar}" alt="${req.name}" class="notif-avatar">
+              <span class="notif-badge-icon req-icon">♧</span>
+            </div>
+            <div class="notif-content-col">
+              <div class="notif-meta-row">
+                <strong>${req.name}</strong>
+                <time>${req.time}</time>
+              </div>
+              <p class="notif-text">sent you a friend request</p>
+              <span class="notif-subtext">${req.mutual} · ${req.role}</span>
+              <div class="notif-actions-row">
+                <button class="button button-primary button-small notif-accept-btn" data-accept-id="${req.id}" type="button">Confirm</button>
+                <button class="button button-outline button-small notif-decline-btn" data-decline-id="${req.id}" type="button">Delete</button>
+              </div>
+            </div>
+            ${!notif.read ? '<span class="unread-blue-dot" aria-label="Unread"></span>' : ''}
+          </div>
+        `;
+      }
+
+      return `
+        <div class="notif-item ${notif.read ? 'is-read' : 'is-unread'}" data-notif-id="${notif.id}">
+          <div class="notif-avatar-col">
+            <img src="${notif.avatar}" alt="${notif.actor}" class="notif-avatar">
+            <span class="notif-badge-icon ${notif.iconClass}">${notif.icon}</span>
+          </div>
+          <div class="notif-content-col">
+            <div class="notif-meta-row">
+              <strong>${notif.actor}</strong>
+              <time>${notif.time}</time>
+            </div>
+            <p class="notif-text">${notif.text}</p>
+          </div>
+          ${!notif.read ? '<span class="unread-blue-dot" aria-label="Unread"></span>' : ''}
+        </div>
+      `;
+    }).join('');
+
+    attachRequestActionListeners(notifPopBody);
+
+    notifPopBody.querySelectorAll('[data-notif-id]').forEach(item => {
+      item.addEventListener('click', () => {
+        const id = item.dataset.notifId;
+        const notif = notifications.find(n => n.id === id);
+        if (notif && !notif.read) {
+          notif.read = true;
+          renderNotifications(activeNotifFilter);
+        }
+      });
+    });
+  }
+
+  function acceptFriendRequest(reqId) {
+    const req = friendRequests.find(r => r.id === reqId);
+    if (!req) return;
+
+    // Add to PEOPLE list
+    const existingPerson = PEOPLE.find(p => p.name === req.name);
+    if (!existingPerson) {
+      PEOPLE.unshift({
+        id: Date.now(),
+        name: req.name,
+        handle: req.handle,
+        role: req.role,
+        mutual: req.mutual,
+        avatar: req.avatar,
+        following: true
+      });
+    } else {
+      existingPerson.following = true;
+    }
+
+    // Remove from friendRequests and notifications
+    friendRequests = friendRequests.filter(r => r.id !== reqId);
+    notifications = notifications.filter(n => !(n.isRequest && n.requestId === reqId));
+
+    CURRENT_USER.friendsCount++;
+    const friendsCountEl = document.querySelector('.profile-stats div strong');
+    if (friendsCountEl) friendsCountEl.textContent = CURRENT_USER.friendsCount;
+
+    renderFriends('following');
+    renderNotifications(activeNotifFilter);
+    showToast(`Connected with ${req.name}! ♧`, '♧');
+  }
+
+  function declineFriendRequest(reqId) {
+    const req = friendRequests.find(r => r.id === reqId);
+    const reqName = req ? req.name : "person";
+    friendRequests = friendRequests.filter(r => r.id !== reqId);
+    notifications = notifications.filter(n => !(n.isRequest && n.requestId === reqId));
+
+    renderNotifications(activeNotifFilter);
+    showToast(`Declined request from ${reqName}`, '×');
+  }
+
+  function markAllNotificationsRead() {
+    notifications.forEach(n => { n.read = true; });
+    renderNotifications(activeNotifFilter);
+    showToast("All notifications marked as read ✓", "✓");
+  }
+
+  // Toggle Notifications Popup
+  if (notificationsBtn && notificationsPopup) {
+    notificationsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isHidden = notificationsPopup.hidden;
+      notificationsPopup.hidden = !isHidden;
+      notificationsBtn.setAttribute('aria-expanded', String(!isHidden));
+      if (isHidden) {
+        renderNotifications(activeNotifFilter);
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!notificationsPopup.hidden && !notificationsPopup.contains(e.target) && e.target !== notificationsBtn && !notificationsBtn.contains(e.target)) {
+        notificationsPopup.hidden = true;
+        notificationsBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !notificationsPopup.hidden) {
+        notificationsPopup.hidden = true;
+        notificationsBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  if (markAllReadBtn) {
+    markAllReadBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      markAllNotificationsRead();
+    });
+  }
+
+  notifNavBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const filter = btn.dataset.notifFilter;
+      renderNotifications(filter);
+    });
+  });
+
+  const notifFooterLink = document.querySelector('.notif-footer-link');
+  if (notifFooterLink) {
+    notifFooterLink.addEventListener('click', () => {
+      if (notificationsPopup) notificationsPopup.hidden = true;
+      switchView('friends');
+    });
+  }
+
+  // ==========================================
+  // 12. MODALS & TRIGGERS
   // ==========================================
   const openReelModalBtn = document.getElementById('open-reel-modal');
   if (openReelModalBtn && reelModal) {
@@ -765,7 +1131,7 @@
   });
 
   // ==========================================
-  // 12. INITIALIZATION
+  // 13. INITIALIZATION
   // ==========================================
   renderStories();
   renderHomeReels();
@@ -773,6 +1139,7 @@
   renderFriends('suggested');
   renderReels();
   renderChat();
+  renderNotifications('all');
 
   console.log("My Teta initialized successfully with Supabase and Vercel endpoints configured.");
 })();
