@@ -2663,6 +2663,59 @@
     });
   });
 
+  const authSigninTab = document.getElementById('auth-signin-tab');
+  const authSignupTab = document.getElementById('auth-signup-tab');
+  const authTitle = document.getElementById('auth-title');
+  const authSubtitle = document.querySelector('.modal-subtitle');
+  const authSubmit = document.getElementById('auth-submit');
+  const authEmailInput = document.getElementById('auth-email');
+
+  function openAuthModal(mode = 'signin') {
+    if (!authModal) return;
+    authModal.hidden = false;
+    switchAuthMode(mode);
+    setTimeout(() => {
+      authEmailInput?.focus();
+    }, 120);
+  }
+
+  function switchAuthMode(mode) {
+    if (mode === 'signup') {
+      authSignupTab?.classList.add('is-selected');
+      authSigninTab?.classList.remove('is-selected');
+      if (authTitle) authTitle.textContent = "Create your account.";
+      if (authSubtitle) authSubtitle.textContent = "Join your circle and share the moments that matter.";
+      if (authSubmit) {
+        authSubmit.innerHTML = `<span>Create account</span> <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+      }
+    } else {
+      authSigninTab?.classList.add('is-selected');
+      authSignupTab?.classList.remove('is-selected');
+      if (authTitle) authTitle.textContent = "Come on in.";
+      if (authSubtitle) authSubtitle.textContent = "A little more you, a little more together.";
+      if (authSubmit) {
+        authSubmit.innerHTML = `<span>Sign in</span> <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+      }
+    }
+  }
+
+  document.getElementById('topbar-login-btn')?.addEventListener('click', () => openAuthModal('signin'));
+  document.getElementById('topbar-signup-btn')?.addEventListener('click', () => openAuthModal('signup'));
+  document.getElementById('rail-auth-btn')?.addEventListener('click', () => openAuthModal('signin'));
+  authSigninTab?.addEventListener('click', () => switchAuthMode('signin'));
+  authSignupTab?.addEventListener('click', () => switchAuthMode('signup'));
+
+  document.querySelectorAll('[data-oauth]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const provider = btn.dataset.oauth;
+      showToast(`Connecting securely to ${provider}...`, "🔒");
+      setTimeout(() => {
+        if (authModal) authModal.hidden = true;
+        showToast(`Connected successfully with ${provider}!`, "✨");
+      }, 1000);
+    });
+  });
+
   document.querySelectorAll('[data-close-modal]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (authModal) authModal.hidden = true;
@@ -2670,13 +2723,26 @@
     });
   });
 
+  [authModal, reelModal].forEach(modal => {
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.hidden = true;
+      });
+    }
+  });
+
   const authForm = document.getElementById('auth-form');
   if (authForm) {
     authForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const email = document.getElementById('auth-email').value;
+      const isSignup = authSignupTab?.classList.contains('is-selected');
       if (authModal) authModal.hidden = true;
-      showToast(`Welcome back, ${email.split('@')[0]}!`, "✳");
+      if (isSignup) {
+        showToast(`Account created! Welcome to My Teta, ${email.split('@')[0]}!`, "🎉");
+      } else {
+        showToast(`Welcome back, ${email.split('@')[0]}!`, "✨");
+      }
     });
   }
 
