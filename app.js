@@ -15,7 +15,6 @@
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90",
     cover: "linear-gradient(135deg, #0d9488, #6366f1, #059669)",
     location: "Brooklyn, NY",
-    website: "https://mayachen.studio",
     bio: "Collecting little things: good light, long walks, and meals that turn into stories.",
     password: "password123",
     is2FA: false,
@@ -2689,7 +2688,6 @@
     const displayName = document.getElementById('profile-display-name');
     const handle = document.getElementById('profile-handle');
     const location = document.getElementById('profile-location');
-    const website = document.getElementById('profile-website');
     const bioText = document.getElementById('profile-bio-text');
 
     if (coverBanner) coverBanner.style.background = CURRENT_USER.cover;
@@ -2697,10 +2695,6 @@
     if (displayName) displayName.textContent = CURRENT_USER.name;
     if (handle) handle.textContent = CURRENT_USER.handle;
     if (location) location.textContent = CURRENT_USER.location;
-    if (website) {
-      website.textContent = CURRENT_USER.website.replace(/^https?:\/\//, '') + ' ↗';
-      website.href = CURRENT_USER.website;
-    }
     if (bioText) {
       const cleanBio = CURRENT_USER.bio.replace(/[✳\s]+$/, '');
       bioText.innerHTML = `${cleanBio} <span>✳</span>`;
@@ -2728,14 +2722,12 @@
     const nameInput = document.getElementById('edit-name-input');
     const handleInput = document.getElementById('edit-handle-input');
     const locationInput = document.getElementById('edit-location-input');
-    const websiteInput = document.getElementById('edit-website-input');
     const bioInput = document.getElementById('edit-bio-input');
     const bioCharCount = document.getElementById('bio-char-count');
 
     if (nameInput) nameInput.value = CURRENT_USER.name;
     if (handleInput) handleInput.value = CURRENT_USER.handle.replace(/^@/, '');
     if (locationInput) locationInput.value = CURRENT_USER.location;
-    if (websiteInput) websiteInput.value = CURRENT_USER.website;
     if (bioInput) {
       bioInput.value = CURRENT_USER.bio.replace(/[✳\s]+$/, '');
       if (bioCharCount) bioCharCount.textContent = bioInput.value.length;
@@ -2936,7 +2928,6 @@
         const nameVal = document.getElementById('edit-name-input').value.trim();
         const handleVal = document.getElementById('edit-handle-input').value.trim();
         const locationVal = document.getElementById('edit-location-input').value.trim();
-        const websiteVal = document.getElementById('edit-website-input').value.trim();
         const bioVal = document.getElementById('edit-bio-input').value.trim();
 
         if (!nameVal) {
@@ -2949,7 +2940,6 @@
         CURRENT_USER.name = nameVal;
         CURRENT_USER.handle = handleVal.startsWith('@') ? handleVal : `@${handleVal}`;
         CURRENT_USER.location = locationVal || "Brooklyn, NY";
-        CURRENT_USER.website = websiteVal || "https://mayachen.studio";
         CURRENT_USER.bio = bioVal || "Collecting little moments.";
         CURRENT_USER.avatar = selectedAvatarUrl;
         CURRENT_USER.cover = selectedCoverGradient;
@@ -3263,14 +3253,12 @@
     const nameInput = document.getElementById('setting-name-input');
     const handleInput = document.getElementById('setting-handle-input');
     const locationInput = document.getElementById('setting-location-input');
-    const websiteInput = document.getElementById('setting-website-input');
     const bioInput = document.getElementById('setting-bio-input');
     const bioCount = document.getElementById('settings-bio-char-count');
 
     if (nameInput) nameInput.value = CURRENT_USER.name;
     if (handleInput) handleInput.value = CURRENT_USER.handle.replace(/^@/, '');
     if (locationInput) locationInput.value = CURRENT_USER.location;
-    if (websiteInput) websiteInput.value = CURRENT_USER.website;
     if (bioInput) {
       bioInput.value = CURRENT_USER.bio.replace(/[✳\s]+$/, '');
       if (bioCount) bioCount.textContent = bioInput.value.length;
@@ -3360,7 +3348,6 @@
         const nameVal = document.getElementById('setting-name-input')?.value.trim();
         const handleVal = document.getElementById('setting-handle-input')?.value.trim().replace(/^@/, '');
         const locVal = document.getElementById('setting-location-input')?.value.trim();
-        const webVal = document.getElementById('setting-website-input')?.value.trim();
         const bioVal = document.getElementById('setting-bio-input')?.value.trim();
 
         if (!nameVal || !handleVal) {
@@ -3372,7 +3359,6 @@
         CURRENT_USER.name = nameVal;
         CURRENT_USER.handle = `@${handleVal}`;
         CURRENT_USER.location = locVal || "Brooklyn, NY";
-        CURRENT_USER.website = webVal || "https://mayachen.studio";
         CURRENT_USER.bio = bioVal || "Collecting little things.";
 
         posts.forEach(p => {
