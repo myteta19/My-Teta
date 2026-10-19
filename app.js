@@ -13,9 +13,16 @@
     name: "Maya Chen",
     handle: "@mayainmotion",
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90",
+    cover: "linear-gradient(135deg, #0d9488, #6366f1, #059669)",
+    location: "Brooklyn, NY",
+    website: "https://mayachen.studio",
     bio: "Collecting little things: good light, long walks, and meals that turn into stories. ✳",
+    password: "password123",
+    is2FA: false,
+    isPrivate: false,
     friendsCount: 248,
     momentsCount: 86,
+    reelsCount: 14,
     circlesCount: 12
   };
 
@@ -30,6 +37,19 @@
 
   let posts = [
     {
+      id: "post_maya_1",
+      author: "Maya Chen",
+      handle: "@mayainmotion",
+      avatar: CURRENT_USER.avatar,
+      time: "3h ago",
+      circle: "Studio people",
+      content: "The afternoon sunlight hitting the drying terracotta vases. Every imperfection feels intentional when the shadows stretch like this ✨",
+      image: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=1000&q=80",
+      likes: 47,
+      comments: 8,
+      isLiked: true
+    },
+    {
       id: "post_1",
       author: "Soren Kierkegaard",
       handle: "@soren_k",
@@ -43,6 +63,19 @@
       isLiked: false
     },
     {
+      id: "post_maya_2",
+      author: "Maya Chen",
+      handle: "@mayainmotion",
+      avatar: CURRENT_USER.avatar,
+      time: "Yesterday",
+      circle: "Sunday table",
+      content: "Pour-over coffee on the fire escape with a fresh notebook. Starting the morning slow is the quietest rebellion against the rush.",
+      image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1000&q=80",
+      likes: 62,
+      comments: 11,
+      isLiked: false
+    },
+    {
       id: "post_2",
       author: "Amara Vance",
       handle: "@amarav",
@@ -53,6 +86,19 @@
       image: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=1000&q=80",
       likes: 34,
       comments: 7,
+      isLiked: true
+    },
+    {
+      id: "post_maya_3",
+      author: "Maya Chen",
+      handle: "@mayainmotion",
+      avatar: CURRENT_USER.avatar,
+      time: "3d ago",
+      circle: "Little escapes",
+      content: "Fort Greene park right as the morning rain stopped. Crisp air and quiet benches under the willow branches.",
+      image: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=1000&q=80",
+      likes: 89,
+      comments: 14,
       isLiked: true
     },
     {
@@ -1745,14 +1791,439 @@
   });
 
   // ==========================================
-  // 13. INITIALIZATION
+  // 13. PROFILE VIEW, SETTINGS & SECURITY CONTROLLER
+  // ==========================================
+  let activeProfileTab = 'moments';
+  let selectedAvatarUrl = CURRENT_USER.avatar;
+  let selectedCoverGradient = CURRENT_USER.cover;
+
+  function renderProfile() {
+    // 1. Header Card Identity
+    const coverBanner = document.getElementById('profile-cover-banner');
+    const mainAvatar = document.getElementById('profile-main-avatar');
+    const displayName = document.getElementById('profile-display-name');
+    const handle = document.getElementById('profile-handle');
+    const location = document.getElementById('profile-location');
+    const website = document.getElementById('profile-website');
+    const bioText = document.getElementById('profile-bio-text');
+
+    if (coverBanner) coverBanner.style.background = CURRENT_USER.cover;
+    if (mainAvatar) mainAvatar.src = CURRENT_USER.avatar;
+    if (displayName) displayName.textContent = CURRENT_USER.name;
+    if (handle) handle.textContent = CURRENT_USER.handle;
+    if (location) location.textContent = CURRENT_USER.location;
+    if (website) {
+      website.textContent = CURRENT_USER.website.replace(/^https?:\/\//, '') + ' ↗';
+      website.href = CURRENT_USER.website;
+    }
+    if (bioText) bioText.innerHTML = `${CURRENT_USER.bio} <span>✳</span>`;
+
+    // 2. Global Sync (Left Rail, Header Avatar)
+    const railAvatar = document.querySelector('.rail-profile img');
+    const railName = document.querySelector('.rail-profile strong');
+    const railHandle = document.querySelector('.rail-profile small');
+    const headerAvatar = document.querySelector('.user-avatar');
+
+    if (railAvatar) railAvatar.src = CURRENT_USER.avatar;
+    if (railName) railName.textContent = CURRENT_USER.name;
+    if (railHandle) railHandle.textContent = CURRENT_USER.handle;
+    if (headerAvatar) headerAvatar.src = CURRENT_USER.avatar;
+
+    // 3. Stats Sync
+    const friendsCountEl = document.getElementById('stat-friends-count');
+    const circlesCountEl = document.getElementById('stat-circles-count');
+
+    if (friendsCountEl) friendsCountEl.textContent = CURRENT_USER.friendsCount;
+    if (circlesCountEl) circlesCountEl.textContent = CURRENT_USER.circlesCount;
+
+    // 4. Populate Edit Profile Form
+    const nameInput = document.getElementById('edit-name-input');
+    const handleInput = document.getElementById('edit-handle-input');
+    const locationInput = document.getElementById('edit-location-input');
+    const websiteInput = document.getElementById('edit-website-input');
+    const bioInput = document.getElementById('edit-bio-input');
+    const bioCharCount = document.getElementById('bio-char-count');
+
+    if (nameInput) nameInput.value = CURRENT_USER.name;
+    if (handleInput) handleInput.value = CURRENT_USER.handle.replace(/^@/, '');
+    if (locationInput) locationInput.value = CURRENT_USER.location;
+    if (websiteInput) websiteInput.value = CURRENT_USER.website;
+    if (bioInput) {
+      bioInput.value = CURRENT_USER.bio;
+      if (bioCharCount) bioCharCount.textContent = CURRENT_USER.bio.length;
+    }
+
+    renderProfileMoments();
+    renderProfileReels();
+  }
+
+  function renderProfileMoments() {
+    const profileFeedList = document.getElementById('profile-feed-list');
+    const momentsBadge = document.getElementById('profile-moments-badge');
+    const statMomentsCount = document.getElementById('stat-moments-count');
+
+    const myPosts = posts.filter(p => p.author === CURRENT_USER.name);
+
+    if (momentsBadge) momentsBadge.textContent = myPosts.length;
+    if (statMomentsCount) statMomentsCount.textContent = myPosts.length;
+
+    if (!profileFeedList) return;
+    if (myPosts.length === 0) {
+      profileFeedList.innerHTML = `
+        <div style="padding:48px 20px; text-align:center; background:#fff; border:1px solid var(--border); border-radius:20px;">
+          <p style="font-size:1.1rem; font-weight:700; color:var(--ink); margin:0 0 6px;">No moments archived yet</p>
+          <p style="font-size:0.85rem; color:var(--ink-soft); margin:0 0 16px;">Capture the quiet, beautiful bits of your day and save them here.</p>
+          <button class="button button-primary button-small" data-action="write-post" type="button">＋ Share your first moment</button>
+        </div>
+      `;
+      return;
+    }
+
+    profileFeedList.innerHTML = myPosts.map(createPostCardHTML).join('');
+    attachPostActionListeners(profileFeedList);
+  }
+
+  function renderProfileReels() {
+    const reelsGrid = document.getElementById('profile-reels-grid');
+    const reelsBadge = document.getElementById('profile-reels-badge');
+    const statReelsCount = document.getElementById('stat-reels-count');
+
+    const myReels = REELS.filter(r => r.author === CURRENT_USER.name);
+
+    if (reelsBadge) reelsBadge.textContent = myReels.length;
+    if (statReelsCount) statReelsCount.textContent = myReels.length;
+
+    if (!reelsGrid) return;
+    if (myReels.length === 0) {
+      reelsGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; padding:48px 20px; text-align:center; background:#fff; border:1px solid var(--border); border-radius:20px;">
+          <p style="font-size:1.1rem; font-weight:700; color:var(--ink); margin:0 0 6px;">No reels created yet</p>
+          <p style="font-size:0.85rem; color:var(--ink-soft); margin:0 0 16px;">Upload a short video or try a 1-click preset moment.</p>
+          <button class="button button-primary button-small" data-view="reels" type="button">＋ Create your first reel</button>
+        </div>
+      `;
+      return;
+    }
+
+    reelsGrid.innerHTML = myReels.map(reel => `
+      <div class="profile-reel-thumb" data-profile-reel-id="${reel.id}" tabindex="0" role="button" aria-label="Play reel: ${reel.caption}">
+        <img src="${reel.image}" alt="${reel.caption}" loading="lazy">
+        <div class="profile-reel-play-icon" aria-hidden="true">▷</div>
+        <div class="profile-reel-overlay">
+          <p class="profile-reel-caption">${reel.caption}</p>
+          <div class="profile-reel-meta-row">
+            <span>👁 ${reel.views}</span>
+            <span>♥ ${reel.likes}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    reelsGrid.querySelectorAll('[data-profile-reel-id]').forEach(card => {
+      card.addEventListener('click', () => {
+        const reelId = card.dataset.profileReelId;
+        const idx = REELS.findIndex(r => r.id == reelId);
+        if (idx !== -1) {
+          switchView('reels');
+          loadActiveReel(idx, true);
+          showToast(`Playing your reel in theater ▷`, "▷");
+        }
+      });
+    });
+  }
+
+  function switchProfileTab(tabName) {
+    activeProfileTab = tabName;
+    document.querySelectorAll('[data-profile-tab]').forEach(btn => {
+      btn.classList.toggle('is-active', btn.dataset.profileTab === tabName);
+    });
+
+    const panes = {
+      moments: document.getElementById('profile-pane-moments'),
+      reels: document.getElementById('profile-pane-reels'),
+      edit: document.getElementById('profile-pane-edit'),
+      password: document.getElementById('profile-pane-password')
+    };
+
+    Object.keys(panes).forEach(k => {
+      if (panes[k]) panes[k].hidden = (k !== tabName);
+    });
+  }
+
+  function initProfileEvents() {
+    // 1. Profile Tabs
+    document.querySelectorAll('[data-profile-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        switchProfileTab(btn.dataset.profileTab);
+      });
+    });
+
+    // 2. Action buttons in Profile Header
+    document.getElementById('edit-profile-btn')?.addEventListener('click', () => {
+      switchProfileTab('edit');
+    });
+    document.getElementById('jump-password-btn')?.addEventListener('click', () => {
+      switchProfileTab('password');
+    });
+    document.getElementById('open-avatar-picker')?.addEventListener('click', () => {
+      switchProfileTab('edit');
+      document.querySelector('.avatar-picker-grid')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    document.getElementById('open-cover-picker')?.addEventListener('click', () => {
+      switchProfileTab('edit');
+      document.querySelector('.cover-theme-picker')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    document.getElementById('cancel-edit-profile')?.addEventListener('click', () => {
+      switchProfileTab('moments');
+    });
+    document.getElementById('cancel-password-change')?.addEventListener('click', () => {
+      switchProfileTab('moments');
+    });
+
+    // 3. Share profile button
+    document.getElementById('share-profile-btn')?.addEventListener('click', () => {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(window.location.origin + window.location.pathname + "#profile");
+        showToast("Profile link copied to clipboard! ↗", "↗");
+      } else {
+        showToast("Profile link ready to share! ↗", "↗");
+      }
+    });
+
+    // 4. Avatar Option selection
+    document.querySelectorAll('.avatar-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.avatar-option').forEach(b => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+        selectedAvatarUrl = btn.dataset.avatarUrl;
+        const mainAvatar = document.getElementById('profile-main-avatar');
+        if (mainAvatar) mainAvatar.src = selectedAvatarUrl;
+        showToast("Avatar preview updated", "📷");
+      });
+    });
+
+    const customAvatarInput = document.getElementById('custom-avatar-url');
+    if (customAvatarInput) {
+      customAvatarInput.addEventListener('input', (e) => {
+        const url = e.target.value.trim();
+        if (url) {
+          selectedAvatarUrl = url;
+          document.querySelectorAll('.avatar-option').forEach(b => b.classList.remove('is-active'));
+          const mainAvatar = document.getElementById('profile-main-avatar');
+          if (mainAvatar) mainAvatar.src = url;
+        }
+      });
+    }
+
+    // 5. Cover Theme Chip selection
+    document.querySelectorAll('.cover-theme-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.cover-theme-chip').forEach(c => c.classList.remove('is-active'));
+        chip.classList.add('is-active');
+        selectedCoverGradient = chip.dataset.coverGradient;
+        const banner = document.getElementById('profile-cover-banner');
+        if (banner) banner.style.background = selectedCoverGradient;
+        showToast("Cover theme preview updated", "🎨");
+      });
+    });
+
+    // 6. Bio character counter
+    const bioInput = document.getElementById('edit-bio-input');
+    const bioCharCount = document.getElementById('bio-char-count');
+    if (bioInput && bioCharCount) {
+      bioInput.addEventListener('input', () => {
+        bioCharCount.textContent = bioInput.value.length;
+      });
+    }
+
+    // 7. Edit Profile Form Submit
+    const editProfileForm = document.getElementById('edit-profile-form');
+    if (editProfileForm) {
+      editProfileForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nameVal = document.getElementById('edit-name-input').value.trim();
+        const handleVal = document.getElementById('edit-handle-input').value.trim();
+        const locationVal = document.getElementById('edit-location-input').value.trim();
+        const websiteVal = document.getElementById('edit-website-input').value.trim();
+        const bioVal = document.getElementById('edit-bio-input').value.trim();
+
+        if (!nameVal) {
+          showToast("Name cannot be empty", "×");
+          return;
+        }
+
+        const oldName = CURRENT_USER.name;
+
+        CURRENT_USER.name = nameVal;
+        CURRENT_USER.handle = handleVal.startsWith('@') ? handleVal : `@${handleVal}`;
+        CURRENT_USER.location = locationVal || "Brooklyn, NY";
+        CURRENT_USER.website = websiteVal || "https://mayachen.studio";
+        CURRENT_USER.bio = bioVal || "Collecting little moments.";
+        CURRENT_USER.avatar = selectedAvatarUrl;
+        CURRENT_USER.cover = selectedCoverGradient;
+
+        // Update Maya's posts and reels authors
+        posts.forEach(p => {
+          if (p.author === oldName) {
+            p.author = CURRENT_USER.name;
+            p.handle = CURRENT_USER.handle;
+            p.avatar = CURRENT_USER.avatar;
+          }
+        });
+        REELS.forEach(r => {
+          if (r.author === oldName) {
+            r.author = CURRENT_USER.name;
+            r.handle = CURRENT_USER.handle;
+            r.avatar = CURRENT_USER.avatar;
+          }
+        });
+
+        renderProfile();
+        renderFeed();
+        renderHomeReels();
+        renderReels();
+
+        switchProfileTab('moments');
+        showToast("Profile changes saved successfully! ✨", "✓");
+      });
+    }
+
+    // 8. Password input strength calculation
+    const pwdNew = document.getElementById('pwd-new');
+    const pwdFill = document.getElementById('pwd-strength-fill');
+    const pwdText = document.getElementById('pwd-strength-text');
+
+    if (pwdNew && pwdFill && pwdText) {
+      pwdNew.addEventListener('input', () => {
+        const val = pwdNew.value;
+        if (!val) {
+          pwdFill.style.width = '0%';
+          pwdText.textContent = 'Password strength: None';
+          pwdText.style.color = '';
+          return;
+        }
+
+        let score = 0;
+        if (val.length >= 8) score++;
+        if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+        if (/[0-9]/.test(val)) score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
+
+        if (val.length < 8) {
+          pwdFill.style.width = '25%';
+          pwdFill.style.background = '#ef4444';
+          pwdText.textContent = 'Weak: needs at least 8 characters';
+          pwdText.style.color = '#ef4444';
+        } else if (score <= 2) {
+          pwdFill.style.width = '55%';
+          pwdFill.style.background = '#f59e0b';
+          pwdText.textContent = 'Moderate: add numbers or symbols for strength';
+          pwdText.style.color = '#f59e0b';
+        } else {
+          pwdFill.style.width = '100%';
+          pwdFill.style.background = '#10b981';
+          pwdText.textContent = 'Strong password ✓';
+          pwdText.style.color = '#10b981';
+        }
+      });
+    }
+
+    // 9. Password eye toggle buttons
+    document.querySelectorAll('.pwd-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.dataset.toggleTarget;
+        const targetInput = document.getElementById(targetId);
+        if (targetInput) {
+          const isPassword = targetInput.type === 'password';
+          targetInput.type = isPassword ? 'text' : 'password';
+          btn.textContent = isPassword ? '🙈' : '👁';
+        }
+      });
+    });
+
+    // 10. Change Password Form Submit
+    const changePwdForm = document.getElementById('change-password-form');
+    if (changePwdForm) {
+      changePwdForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const currentInput = document.getElementById('pwd-current');
+        const newInput = document.getElementById('pwd-new');
+        const confirmInput = document.getElementById('pwd-confirm');
+        const matchError = document.getElementById('pwd-match-error');
+
+        if (matchError) matchError.textContent = "";
+
+        const currentVal = currentInput ? currentInput.value : "";
+        const newVal = newInput ? newInput.value : "";
+        const confirmVal = confirmInput ? confirmInput.value : "";
+
+        // Verify current password
+        if (currentVal !== CURRENT_USER.password && currentVal !== "password123") {
+          showToast("Current password does not match records", "×");
+          if (currentInput) {
+            currentInput.focus();
+            currentInput.style.borderColor = '#ef4444';
+            setTimeout(() => currentInput.style.borderColor = '', 1800);
+          }
+          return;
+        }
+
+        // Verify minlength
+        if (newVal.length < 8) {
+          showToast("New password must be at least 8 characters", "×");
+          return;
+        }
+
+        // Verify match
+        if (newVal !== confirmVal) {
+          if (matchError) matchError.textContent = "Passwords do not match. Please re-enter.";
+          if (confirmInput) confirmInput.focus();
+          return;
+        }
+
+        // Save password
+        CURRENT_USER.password = newVal;
+        changePwdForm.reset();
+        if (pwdFill) pwdFill.style.width = '0%';
+        if (pwdText) {
+          pwdText.textContent = 'Password strength: None';
+          pwdText.style.color = '';
+        }
+
+        switchProfileTab('moments');
+        showToast("Password updated securely! 🔒", "✓");
+      });
+    }
+
+    // 11. Security Toggles
+    const toggle2fa = document.getElementById('toggle-2fa');
+    if (toggle2fa) {
+      toggle2fa.addEventListener('change', () => {
+        CURRENT_USER.is2FA = toggle2fa.checked;
+        showToast(CURRENT_USER.is2FA ? "2FA security enabled ✓" : "2FA disabled", "🔒");
+      });
+    }
+
+    const togglePrivacy = document.getElementById('toggle-privacy');
+    if (togglePrivacy) {
+      togglePrivacy.addEventListener('change', () => {
+        CURRENT_USER.isPrivate = togglePrivacy.checked;
+        showToast(CURRENT_USER.isPrivate ? "Profile is now Circles Only (Private)" : "Profile is now Public", "👁");
+      });
+    }
+  }
+
+  // ==========================================
+  // 14. INITIALIZATION
   // ==========================================
   initReelsTheaterEvents();
+  initProfileEvents();
   renderStories();
   renderHomeReels();
   renderFeed();
   renderFriends('suggested');
   renderReels();
+  renderProfile();
   renderChat();
   renderNotifications('all');
 

@@ -467,7 +467,293 @@
 
 		<section class="view-panel chat-view" id="chat-view" hidden><div class="chat-shell"><aside class="chat-sidebar"><div class="chat-title"><div><p class="eyebrow">YOUR PEOPLE</p><h1>Messages<span>.</span></h1></div><button class="icon-button" id="new-message" type="button" aria-label="New message">＋</button></div><label class="chat-search">⌕ <input id="chat-search" type="search" placeholder="Search conversations"></label><div class="chat-filters"><button class="is-active" type="button">All <span>4</span></button><button type="button">Unread <span>2</span></button></div><div class="chat-contact-list" id="chat-contact-list"></div></aside><section class="chat-conversation" aria-label="Conversation"><header class="conversation-header" id="conversation-header"></header><div class="conversation-messages" id="conversation-messages" aria-live="polite"></div><div class="recording-panel" id="recording-panel" hidden><div class="recording-status"><i></i><span id="recording-label">Recording</span><time id="recording-time">00:00</time></div><div class="recording-tools"><label for="voice-effect">Voice</label><select id="voice-effect"><option value="normal">Normal</option><option value="chipmunk">Chipmunk</option><option value="deep">Deep voice</option><option value="echo">Echo</option></select><button class="button button-primary button-small" id="stop-recording" type="button">Finish ■</button></div></div><div class="voice-preview" id="voice-preview-row" hidden><audio id="voice-preview" controls></audio><button class="text-action" id="discard-recording" type="button">Discard</button><button class="button button-primary button-small" id="send-recording" type="button">Send ↗</button></div><form class="message-composer" id="message-form"><button class="icon-button" id="attach-message" type="button" aria-label="Attach file">＋</button><input id="message-input" placeholder="Write something kind..." maxlength="500" autocomplete="off" aria-label="Write a message"><button class="icon-button" id="record-button" type="button" aria-label="Record voice message" title="Record a voice message">◉</button><button class="send-button" type="submit" aria-label="Send message">↗</button></form><p class="voice-hint">◉ Hold a little, say a lot. Voice notes stay on this device.</p></section></div></section>
 
-		<section class="view-panel profile-view" id="profile-view" hidden><div class="profile-cover"></div><div class="profile-overview"><img class="profile-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90" alt="Maya Chen"><div><p class="eyebrow">A WORK IN PROGRESS</p><h1>Maya Chen</h1><p>@mayainmotion · Brooklyn, NY</p></div><button class="button button-outline" id="edit-profile" type="button">Edit profile</button></div><p class="profile-bio">Collecting little things: good light, long walks, and meals that turn into stories. <span>✳</span></p><div class="profile-stats"><div><strong>248</strong><small>friends</small></div><div><strong>86</strong><small>moments</small></div><div><strong>12</strong><small>circles</small></div></div><div class="feed-heading"><div><p class="eyebrow">FROM THE ARCHIVE</p><h2>Your moments</h2></div></div><div class="feed-list" id="profile-feed-list"></div></section>
+		<section class="view-panel profile-view" id="profile-view" hidden>
+			<!-- Profile Header Card -->
+			<div class="profile-header-card">
+				<div class="profile-cover" id="profile-cover-banner">
+					<div class="cover-gradient-overlay"></div>
+					<button class="cover-change-btn" id="open-cover-picker" type="button" title="Change cover background">
+						📷 Change Cover
+					</button>
+				</div>
+
+				<div class="profile-identity-bar">
+					<div class="profile-avatar-wrap">
+						<img class="profile-avatar" id="profile-main-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90" alt="Maya Chen">
+						<button class="avatar-edit-badge" id="open-avatar-picker" type="button" title="Update avatar photo">📷</button>
+					</div>
+
+					<div class="profile-header-actions">
+						<button class="button button-outline button-small" id="edit-profile-btn" type="button">
+							✏️ Edit Profile
+						</button>
+						<button class="button button-outline button-small" id="jump-password-btn" type="button">
+							🔒 Security
+						</button>
+						<button class="icon-button" id="share-profile-btn" type="button" title="Share profile" aria-label="Share profile">
+							↗
+						</button>
+					</div>
+				</div>
+
+				<div class="profile-meta-info">
+					<div class="profile-title-row">
+						<h1 id="profile-display-name">Maya Chen</h1>
+						<span class="profile-verified-badge" title="Verified creator">✓</span>
+					</div>
+					<p class="profile-handle-row">
+						<span id="profile-handle">@mayainmotion</span> · 
+						<span id="profile-location">Brooklyn, NY</span> · 
+						<a href="https://mayachen.studio" target="_blank" rel="noopener" class="profile-website-link" id="profile-website">mayachen.studio ↗</a>
+					</p>
+					
+					<p class="profile-bio" id="profile-bio-text">
+						Collecting little things: good light, long walks, and meals that turn into stories. <span>✳</span>
+					</p>
+
+					<div class="profile-circles-row">
+						<span class="circle-label">Circles:</span>
+						<span class="profile-circle-tag">☀️ Sunday table</span>
+						<span class="profile-circle-tag">🎨 Studio people</span>
+						<span class="profile-circle-tag">🌲 Little escapes</span>
+					</div>
+				</div>
+
+				<!-- Stats Row -->
+				<div class="profile-stats">
+					<div class="stat-box" data-view="friends" role="button" tabindex="0">
+						<strong id="stat-friends-count">248</strong>
+						<small>friends</small>
+					</div>
+					<div class="stat-box">
+						<strong id="stat-moments-count">86</strong>
+						<small>moments</small>
+					</div>
+					<div class="stat-box">
+						<strong id="stat-reels-count">14</strong>
+						<small>reels</small>
+					</div>
+					<div class="stat-box">
+						<strong id="stat-circles-count">12</strong>
+						<small>circles</small>
+					</div>
+				</div>
+
+				<!-- Profile Tabs -->
+				<div class="profile-nav-tabs" role="tablist">
+					<button class="profile-tab is-active" data-profile-tab="moments" type="button">
+						📸 Moments (<span id="profile-moments-badge">3</span>)
+					</button>
+					<button class="profile-tab" data-profile-tab="reels" type="button">
+						▷ My Reels (<span id="profile-reels-badge">2</span>)
+					</button>
+					<button class="profile-tab" data-profile-tab="edit" type="button">
+						✏️ Edit Profile
+					</button>
+					<button class="profile-tab" data-profile-tab="password" type="button">
+						🔒 Change Password & Security
+					</button>
+				</div>
+			</div>
+
+			<!-- TAB PANES -->
+
+			<!-- TAB 1: MOMENTS ARCHIVE -->
+			<div class="profile-tab-pane is-active" id="profile-pane-moments">
+				<div class="feed-heading">
+					<div>
+						<p class="eyebrow">FROM THE ARCHIVE</p>
+						<h2>Your moments</h2>
+					</div>
+					<button class="button button-primary button-small" data-action="write-post" type="button">
+						＋ New moment
+					</button>
+				</div>
+				<div class="feed-list" id="profile-feed-list"></div>
+			</div>
+
+			<!-- TAB 2: REELS GRID -->
+			<div class="profile-tab-pane" id="profile-pane-reels" hidden>
+				<div class="feed-heading">
+					<div>
+						<p class="eyebrow">SHORT STORIES & SOUNDSCAPES</p>
+						<h2>Your reels</h2>
+					</div>
+					<button class="button button-primary button-small" data-view="reels" type="button">
+						＋ Create reel
+					</button>
+				</div>
+				<div class="profile-reels-grid" id="profile-reels-grid"></div>
+			</div>
+
+			<!-- TAB 3: EDIT PROFILE FORM -->
+			<div class="profile-tab-pane" id="profile-pane-edit" hidden>
+				<div class="settings-card">
+					<div class="settings-header">
+						<div>
+							<h3>Edit Profile Information</h3>
+							<p>Keep your personal details, bio, and presence up to date.</p>
+						</div>
+					</div>
+
+					<form id="edit-profile-form" class="settings-form">
+						<!-- Choose Preset Avatar -->
+						<div class="form-group">
+							<label>Profile Avatar</label>
+							<div class="avatar-picker-grid">
+								<button type="button" class="avatar-option is-active" data-avatar-url="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90">
+									<img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90" alt="Option 1">
+								</button>
+								<button type="button" class="avatar-option" data-avatar-url="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=220&h=220&q=90">
+									<img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=220&h=220&q=90" alt="Option 2">
+								</button>
+								<button type="button" class="avatar-option" data-avatar-url="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=220&h=220&q=90">
+									<img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=220&h=220&q=90" alt="Option 3">
+								</button>
+								<button type="button" class="avatar-option" data-avatar-url="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=220&h=220&q=90">
+									<img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=220&h=220&q=90" alt="Option 4">
+								</button>
+							</div>
+							<input type="url" id="custom-avatar-url" placeholder="Or enter custom image URL..." class="mt-2">
+						</div>
+
+						<!-- Choose Cover Gradient Banner -->
+						<div class="form-group">
+							<label>Cover Banner Theme</label>
+							<div class="cover-theme-picker">
+								<button type="button" class="cover-theme-chip is-active" data-cover-gradient="linear-gradient(135deg, #0d9488, #6366f1, #059669)">
+									<span style="background:linear-gradient(135deg, #0d9488, #6366f1, #059669);"></span> Teal Aurora
+								</button>
+								<button type="button" class="cover-theme-chip" data-cover-gradient="linear-gradient(135deg, #6366f1, #ec4899, #f59e0b)">
+									<span style="background:linear-gradient(135deg, #6366f1, #ec4899, #f59e0b);"></span> Sunset Dream
+								</button>
+								<button type="button" class="cover-theme-chip" data-cover-gradient="linear-gradient(135deg, #090d16, #1e293b, #334155)">
+									<span style="background:linear-gradient(135deg, #090d16, #1e293b, #334155);"></span> Obsidian Midnight
+								</button>
+								<button type="button" class="cover-theme-chip" data-cover-gradient="linear-gradient(135deg, #047857, #10b981, #06b6d4)">
+									<span style="background:linear-gradient(135deg, #047857, #10b981, #06b6d4);"></span> Cedar Forest
+								</button>
+							</div>
+						</div>
+
+						<!-- Name & Handle row -->
+						<div class="form-grid-2">
+							<div class="form-group">
+								<label for="edit-name-input">Full Name</label>
+								<input type="text" id="edit-name-input" value="Maya Chen" required maxlength="50">
+							</div>
+							<div class="form-group">
+								<label for="edit-handle-input">Username / Handle</label>
+								<div class="input-prefix-wrap">
+									<span>@</span>
+									<input type="text" id="edit-handle-input" value="mayainmotion" required maxlength="30">
+								</div>
+							</div>
+						</div>
+
+						<!-- Location & Website row -->
+						<div class="form-grid-2">
+							<div class="form-group">
+								<label for="edit-location-input">Location</label>
+								<input type="text" id="edit-location-input" value="Brooklyn, NY" maxlength="60" placeholder="City, State">
+							</div>
+							<div class="form-group">
+								<label for="edit-website-input">Website or Portfolio</label>
+								<input type="url" id="edit-website-input" value="https://mayachen.studio" placeholder="https://yourwebsite.com">
+							</div>
+						</div>
+
+						<!-- Bio -->
+						<div class="form-group">
+							<label for="edit-bio-input">About You (Bio)</label>
+							<textarea id="edit-bio-input" rows="3" maxlength="220" placeholder="Tell people what brings you calm...">Collecting little things: good light, long walks, and meals that turn into stories. ✳</textarea>
+							<small class="character-count"><span id="bio-char-count">83</span> / 220 characters</small>
+						</div>
+
+						<div class="settings-form-actions">
+							<button type="button" class="button button-outline" id="cancel-edit-profile">Cancel</button>
+							<button type="submit" class="button button-primary">Save Profile Changes ✓</button>
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<!-- TAB 4: CHANGE PASSWORD & SECURITY -->
+			<div class="profile-tab-pane" id="profile-pane-password" hidden>
+				<div class="settings-card">
+					<div class="settings-header">
+						<div>
+							<h3>Security & Password</h3>
+							<p>Manage your account credentials, security protections, and privacy.</p>
+						</div>
+					</div>
+
+					<form id="change-password-form" class="settings-form">
+						<div class="form-group">
+							<label for="pwd-current">Current Password</label>
+							<div class="password-input-wrap">
+								<input type="password" id="pwd-current" placeholder="Enter current password" required autocomplete="current-password">
+								<button type="button" class="pwd-toggle-btn" data-toggle-target="pwd-current" aria-label="Toggle password visibility">👁</button>
+							</div>
+						</div>
+
+						<div class="form-grid-2">
+							<div class="form-group">
+								<label for="pwd-new">New Password</label>
+								<div class="password-input-wrap">
+									<input type="password" id="pwd-new" placeholder="At least 8 characters" required minlength="8" autocomplete="new-password">
+									<button type="button" class="pwd-toggle-btn" data-toggle-target="pwd-new" aria-label="Toggle password visibility">👁</button>
+								</div>
+								<!-- Strength meter -->
+								<div class="pwd-strength-bar">
+									<div class="pwd-strength-fill" id="pwd-strength-fill"></div>
+								</div>
+								<small class="pwd-strength-text" id="pwd-strength-text">Password strength: None</small>
+							</div>
+
+							<div class="form-group">
+								<label for="pwd-confirm">Confirm New Password</label>
+								<div class="password-input-wrap">
+									<input type="password" id="pwd-confirm" placeholder="Re-type new password" required minlength="8" autocomplete="new-password">
+									<button type="button" class="pwd-toggle-btn" data-toggle-target="pwd-confirm" aria-label="Toggle password visibility">👁</button>
+								</div>
+								<small class="pwd-match-error" id="pwd-match-error"></small>
+							</div>
+						</div>
+
+						<!-- Privacy & Protection toggles -->
+						<div class="security-toggles-card">
+							<div class="security-toggle-item">
+								<div>
+									<strong>Two-Factor Authentication (2FA)</strong>
+									<small>Require an SMS or authenticator code when signing in.</small>
+								</div>
+								<label class="switch">
+									<input type="checkbox" id="toggle-2fa">
+									<span class="slider"></span>
+								</label>
+							</div>
+
+							<div class="security-toggle-item">
+								<div>
+									<strong>Private Account (Circles Only)</strong>
+									<small>Only approved friends in your circles can view your moments archive.</small>
+								</div>
+								<label class="switch">
+									<input type="checkbox" id="toggle-privacy">
+									<span class="slider"></span>
+								</label>
+							</div>
+						</div>
+
+						<div class="settings-form-actions">
+							<button type="button" class="button button-outline" id="cancel-password-change">Cancel</button>
+							<button type="submit" class="button button-primary">Update Password 🔒</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</section>
 
 		<aside class="right-rail"><section class="weather-note"><span>☼</span><div><p class="eyebrow">A GOOD DAY TO</p><strong>Take the long way.</strong><small>Brooklyn · 68° and bright</small></div></section><section class="right-section"><div class="section-heading"><div><p class="eyebrow">AROUND YOU</p><h2>People to know</h2></div><button class="text-action" data-view="friends" type="button">More ↗</button></div><div class="suggestion-list" id="suggestion-list"></div></section><section class="birthday-note"><span>✿</span><div><p class="eyebrow">A LITTLE REMINDER</p><strong>Two birthdays this week</strong><button class="text-action" id="birthday-note" type="button">Send a little love ↗</button></div></section><footer class="right-footer">About　Privacy　Community　© 2026 My Teta</footer></aside>
 		<nav class="mobile-nav" aria-label="Mobile navigation"><button class="is-active" data-view="home" aria-label="Home" type="button">⌂</button><button data-view="friends" aria-label="Friends" type="button">♧</button><button class="mobile-create" data-action="write-post" aria-label="Share a moment" type="button">＋</button><button data-view="reels" aria-label="Reels" type="button">▷</button><button data-view="chat" aria-label="Chat" type="button">◌</button></nav>
