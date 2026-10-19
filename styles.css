@@ -5438,7 +5438,7 @@ input:checked + .slider:before {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  padding: 28px;
+  padding: 36px 40px;
   box-shadow: var(--shadow-sm);
   margin-bottom: 24px;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -5453,16 +5453,16 @@ input:checked + .slider:before {
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
-  padding-bottom: 20px;
-  margin-bottom: 22px;
+  padding-bottom: 24px;
+  margin-bottom: 28px;
   border-bottom: 1px solid var(--border);
 }
 
 .contact-card-header h2 {
-  font-size: 1.35rem;
+  font-size: 1.4rem;
   font-weight: 800;
   color: var(--ink);
-  margin: 0 0 6px;
+  margin: 0 0 8px;
   letter-spacing: -0.02em;
 }
 
@@ -5478,13 +5478,45 @@ input:checked + .slider:before {
   white-space: nowrap;
 }
 
+/* Contact Support Form Spacing */
+#contact-support-form {
+  display: flex;
+  flex-direction: column;
+}
+
+#contact-support-form .form-group {
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+#contact-support-form label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 9px;
+  letter-spacing: -0.01em;
+}
+
+#contact-support-form .form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+#contact-support-form .form-grid-2 .form-group {
+  margin-bottom: 0;
+}
+
 /* Category Quick Selector Chips */
 .form-label-bold {
   display: block;
   font-size: 0.88rem;
   font-weight: 700;
   color: var(--ink);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .required-star {
@@ -5494,15 +5526,15 @@ input:checked + .slider:before {
 .contact-category-chips {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
-  margin-bottom: 18px;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .category-chip {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   background: var(--surface-subtle);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-lg);
@@ -5549,9 +5581,9 @@ input:checked + .slider:before {
 .contact-select,
 .contact-textarea {
   width: 100%;
-  padding: 11px 14px;
+  padding: 13px 16px;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   color: var(--ink);
   background: var(--surface-subtle);
   border: 1px solid var(--border);
@@ -5571,21 +5603,23 @@ input:checked + .slider:before {
 
 .contact-textarea {
   resize: vertical;
-  min-height: 120px;
-  line-height: 1.5;
+  min-height: 140px;
+  line-height: 1.6;
+  padding: 14px 16px;
 }
 
 .label-with-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 9px;
 }
 
 .label-with-meta label {
   font-size: 0.88rem;
   font-weight: 700;
   color: var(--ink);
+  margin-bottom: 0 !important;
 }
 
 .char-counter {
@@ -5595,10 +5629,10 @@ input:checked + .slider:before {
 }
 
 .field-hint {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--ink-faint);
-  margin: 6px 0 0;
-  line-height: 1.4;
+  margin: 9px 0 0;
+  line-height: 1.45;
 }
 
 /* Dropzone */
