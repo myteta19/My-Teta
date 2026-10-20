@@ -303,29 +303,23 @@
   async function syncCommunityFromSupabase() {
     try {
       const cloudProfiles = await SupabaseService.fetchProfiles();
+      PEOPLE = [];
       if (cloudProfiles && cloudProfiles.length > 0) {
         cloudProfiles.forEach(cp => {
-          if (cp.handle && cp.handle.toLowerCase() === CURRENT_USER.handle.toLowerCase()) return;
-          const existing = PEOPLE.find(p => p.handle && p.handle.toLowerCase() === cp.handle.toLowerCase());
-          if (existing) {
-            existing.name = cp.name || existing.name;
-            existing.role = cp.role || existing.role;
-            existing.avatar = cp.avatar || existing.avatar;
-            existing.mutual = cp.mutual || existing.mutual;
-          } else {
-            PEOPLE.push({
-              id: cp.id || Date.now(),
-              name: cp.name,
-              handle: cp.handle,
-              role: cp.role || 'Member',
-              mutual: cp.mutual || 'Community Member',
-              avatar: cp.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-              following: false
-            });
-          }
+          if (cp.handle && CURRENT_USER.handle && cp.handle.toLowerCase() === CURRENT_USER.handle.toLowerCase()) return;
+          PEOPLE.push({
+            id: cp.id || `user_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+            name: cp.name,
+            handle: cp.handle,
+            role: cp.role || 'Member',
+            mutual: cp.mutual || 'Community Member',
+            avatar: cp.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cp.handle || 'member')}`,
+            following: false
+          });
         });
       }
 
+      sentRequestHandles.clear();
       const sent = await SupabaseService.fetchSentRequests(CURRENT_USER.handle);
       if (sent && sent.length > 0) {
         sent.forEach(s => {
@@ -333,39 +327,37 @@
         });
       }
 
+      friendRequests = [];
       const incoming = await SupabaseService.fetchIncomingRequests(CURRENT_USER.handle);
       if (incoming && incoming.length > 0) {
         incoming.forEach(inc => {
-          const alreadyExists = friendRequests.some(r => r.id === inc.id);
-          if (!alreadyExists) {
-            friendRequests.unshift({
-              id: inc.id,
-              name: inc.sender_name,
-              handle: inc.sender_handle,
-              avatar: inc.sender_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-              role: inc.sender_role || 'Member',
-              mutual: inc.sender_mutual || 'Requested connection via Supabase',
-              time: 'Just now',
-              isSupabase: true
-            });
+          friendRequests.unshift({
+            id: inc.id,
+            name: inc.sender_name,
+            handle: inc.sender_handle,
+            avatar: inc.sender_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+            role: inc.sender_role || 'Member',
+            mutual: inc.sender_mutual || 'Requested connection via Supabase',
+            time: 'Just now',
+            isSupabase: true
+          });
 
-            if (typeof notifications !== 'undefined' && Array.isArray(notifications)) {
-              const notifAlready = notifications.some(n => n.requestId === inc.id);
-              if (!notifAlready) {
-                notifications.unshift({
-                  id: `notif_${inc.id}`,
-                  type: "request",
-                  icon: "👥",
-                  iconClass: "icon-request",
-                  actor: inc.sender_name,
-                  avatar: inc.sender_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-                  text: "sent you a friend request via Supabase",
-                  time: "Just now",
-                  read: false,
-                  isRequest: true,
-                  requestId: inc.id
-                });
-              }
+          if (typeof notifications !== 'undefined' && Array.isArray(notifications)) {
+            const notifAlready = notifications.some(n => n.requestId === inc.id);
+            if (!notifAlready) {
+              notifications.unshift({
+                id: `notif_${inc.id}`,
+                type: "request",
+                icon: "👥",
+                iconClass: "icon-request",
+                actor: inc.sender_name,
+                avatar: inc.sender_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+                text: "sent you a friend request via Supabase",
+                time: "Just now",
+                read: false,
+                isRequest: true,
+                requestId: inc.id
+              });
             }
           }
         });
@@ -651,12 +643,7 @@
     }
   ];
 
-  let PEOPLE = [
-    { id: 1, name: "Nadia Osei", handle: "@nadia_o", role: "Photographer & Maker", mutual: "8 mutual friends", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80", following: false },
-    { id: 2, name: "Julian Lee", handle: "@julianlee", role: "Architect", mutual: "14 mutual friends", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80", following: true },
-    { id: 3, name: "Clara Moreau", handle: "@claram", role: "Botanist", mutual: "4 mutual friends", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80", following: false },
-    { id: 4, name: "Devin Brooks", handle: "@devin_b", role: "Coffee Roaster", mutual: "19 mutual friends", avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80", following: true }
-  ];
+  let PEOPLE = [];
 
   const REELS = [
     {
@@ -885,35 +872,7 @@
   // ==========================================
   // NOTIFICATIONS & FRIEND REQUESTS DATA
   // ==========================================
-  let friendRequests = [
-    {
-      id: "req_1",
-      name: "Elena Rostova",
-      handle: "@elenar",
-      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80",
-      role: "Ceramicist & Sculptor",
-      mutual: "6 mutual friends",
-      time: "12m ago"
-    },
-    {
-      id: "req_2",
-      name: "Marcus Vance",
-      handle: "@marcus_v",
-      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80",
-      role: "Ambient Sound Designer",
-      mutual: "11 mutual friends",
-      time: "2h ago"
-    },
-    {
-      id: "req_3",
-      name: "Kaelen Thorne",
-      handle: "@kaelenthorne",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-      role: "Visual Poet & Typographer",
-      mutual: "4 mutual friends",
-      time: "1d ago"
-    }
-  ];
+  let friendRequests = [];
 
   let notifications = [
     {
@@ -928,13 +887,6 @@
       read: false
     },
     {
-      id: "notif_req_1",
-      type: "request",
-      isRequest: true,
-      requestId: "req_1",
-      read: false
-    },
-    {
       id: "notif_2",
       type: "comment",
       icon: "💬",
@@ -946,13 +898,6 @@
       read: false
     },
     {
-      id: "notif_req_2",
-      type: "request",
-      isRequest: true,
-      requestId: "req_2",
-      read: false
-    },
-    {
       id: "notif_3",
       type: "circle",
       icon: "✳",
@@ -961,13 +906,6 @@
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
       text: "invited you to join the Sunday table circle",
       time: "3h ago",
-      read: true
-    },
-    {
-      id: "notif_req_3",
-      type: "request",
-      isRequest: true,
-      requestId: "req_3",
       read: true
     }
   ];
