@@ -272,6 +272,31 @@
         console.warn("SupabaseService.declineFriendRequest error:", err);
         return null;
       }
+    },
+
+    async cancelSentRequest(userHandle, receiverHandle) {
+      try {
+        if (!userHandle || !receiverHandle) return null;
+        const uHandle = userHandle.startsWith('@') ? userHandle : `@${userHandle}`;
+        const rHandle = receiverHandle.startsWith('@') ? receiverHandle : `@${receiverHandle}`;
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('friend_requests')
+            .delete()
+            .eq('sender_handle', uHandle)
+            .eq('receiver_handle', rHandle)
+            .eq('status', 'pending');
+          if (error) console.warn("Supabase cancelSentRequest SDK error:", error);
+          return data;
+        } else {
+          return await this.request(`friend_requests?sender_handle=eq.${encodeURIComponent(uHandle)}&receiver_handle=eq.${encodeURIComponent(rHandle)}&status=eq.pending`, {
+            method: 'DELETE'
+          });
+        }
+      } catch (err) {
+        console.warn("SupabaseService.cancelSentRequest error:", err);
+        return null;
+      }
     }
   };
 
@@ -346,6 +371,8 @@
         });
       }
 
+      if (typeof updateSentBadgeCounts === 'function') updateSentBadgeCounts();
+      if (typeof renderHomeSearch === 'function') renderHomeSearch();
       if (typeof renderFriends === 'function') renderFriends(currentFriendFilter);
       if (typeof renderChat === 'function') renderChat();
       if (typeof renderNotifications === 'function') renderNotifications(activeNotifFilter);
@@ -1806,7 +1833,10 @@
     let list = PEOPLE;
     if (filter === 'following') {
       list = PEOPLE.filter(p => p.following);
+    } else if (filter === 'requested') {
+      list = PEOPLE.filter(p => p.handle && sentRequestHandles.has(p.handle.toLowerCase()));
     }
+
     if (query) {
       list = list.filter(p => 
         p.name.toLowerCase().includes(query) || 
@@ -1822,8 +1852,8 @@
     if (list.length === 0) {
       peopleGrid.innerHTML = `
         <div style="grid-column: 1 / -1; padding: 40px 16px; text-align: center; color: var(--ink-faint);">
-          <p style="margin: 0 0 6px; font-weight: 700; color: var(--ink-soft); font-size: 1rem;">No people found</p>
-          <small>${query ? `No matching friends for "${escapeHTML(query)}"` : 'You haven\'t added any friends to your list yet.'}</small>
+          <p style="margin: 0 0 6px; font-weight: 700; color: var(--ink-soft); font-size: 1rem;">${filter === 'requested' ? 'No pending sent requests' : 'No people found'}</p>
+          <small>${filter === 'requested' ? 'You have not sent any connection requests yet. Find people to connect with!' : (query ? `No matching friends for "${escapeHTML(query)}"` : 'You haven\'t added any friends to your list yet.')}</small>
         </div>
       `;
       return;
@@ -1833,7 +1863,8 @@
       const handleKey = (person.handle || '').toLowerCase();
       const isRequested = handleKey && sentRequestHandles.has(handleKey);
       return `
-      <div class="person-card">
+      <div class="person-card ${isRequested ? 'is-requested' : ''}">
+        ${isRequested ? '<span class="person-card-status-pill is-pending" style="font-size:0.68rem; padding:2px 8px; border-radius:12px; background:#fef3c7; color:#92400e; border:1px solid #fde68a;">⏳ Request Sent</span>' : ''}
         <img src="${person.avatar}" alt="${escapeHTML(person.name)}">
         <h3>${escapeHTML(person.name)}</h3>
         <p>${escapeHTML(person.role)} · <span style="color:var(--lagoon);">${escapeHTML(person.mutual)}</span></p>
@@ -1855,6 +1886,7 @@
         if (person.following) {
           person.following = false;
           renderFriends(currentFriendFilter);
+          renderHomeSearch();
           renderChatFriendsTray();
           renderChat();
           showToast(`Removed connection with ${person.name}`, "ℹ");
@@ -1870,6 +1902,7 @@
         // Send friend request via Supabase
         if (person.handle) {
           sentRequestHandles.add(handleKey);
+          updateSentBadgeCounts();
           btn.textContent = 'Requested ⏳';
           btn.className = 'button button-outline button-small';
           showToast(`Friend request sent to ${person.name}! 🚀`, "✨");
@@ -1883,9 +1916,11 @@
             receiver_handle: person.handle
           });
           renderFriends(currentFriendFilter);
+          renderHomeSearch();
         } else {
           person.following = true;
           renderFriends(currentFriendFilter);
+          renderHomeSearch();
           renderChatFriendsTray();
           renderChat();
           showToast(`Connected with ${person.name}! Added to chat circle ✨`, "✨");
@@ -1917,6 +1952,234 @@
       renderFriends(btn.dataset.friendFilter);
     });
   });
+
+  // ==========================================
+  // HOME SEARCH & SENT REQUESTS CONTROLLER
+  // ==========================================
+  let currentHomeFilter = 'all'; // 'all' | 'requested' | 'following'
+
+  function updateSentBadgeCounts() {
+    const sentCount = sentRequestHandles.size;
+    const pillSent = document.getElementById('home-pill-sent-count');
+    const metaSent = document.getElementById('home-meta-sent');
+    const metaTotal = document.getElementById('home-meta-total');
+    const friendsSentBadge = document.getElementById('friends-sent-badge');
+
+    if (pillSent) pillSent.textContent = sentCount;
+    if (metaSent) metaSent.textContent = sentCount;
+    if (metaTotal) metaTotal.textContent = PEOPLE.length;
+    if (friendsSentBadge) friendsSentBadge.textContent = sentCount;
+  }
+
+  function renderHomeSearch() {
+    const homeDrawerGrid = document.getElementById('home-drawer-grid');
+    if (!homeDrawerGrid) return;
+    updateSentBadgeCounts();
+
+    const homeInput = document.getElementById('home-people-search');
+    const homeClearBtn = document.getElementById('home-search-clear');
+    const drawerLabel = document.getElementById('home-drawer-label');
+    const drawerCount = document.getElementById('home-drawer-count');
+
+    const query = homeInput ? homeInput.value.trim().toLowerCase() : '';
+    if (homeClearBtn) homeClearBtn.hidden = !query;
+
+    let list = PEOPLE;
+    if (currentHomeFilter === 'requested') {
+      list = PEOPLE.filter(p => p.handle && sentRequestHandles.has(p.handle.toLowerCase()));
+      if (drawerLabel) drawerLabel.textContent = "Sent Requests (Pending Confirmation)";
+    } else if (currentHomeFilter === 'following') {
+      list = PEOPLE.filter(p => p.following);
+      if (drawerLabel) drawerLabel.textContent = "Connected Circle & Friends";
+    } else {
+      if (drawerLabel) drawerLabel.textContent = query ? `Search Results for "${query}"` : "Community Members";
+    }
+
+    if (query) {
+      list = list.filter(p =>
+        p.name.toLowerCase().includes(query) ||
+        (p.handle && p.handle.toLowerCase().includes(query)) ||
+        (p.role && p.role.toLowerCase().includes(query)) ||
+        (p.mutual && p.mutual.toLowerCase().includes(query))
+      );
+    }
+
+    if (drawerCount) {
+      drawerCount.textContent = `${list.length} ${list.length === 1 ? 'person' : 'people'}`;
+    }
+
+    if (list.length === 0) {
+      if (currentHomeFilter === 'requested') {
+        homeDrawerGrid.innerHTML = `
+          <div class="home-search-empty">
+            <span class="empty-icon">⏳</span>
+            <p>No pending sent requests</p>
+            <small>When you click "＋ Connect" on any member, your sent requests will appear here so you can easily track who you invited!</small>
+          </div>
+        `;
+      } else if (query) {
+        homeDrawerGrid.innerHTML = `
+          <div class="home-search-empty">
+            <span class="empty-icon">🔍</span>
+            <p>No community members found matching "${escapeHTML(query)}"</p>
+            <small>Try searching by full name or @handle, or tap a filter tab above.</small>
+          </div>
+        `;
+      } else {
+        homeDrawerGrid.innerHTML = `
+          <div class="home-search-empty">
+            <span class="empty-icon">👥</span>
+            <p>No people in this filter</p>
+            <small>Explore suggestions or connect with new friends across the community.</small>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    homeDrawerGrid.innerHTML = list.map(person => {
+      const handleKey = (person.handle || '').toLowerCase();
+      const isRequested = handleKey && sentRequestHandles.has(handleKey);
+
+      let statusPill = '';
+      if (isRequested) {
+        statusPill = `<span class="person-card-status-pill is-pending">⏳ Request Sent</span>`;
+      } else if (person.following) {
+        statusPill = `<span class="person-card-status-pill is-following">✓ In Circle</span>`;
+      } else {
+        statusPill = `<span class="person-card-status-pill is-available">＋ Community</span>`;
+      }
+
+      return `
+        <div class="home-person-card ${isRequested ? 'is-requested' : ''}" data-person-card-id="${person.id}">
+          ${statusPill}
+          <img src="${person.avatar}" alt="${escapeHTML(person.name)}" class="home-card-avatar">
+          <div class="home-card-identity">
+            <strong>${escapeHTML(person.name)}</strong>
+            <small>${escapeHTML(person.handle || '')}</small>
+          </div>
+          <p class="home-card-role" title="${escapeHTML(person.role || '')}">${escapeHTML(person.role || 'Community Member')}</p>
+          <div class="home-card-actions">
+            ${isRequested ? `
+              <button class="button button-outline button-small btn-requested" disabled style="flex:1; border-color:#f59e0b; color:#d97706; background:#fffbeb;">Requested ⏳</button>
+              <button class="btn-withdraw-req" data-home-cancel-handle="${person.handle}" title="Withdraw request">✕</button>
+            ` : (person.following ? `
+              <button class="button button-outline button-small" data-home-follow-id="${person.id}">Following ✓</button>
+              <button class="button button-primary button-small" data-home-message-id="${person.id}">💬 Chat</button>
+            ` : `
+              <button class="button button-primary button-small" data-home-follow-id="${person.id}" style="width:100%;">＋ Connect</button>
+            `)}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Connect / Unfollow action
+    homeDrawerGrid.querySelectorAll('[data-home-follow-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.homeFollowId;
+        const person = PEOPLE.find(p => p.id == id);
+        if (!person) return;
+
+        if (person.following) {
+          person.following = false;
+          renderHomeSearch();
+          renderFriends(currentFriendFilter);
+          renderChatFriendsTray();
+          renderChat();
+          showToast(`Removed connection with ${person.name}`, "ℹ");
+          return;
+        }
+
+        const handleKey = (person.handle || '').toLowerCase();
+        if (handleKey && sentRequestHandles.has(handleKey)) {
+          showToast(`Friend request already sent to ${person.name}. Awaiting reply! ⏳`, "⏳");
+          return;
+        }
+
+        if (person.handle) {
+          sentRequestHandles.add(handleKey);
+          updateSentBadgeCounts();
+          renderHomeSearch();
+          renderFriends(currentFriendFilter);
+          showToast(`Friend request sent to ${person.name}! 🚀`, "✨");
+
+          await SupabaseService.sendFriendRequest({
+            sender_name: CURRENT_USER.name,
+            sender_handle: CURRENT_USER.handle,
+            sender_avatar: CURRENT_USER.avatar,
+            sender_role: CURRENT_USER.role || 'Member',
+            sender_mutual: 'Connected via My Teta circle',
+            receiver_handle: person.handle
+          });
+          renderHomeSearch();
+          renderFriends(currentFriendFilter);
+        } else {
+          person.following = true;
+          renderHomeSearch();
+          renderFriends(currentFriendFilter);
+          renderChatFriendsTray();
+          renderChat();
+          showToast(`Connected with ${person.name}! Added to chat circle ✨`, "✨");
+        }
+      });
+    });
+
+    // Cancel / Withdraw request
+    homeDrawerGrid.querySelectorAll('[data-home-cancel-handle]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const handle = btn.dataset.homeCancelHandle;
+        if (!handle) return;
+        const handleKey = handle.toLowerCase();
+        sentRequestHandles.delete(handleKey);
+        updateSentBadgeCounts();
+        renderHomeSearch();
+        renderFriends(currentFriendFilter);
+        showToast(`Request to ${handle} withdrawn`, "ℹ");
+
+        await SupabaseService.cancelSentRequest(CURRENT_USER.handle, handle);
+      });
+    });
+
+    // Message / Chat action
+    homeDrawerGrid.querySelectorAll('[data-home-message-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.homeMessageId;
+        const person = PEOPLE.find(p => p.id == id);
+        if (person) startOrOpenChatWithPerson(person);
+      });
+    });
+  }
+
+  function initHomeSearchEvents() {
+    const homeInput = document.getElementById('home-people-search');
+    const homeClear = document.getElementById('home-search-clear');
+
+    if (homeInput) {
+      homeInput.addEventListener('input', () => {
+        renderHomeSearch();
+      });
+    }
+
+    if (homeClear) {
+      homeClear.addEventListener('click', () => {
+        if (homeInput) {
+          homeInput.value = '';
+          homeInput.focus();
+        }
+        renderHomeSearch();
+      });
+    }
+
+    document.querySelectorAll('[data-home-filter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-home-filter]').forEach(b => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+        currentHomeFilter = btn.dataset.homeFilter;
+        renderHomeSearch();
+      });
+    });
+  }
 
   // ==========================================
   // 9. REELS THEATER & CREATOR STUDIO ENGINE
@@ -4842,8 +5105,10 @@
   initProfileEvents();
   initSettingsEvents();
   initContactEvents();
+  initHomeSearchEvents();
   renderStories();
   renderHomeReels();
+  renderHomeSearch();
   renderFeed();
   renderFriends('suggested');
   renderReels();

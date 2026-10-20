@@ -106,6 +106,65 @@
 				<button class="button button-outline" data-action="write-post" type="button"><b>＋</b> Share a moment</button>
 			</div>
 
+			<!-- HOME COMMUNITY & SENT REQUESTS SEARCH BAR -->
+			<section class="home-search-section" id="home-search-section" aria-label="Community search and sent requests">
+				<div class="home-search-card">
+					<div class="home-search-header">
+						<div class="home-search-title-wrap">
+							<span class="home-search-chip">
+								<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+								PEOPLE DISCOVERY
+							</span>
+							<h3>Search Community & Sent Requests</h3>
+						</div>
+						<div class="home-search-meta">
+							<span class="home-meta-item"><b id="home-meta-total">0</b> Members</span>
+							<span class="home-meta-item is-amber"><b id="home-meta-sent">0</b> Requests Sent ⏳</span>
+						</div>
+					</div>
+
+					<div class="home-search-input-box">
+						<svg class="home-search-lens" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<circle cx="11" cy="11" r="8"></circle>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+						</svg>
+						<input 
+							type="search" 
+							id="home-people-search" 
+							placeholder="Search by name, @handle, role, or see who you sent a request to..." 
+							aria-label="Search people and see sent requests"
+							autocomplete="off"
+						>
+						<button class="home-search-clear" id="home-search-clear" type="button" aria-label="Clear search input" hidden>✕</button>
+					</div>
+
+					<div class="home-search-filter-bar">
+						<div class="home-filter-pills" role="tablist" aria-label="Filter community members">
+							<button class="home-pill is-active" data-home-filter="all" type="button">All Community</button>
+							<button class="home-pill pill-requested" data-home-filter="requested" type="button" id="btn-pill-requested">
+								<span>Sent Requests ⏳</span>
+								<span class="home-pill-count" id="home-pill-sent-count">0</span>
+							</button>
+							<button class="home-pill" data-home-filter="following" type="button">Connected Friends ✓</button>
+						</div>
+						<div class="home-search-hint-text" id="home-search-hint">
+							<small>💡 Search any person or tap <strong>Sent Requests ⏳</strong> to view your pending invites.</small>
+						</div>
+					</div>
+
+					<!-- Interactive Search Results Drawer -->
+					<div class="home-search-results-drawer" id="home-search-drawer">
+						<div class="home-drawer-header">
+							<span class="home-drawer-label" id="home-drawer-label">Community Members</span>
+							<span class="home-drawer-count-badge" id="home-drawer-count">Loading...</span>
+						</div>
+						<div class="home-drawer-grid" id="home-drawer-grid">
+							<!-- Rendered live via JavaScript -->
+						</div>
+					</div>
+				</div>
+			</section>
+
 			<section class="stories">
 				<div class="section-heading">
 					<div>
@@ -169,6 +228,7 @@
 				<div class="segmented">
 					<button class="is-selected" data-friend-filter="suggested" type="button">For you</button>
 					<button data-friend-filter="following" type="button">Following</button>
+					<button data-friend-filter="requested" type="button" id="friends-tab-requested">Sent Requests <span class="nav-pill-badge" id="friends-sent-badge">0</span></button>
 				</div>
 				<div class="friends-search-box">
 					<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
