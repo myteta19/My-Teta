@@ -2967,14 +2967,6 @@
     });
   }
 
-  // Search shortcut
-  const globalSearch = document.getElementById('global-search');
-  window.addEventListener('keydown', (e) => {
-    if (e.key === '/' && document.activeElement !== globalSearch && document.activeElement.tagName !== 'TEXTAREA' && document.activeElement.tagName !== 'INPUT') {
-      e.preventDefault();
-      if (globalSearch) globalSearch.focus();
-    }
-  });
 
   // ==========================================
   // 13. PROFILE VIEW, SETTINGS & SECURITY CONTROLLER
