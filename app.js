@@ -265,7 +265,7 @@
     }
   ];
 
-  const PEOPLE = [
+  let PEOPLE = [
     { id: 1, name: "Nadia Osei", handle: "@nadia_o", role: "Photographer & Maker", mutual: "8 mutual friends", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80", following: false },
     { id: 2, name: "Julian Lee", handle: "@julianlee", role: "Architect", mutual: "14 mutual friends", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80", following: true },
     { id: 3, name: "Clara Moreau", handle: "@claram", role: "Botanist", mutual: "4 mutual friends", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80", following: false },
@@ -410,7 +410,7 @@
     }
   };
 
-  const CHATS = [
+  let CHATS = [
     {
       id: 1,
       name: "Amara Vance",
@@ -1436,26 +1436,51 @@
   // ==========================================
   // 8. FRIENDS VIEW
   // ==========================================
-  function renderFriends(filter = 'suggested') {
+  const friendsSearchInput = document.getElementById('friends-search-input');
+  let currentFriendFilter = 'suggested';
+
+  function renderFriends(filter = currentFriendFilter) {
+    currentFriendFilter = filter;
     if (!peopleGrid) return;
 
+    const query = friendsSearchInput ? friendsSearchInput.value.trim().toLowerCase() : '';
     let list = PEOPLE;
     if (filter === 'following') {
       list = PEOPLE.filter(p => p.following);
     }
+    if (query) {
+      list = list.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        (p.handle && p.handle.toLowerCase().includes(query)) ||
+        (p.role && p.role.toLowerCase().includes(query))
+      );
+    }
 
     if (friendCountSpan) {
-      friendCountSpan.textContent = `${list.length} people`;
+      friendCountSpan.textContent = `${list.length} ${list.length === 1 ? 'person' : 'people'}`;
+    }
+
+    if (list.length === 0) {
+      peopleGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 40px 16px; text-align: center; color: var(--ink-faint);">
+          <p style="margin: 0 0 6px; font-weight: 700; color: var(--ink-soft); font-size: 1rem;">No people found</p>
+          <small>${query ? `No matching friends for "${escapeHTML(query)}"` : 'You haven\'t added any friends to your list yet.'}</small>
+        </div>
+      `;
+      return;
     }
 
     peopleGrid.innerHTML = list.map(person => `
       <div class="person-card">
-        <img src="${person.avatar}" alt="${person.name}">
-        <h3>${person.name}</h3>
-        <p>${person.role} · <span style="color:var(--lagoon);">${person.mutual}</span></p>
-        <button class="button ${person.following ? 'button-outline' : 'button-primary'} button-small" data-follow-id="${person.id}">
-          ${person.following ? 'Following ✓' : '＋ Connect'}
-        </button>
+        <img src="${person.avatar}" alt="${escapeHTML(person.name)}">
+        <h3>${escapeHTML(person.name)}</h3>
+        <p>${escapeHTML(person.role)} · <span style="color:var(--lagoon);">${escapeHTML(person.mutual)}</span></p>
+        <div class="person-card-actions">
+          <button class="button ${person.following ? 'button-outline' : 'button-primary'} button-small" data-follow-id="${person.id}">
+            ${person.following ? 'Following ✓' : '＋ Connect'}
+          </button>
+          ${person.following ? `<button class="button button-primary button-small" data-message-person-id="${person.id}" type="button" title="Message ${escapeHTML(person.name)}">💬 Chat</button>` : ''}
+        </div>
       </div>
     `).join('');
 
@@ -1465,10 +1490,32 @@
         const person = PEOPLE.find(p => p.id == id);
         if (person) {
           person.following = !person.following;
-          renderFriends(filter);
-          showToast(person.following ? `Connected with ${person.name}!` : `Removed connection`, "✨");
+          renderFriends(currentFriendFilter);
+          renderChatFriendsTray();
+          renderChat();
+          if (person.following) {
+            showToast(`Added ${person.name} to friendlist! You can now search & message them in Chat ✨`, "✨");
+          } else {
+            showToast(`Removed connection with ${person.name}`, "ℹ");
+          }
         }
       });
+    });
+
+    peopleGrid.querySelectorAll('[data-message-person-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.messagePersonId;
+        const person = PEOPLE.find(p => p.id == id);
+        if (person) {
+          startOrOpenChatWithPerson(person);
+        }
+      });
+    });
+  }
+
+  if (friendsSearchInput) {
+    friendsSearchInput.addEventListener('input', () => {
+      renderFriends(currentFriendFilter);
     });
   }
 
@@ -2061,6 +2108,9 @@
   const messageForm = document.getElementById('message-form');
   const messageInput = document.getElementById('message-input');
   const chatSearchInput = document.getElementById('chat-search');
+  const chatFriendsTray = document.getElementById('chat-friends-tray');
+  const chatFriendsScroll = document.getElementById('chat-friends-scroll');
+  const chatViewAllFriends = document.getElementById('chat-view-all-friends');
   const typingIndicator = document.getElementById('chat-typing-indicator');
   const typingLabel = document.getElementById('typing-label');
   const attachMessageBtn = document.getElementById('attach-message');
@@ -2090,32 +2140,155 @@
     }
   }
 
-  function getFilteredChats() {
-    const query = chatSearchInput ? chatSearchInput.value.trim().toLowerCase() : '';
-    return CHATS.filter(chat => {
-      const matchesFilter = (chatFilterMode === 'unread') ? (chat.unread > 0) : true;
-      const matchesSearch = !query || 
-        chat.name.toLowerCase().includes(query) || 
-        (chat.lastMsg && chat.lastMsg.toLowerCase().includes(query));
-      return matchesFilter && matchesSearch;
+  function renderChatFriendsTray() {
+    if (!chatFriendsScroll) return;
+    const friends = PEOPLE.filter(p => p.following);
+    if (friends.length === 0) {
+      chatFriendsScroll.innerHTML = `
+        <div style="font-size: 0.72rem; color: var(--ink-faint); padding: 4px 0; display: flex; align-items: center; gap: 6px;">
+          <span>No friends in circle yet.</span>
+          <button id="chat-add-friend-btn" type="button" style="background:none; border:none; color:var(--lagoon); font-weight:700; cursor:pointer; padding:0;">Add people ↗</button>
+        </div>
+      `;
+      document.getElementById('chat-add-friend-btn')?.addEventListener('click', () => {
+        switchView('friends');
+      });
+      return;
+    }
+
+    chatFriendsScroll.innerHTML = friends.map(f => {
+      const firstName = f.name.split(' ')[0];
+      return `
+        <button class="chat-friend-bubble" data-start-friend-chat="${f.id}" type="button" title="Chat with ${escapeHTML(f.name)}" aria-label="Chat with ${escapeHTML(f.name)}">
+          <div class="chat-friend-bubble-avatar">
+            <img src="${f.avatar}" alt="${escapeHTML(f.name)}">
+            <span class="chat-online-dot"></span>
+          </div>
+          <span class="chat-friend-bubble-name">${escapeHTML(firstName)}</span>
+        </button>
+      `;
+    }).join('');
+
+    chatFriendsScroll.querySelectorAll('[data-start-friend-chat]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.startFriendChat;
+        const friend = PEOPLE.find(p => p.id == id);
+        if (friend) {
+          startOrOpenChatWithPerson(friend);
+        }
+      });
     });
+  }
+
+  if (chatViewAllFriends) {
+    chatViewAllFriends.addEventListener('click', () => {
+      switchView('friends');
+    });
+  }
+
+  function startOrOpenChatWithPerson(person) {
+    if (!person) return;
+    let existingChat = CHATS.find(c => 
+      c.name.toLowerCase() === person.name.toLowerCase() || 
+      (c.personId && c.personId == person.id)
+    );
+
+    if (!existingChat) {
+      const newId = Math.max(0, ...CHATS.map(c => c.id)) + 1;
+      existingChat = {
+        id: newId,
+        personId: person.id,
+        name: person.name,
+        avatar: person.avatar,
+        status: `Active recently · ${person.role || 'In your circle'}`,
+        online: true,
+        lastMsg: `Connected with ${person.name.split(' ')[0]}`,
+        time: "Just now",
+        unread: 0,
+        messages: [
+          {
+            type: "received",
+            text: `Hi Maya! Great connecting with you on My Teta ✨`,
+            time: "Just now"
+          }
+        ],
+        autoReplies: [
+          `Hey Maya! How is your day going? 😊`,
+          `Loved your latest post on the feed!`,
+          `So good connecting with you here! Catch you later today ☕`,
+          `Thanks for reaching out! Let's collaborate soon ✨`
+        ]
+      };
+      CHATS.unshift(existingChat);
+    }
+
+    if (!person.following) {
+      person.following = true;
+      renderFriends(currentFriendFilter);
+    }
+    renderChatFriendsTray();
+
+    if (chatSearchInput) {
+      chatSearchInput.value = '';
+    }
+
+    switchView('chat');
+    selectChat(existingChat.id);
+    showToast(`Opened chat with ${person.name}`, "💬");
   }
 
   function renderChat() {
     updateChatBadges();
+    renderChatFriendsTray();
     if (!chatContactList) return;
 
-    const filtered = getFilteredChats();
+    const query = chatSearchInput ? chatSearchInput.value.trim().toLowerCase() : '';
+    const filteredChats = CHATS.filter(chat => {
+      const matchesFilter = (chatFilterMode === 'unread') ? (chat.unread > 0) : true;
+      const matchesSearch = !query || 
+        chat.name.toLowerCase().includes(query) || 
+        (chat.lastMsg && chat.lastMsg.toLowerCase().includes(query)) ||
+        (chat.status && chat.status.toLowerCase().includes(query));
+      return matchesFilter && matchesSearch;
+    });
 
-    if (filtered.length === 0) {
+    // Also search across PEOPLE (all friends you added to friendlist and circle contacts)
+    let matchingPeople = [];
+    if (query) {
+      matchingPeople = PEOPLE.filter(p => {
+        const matchesQuery = p.name.toLowerCase().includes(query) || 
+          (p.handle && p.handle.toLowerCase().includes(query)) ||
+          (p.role && p.role.toLowerCase().includes(query));
+        const alreadyInChats = filteredChats.some(c => 
+          c.name.toLowerCase() === p.name.toLowerCase() || 
+          (c.personId && c.personId == p.id)
+        );
+        return matchesQuery && !alreadyInChats;
+      });
+    }
+
+    if (filteredChats.length === 0 && matchingPeople.length === 0) {
       chatContactList.innerHTML = `
-        <div style="padding: 32px 16px; text-align: center; color: var(--ink-faint); font-size: 0.85rem;">
-          <p style="margin: 0 0 4px; font-weight: 600;">No conversations found</p>
-          <small>Try clearing your search or filter</small>
+        <div style="padding: 36px 16px; text-align: center; color: var(--ink-faint); font-size: 0.85rem;">
+          <p style="margin: 0 0 4px; font-weight: 700; color: var(--ink-soft);">No results found</p>
+          <small>${query ? `No contacts or friends matching "${escapeHTML(query)}"` : 'Try clearing your search or filter'}</small>
         </div>
       `;
-    } else {
-      chatContactList.innerHTML = filtered.map(chat => `
+      return;
+    }
+
+    let html = '';
+
+    // 1. Render matching active chats
+    if (filteredChats.length > 0) {
+      if (query && matchingPeople.length > 0) {
+        html += `
+          <div class="chat-search-section-header">
+            <span>Conversations (${filteredChats.length})</span>
+          </div>
+        `;
+      }
+      html += filteredChats.map(chat => `
         <div class="chat-item ${chat.id === activeChatId ? 'is-selected' : ''}" data-chat-id="${chat.id}" role="button" tabindex="0" aria-label="Chat with ${escapeHTML(chat.name)}">
           <div class="chat-avatar-wrap">
             <img src="${chat.avatar}" alt="${escapeHTML(chat.name)}">
@@ -2135,10 +2308,50 @@
       `).join('');
     }
 
+    // 2. Render matching friends from friendlist or circle
+    if (matchingPeople.length > 0) {
+      html += `
+        <div class="chat-search-section-header">
+          <span>Friends & People (${matchingPeople.length})</span>
+          <small>Tap to message</small>
+        </div>
+      `;
+      html += matchingPeople.map(p => `
+        <div class="chat-item chat-item-friend-result" data-search-person-id="${p.id}" role="button" tabindex="0" aria-label="Start chat with ${escapeHTML(p.name)}">
+          <div class="chat-avatar-wrap">
+            <img src="${p.avatar}" alt="${escapeHTML(p.name)}">
+            <span class="chat-online-dot" title="Active in circle"></span>
+          </div>
+          <div class="chat-item-body">
+            <div class="chat-item-header">
+              <strong>${escapeHTML(p.name)}</strong>
+              <span class="chat-friend-badge">${p.following ? 'Friend' : 'Person'}</span>
+            </div>
+            <div class="chat-item-preview">
+              <p>${escapeHTML(p.role || p.handle)} · Tap to message</p>
+            </div>
+          </div>
+          <button class="chat-quick-start-btn" type="button" title="Message ${escapeHTML(p.name)}">💬</button>
+        </div>
+      `).join('');
+    }
+
+    chatContactList.innerHTML = html;
+
     chatContactList.querySelectorAll('[data-chat-id]').forEach(item => {
       item.addEventListener('click', () => {
         const id = Number(item.dataset.chatId);
         selectChat(id);
+      });
+    });
+
+    chatContactList.querySelectorAll('[data-search-person-id]').forEach(item => {
+      item.addEventListener('click', () => {
+        const id = item.dataset.searchPersonId;
+        const person = PEOPLE.find(p => p.id == id);
+        if (person) {
+          startOrOpenChatWithPerson(person);
+        }
       });
     });
 
@@ -2333,12 +2546,11 @@
     });
   }
 
-  // New Message Button
   if (newMessageBtn) {
     newMessageBtn.addEventListener('click', () => {
       if (chatSearchInput) {
         chatSearchInput.focus();
-        showToast("Search contacts to start a new chat", "✍️");
+        showToast("Search any friend or tap their avatar in the tray above to chat ✍️", "✍️");
       }
     });
   }
@@ -2536,8 +2748,10 @@
     if (friendsCountEl) friendsCountEl.textContent = CURRENT_USER.friendsCount;
 
     renderFriends('following');
+    renderChatFriendsTray();
+    renderChat();
     renderNotifications(activeNotifFilter);
-    showToast(`Connected with ${req.name}!`, '✨');
+    showToast(`Connected with ${req.name}! Added to chat circle ✨`, '✨');
   }
 
   function declineFriendRequest(reqId) {

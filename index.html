@@ -158,7 +158,25 @@
 			<button class="load-more" id="load-more" type="button">That’s the latest <span>✳</span></button>
 		</section>
 
-		<section class="view-panel" id="friends-view" hidden><div class="page-heading"><p class="eyebrow">YOUR WORLD, A LITTLE WIDER</p><h1 id="friends-title">People <span>feel like home.</span></h1><p>Find your people. Keep the good ones close.</p></div><div class="friends-toolbar"><div class="segmented"><button class="is-selected" data-friend-filter="suggested" type="button">For you</button><button data-friend-filter="following" type="button">Following</button></div><span id="friend-count"></span></div><div class="people-grid" id="people-grid"></div></section>
+		<section class="view-panel" id="friends-view" hidden>
+			<div class="page-heading">
+				<p class="eyebrow">YOUR WORLD, A LITTLE WIDER</p>
+				<h1 id="friends-title">People <span>feel like home.</span></h1>
+				<p>Find your people. Keep the good ones close.</p>
+			</div>
+			<div class="friends-toolbar">
+				<div class="segmented">
+					<button class="is-selected" data-friend-filter="suggested" type="button">For you</button>
+					<button data-friend-filter="following" type="button">Following</button>
+				</div>
+				<div class="friends-search-box">
+					<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+					<input type="search" id="friends-search-input" placeholder="Search friends by name or role..." aria-label="Search friends">
+				</div>
+				<span id="friend-count"></span>
+			</div>
+			<div class="people-grid" id="people-grid"></div>
+		</section>
 
 		<section class="view-panel reels-view" id="reels-view" hidden>
 			<!-- Reels Topbar -->
@@ -477,8 +495,17 @@
 					<div class="chat-search-wrap">
 						<label class="chat-search">
 							<span class="chat-search-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
-							<input id="chat-search" type="search" placeholder="Search conversations...">
+							<input id="chat-search" type="search" placeholder="Search friends & conversations...">
 						</label>
+					</div>
+
+					<!-- Friends in Circle Quick Tray -->
+					<div class="chat-friends-tray" id="chat-friends-tray">
+						<div class="chat-friends-tray-header">
+							<span>Friends in circle</span>
+							<button type="button" id="chat-view-all-friends" class="chat-view-all-link">People view ↗</button>
+						</div>
+						<div class="chat-friends-scroll" id="chat-friends-scroll"></div>
 					</div>
 
 					<div class="chat-filters" role="tablist">
