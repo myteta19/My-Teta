@@ -4477,6 +4477,168 @@ body {
   margin-left: 6px;
 }
 
+/* User Profile Viewer Modal */
+.user-profile-card-modal {
+  max-width: 480px;
+  width: 92%;
+  padding: 0 !important;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  position: relative;
+  animation: modalPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.user-modal-cover {
+  width: 100%;
+  height: 130px;
+  background: linear-gradient(135deg, #0d9488 0%, #6366f1 50%, #059669 100%);
+  position: relative;
+}
+
+.user-modal-cover-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+.user-modal-identity {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 24px;
+  margin-top: -46px;
+  position: relative;
+  z-index: 2;
+}
+
+.user-modal-avatar-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.user-modal-avatar-wrap img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 4px solid var(--surface);
+  object-fit: cover;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  display: block;
+}
+
+.user-modal-online-badge {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 3px solid var(--surface);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.user-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.user-modal-body {
+  padding: 16px 24px 28px;
+}
+
+.user-modal-names {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.user-modal-names h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.user-modal-handle {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--lagoon);
+}
+
+.user-modal-role {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin: 0 0 12px;
+}
+
+.user-modal-bio {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink);
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  background: var(--surface-subtle);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.user-modal-meta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.user-modal-location,
+.user-modal-mutual {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-modal-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.user-modal-stat-box {
+  background: var(--surface-subtle);
+  padding: 10px 8px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.user-modal-stat-box strong {
+  display: block;
+  font-size: 0.92rem;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.user-modal-stat-box small {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+
 /* Chat Mobile Responsive */
 @media (max-width: 768px) {
   .chat-shell {

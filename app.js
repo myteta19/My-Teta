@@ -413,7 +413,11 @@
             id: cp.id || `user_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
             name: cp.name,
             handle: cp.handle,
-            role: cp.role || 'Member',
+            email: cp.email || '',
+            role: cp.role || 'Community Member & Creator',
+            bio: cp.bio || 'Collecting moments on My Teta.',
+            location: cp.location || 'Brooklyn, NY',
+            cover: cp.cover || 'linear-gradient(135deg, #0d9488, #6366f1, #059669)',
             mutual: cp.mutual || 'Community Member',
             avatar: cp.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cp.handle || 'member')}`,
             following: false
@@ -474,17 +478,32 @@
           const partnerHandle = isSender ? af.receiver_handle : af.sender_handle;
           if (!partnerHandle) return;
 
+          const matchedProfile = cloudProfiles ? cloudProfiles.find(cp => cp.handle && cp.handle.toLowerCase() === partnerHandle.toLowerCase()) : null;
+
           let person = PEOPLE.find(p => p.handle && p.handle.toLowerCase() === partnerHandle.toLowerCase());
           if (person) {
             person.following = true;
+            if (matchedProfile) {
+              person.name = matchedProfile.name || person.name;
+              person.avatar = matchedProfile.avatar || person.avatar;
+              person.role = matchedProfile.role || person.role;
+              person.bio = matchedProfile.bio || person.bio;
+              person.location = matchedProfile.location || person.location;
+              person.email = matchedProfile.email || person.email;
+              person.cover = matchedProfile.cover || person.cover;
+            }
           } else {
             person = {
-              id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
-              name: isSender ? partnerHandle.replace('@', '') : (af.sender_name || partnerHandle.replace('@', '')),
+              id: (matchedProfile && matchedProfile.id) || `user_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+              name: (matchedProfile && matchedProfile.name) || (isSender ? partnerHandle.replace('@', '') : (af.sender_name || partnerHandle.replace('@', ''))),
               handle: partnerHandle,
-              role: isSender ? 'Community Member' : (af.sender_role || 'Community Member'),
+              email: (matchedProfile && matchedProfile.email) || '',
+              role: (matchedProfile && matchedProfile.role) || (isSender ? 'Community Member & Creator' : (af.sender_role || 'Community Member & Creator')),
+              bio: (matchedProfile && matchedProfile.bio) || 'Collecting moments on My Teta.',
+              location: (matchedProfile && matchedProfile.location) || 'Brooklyn, NY',
+              cover: (matchedProfile && matchedProfile.cover) || 'linear-gradient(135deg, #0d9488, #6366f1, #059669)',
               mutual: 'Connected friend in circle',
-              avatar: isSender ? `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(partnerHandle)}` : (af.sender_avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(partnerHandle)}`),
+              avatar: (matchedProfile && matchedProfile.avatar) || (isSender ? `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(partnerHandle)}` : (af.sender_avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(partnerHandle)}`)),
               following: true
             };
             PEOPLE.push(person);
@@ -1855,10 +1874,13 @@
       return `
       <div class="person-card ${isRequested ? 'is-requested' : ''}">
         ${isRequested ? '<span class="person-card-status-pill is-pending" style="font-size:0.68rem; padding:2px 8px; border-radius:12px; background:#fef3c7; color:#92400e; border:1px solid #fde68a;">⏳ Request Sent</span>' : ''}
-        <img src="${person.avatar}" alt="${escapeHTML(person.name)}">
-        <h3>${escapeHTML(person.name)}</h3>
+        <div class="person-card-avatar-wrap" data-open-profile-id="${person.id}" role="button" tabindex="0" title="View ${escapeHTML(person.name)}'s profile" style="cursor:pointer; display:inline-block;">
+          <img src="${person.avatar}" alt="${escapeHTML(person.name)}">
+        </div>
+        <h3 data-open-profile-id="${person.id}" role="button" tabindex="0" title="View ${escapeHTML(person.name)}'s profile" style="cursor:pointer;">${escapeHTML(person.name)}</h3>
         <p>${escapeHTML(person.role)} · <span style="color:var(--lagoon);">${escapeHTML(person.mutual)}</span></p>
         <div class="person-card-actions">
+          <button class="button button-outline button-small" data-view-profile-id="${person.id}" type="button" title="View ${escapeHTML(person.name)}'s profile">👤 Profile</button>
           <button class="button ${person.following ? 'button-outline' : (isRequested ? 'button-outline' : 'button-primary')} button-small" data-follow-id="${person.id}">
             ${person.following ? 'Following ✓' : (isRequested ? 'Requested ⏳' : '＋ Connect')}
           </button>
@@ -1866,6 +1888,22 @@
         </div>
       </div>
     `;}).join('');
+
+    peopleGrid.querySelectorAll('[data-view-profile-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.viewProfileId;
+        const person = PEOPLE.find(p => p.id == id);
+        if (person) openUserProfileModal(person);
+      });
+    });
+
+    peopleGrid.querySelectorAll('[data-open-profile-id]').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.dataset.openProfileId;
+        const person = PEOPLE.find(p => p.id == id);
+        if (person) openUserProfileModal(person);
+      });
+    });
 
     peopleGrid.querySelectorAll('[data-follow-id]').forEach(btn => {
       btn.addEventListener('click', async () => {
@@ -2137,6 +2175,18 @@
         const id = btn.dataset.homeMessageId;
         const person = PEOPLE.find(p => p.id == id);
         if (person) startOrOpenChatWithPerson(person);
+      });
+    });
+
+    // View Profile action from search card
+    homeDrawerGrid.querySelectorAll('.home-card-avatar, .home-card-identity').forEach(el => {
+      el.style.cursor = 'pointer';
+      el.title = 'View profile';
+      el.addEventListener('click', () => {
+        const card = el.closest('[data-person-card-id]');
+        const id = card ? card.dataset.personCardId : null;
+        const person = PEOPLE.find(p => p.id == id);
+        if (person) openUserProfileModal(person);
       });
     });
   }
@@ -3008,6 +3058,10 @@
         personId: person.id,
         handle: personHandle,
         name: person.name,
+        email: person.email || '',
+        bio: person.bio || 'Collecting moments on My Teta.',
+        location: person.location || 'Brooklyn, NY',
+        cover: person.cover || 'linear-gradient(135deg, #0d9488 0%, #6366f1 50%, #059669 100%)',
         avatar: person.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(person.name)}`,
         status: `Active recently · ${person.role || 'In your circle'}`,
         online: true,
@@ -3036,6 +3090,68 @@
     } else {
       renderChat();
     }
+  }
+
+  // ==========================================
+  // USER PROFILE VIEW CONTROLLER (MODAL & ACTIONS)
+  // ==========================================
+  const userProfileModal = document.getElementById('user-profile-modal');
+  const closeUserProfileModalBtn = document.getElementById('close-user-profile-modal');
+
+  function openUserProfileModal(person) {
+    if (!person) return;
+    const modal = document.getElementById('user-profile-modal');
+    if (!modal) return;
+
+    const elCover = document.getElementById('modal-profile-cover');
+    const elAvatar = document.getElementById('modal-profile-avatar');
+    const elName = document.getElementById('modal-profile-name');
+    const elHandle = document.getElementById('modal-profile-handle');
+    const elRole = document.getElementById('modal-profile-role');
+    const elBio = document.getElementById('modal-profile-bio');
+    const elLocText = document.getElementById('modal-profile-loc-text');
+    const elMutualText = document.getElementById('modal-profile-mutual-text');
+    const btnChat = document.getElementById('modal-profile-chat-btn');
+    const btnStatus = document.getElementById('modal-profile-status-btn');
+
+    if (elCover) {
+      elCover.style.background = person.cover || 'linear-gradient(135deg, #0d9488 0%, #6366f1 50%, #059669 100%)';
+    }
+    if (elAvatar) {
+      elAvatar.src = person.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(person.handle || person.name)}`;
+      elAvatar.alt = person.name;
+    }
+    if (elName) elName.textContent = person.name;
+    if (elHandle) elHandle.textContent = person.handle || `@${person.name.toLowerCase().replace(/\s+/g, '')}`;
+    if (elRole) elRole.textContent = person.role || 'Community Member & Creator';
+    if (elBio) elBio.textContent = person.bio || 'Collecting moments, good light, and connecting with people on My Teta.';
+    if (elLocText) elLocText.textContent = person.location || 'Brooklyn, NY';
+    if (elMutualText) elMutualText.textContent = person.following ? 'Connected in Circle ✨' : (person.mutual || 'Community Member');
+
+    if (btnStatus) {
+      btnStatus.textContent = person.following ? 'In Circle ✨' : 'Community Member';
+      btnStatus.className = person.following ? 'button button-outline button-small' : 'button button-primary button-small';
+    }
+
+    if (btnChat) {
+      btnChat.onclick = () => {
+        modal.hidden = true;
+        startOrOpenChatWithPerson(person, true);
+      };
+    }
+
+    modal.hidden = false;
+  }
+
+  if (closeUserProfileModalBtn && userProfileModal) {
+    closeUserProfileModalBtn.addEventListener('click', () => {
+      userProfileModal.hidden = true;
+    });
+    userProfileModal.addEventListener('click', (e) => {
+      if (e.target === userProfileModal) {
+        userProfileModal.hidden = true;
+      }
+    });
   }
 
   function renderChat() {
@@ -3239,7 +3355,7 @@
     if (conversationHeader) {
       const roleText = currentChat.status ? (currentChat.status.split('·')[1]?.trim() || currentChat.status) : 'In your circle';
       conversationHeader.innerHTML = `
-        <div class="conversation-header-user">
+        <div class="conversation-header-user" id="chat-header-user-info" role="button" tabindex="0" title="Click to view ${escapeHTML(currentChat.name)}'s profile" style="cursor:pointer;">
           <button class="chat-back-btn" id="chat-mobile-back" type="button" aria-label="Back to contacts list" title="Back to messages">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
           </button>
@@ -3249,22 +3365,36 @@
           </div>
           <div class="conversation-header-info">
             <strong>${escapeHTML(currentChat.name)} <span class="chat-user-handle">${escapeHTML(currentChat.handle || '')}</span></strong>
-            <small>${currentChat.online ? '● Active now' : 'Active recently'} · ${escapeHTML(roleText)}</small>
+            <small>${currentChat.online ? '● Active now' : 'Active recently'} · ${escapeHTML(roleText)} · <span style="text-decoration:underline; font-weight:600;">View Profile</span></small>
           </div>
         </div>
         <div class="conversation-header-actions">
+          <button class="chat-action-btn" type="button" id="chat-profile-btn" title="View ${escapeHTML(currentChat.name)}'s profile" aria-label="View user profile">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </button>
           <button class="chat-action-btn" type="button" id="chat-refresh-btn" title="Refresh messages from Supabase" aria-label="Refresh conversation">
             <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
           </button>
         </div>
       `;
 
-      document.getElementById('chat-mobile-back')?.addEventListener('click', () => {
+      document.getElementById('chat-mobile-back')?.addEventListener('click', (e) => {
+        e.stopPropagation();
         const shell = document.querySelector('.chat-shell');
         if (shell) {
           shell.classList.remove('is-in-conversation');
           shell.classList.add('show-sidebar');
         }
+      });
+
+      document.getElementById('chat-header-user-info')?.addEventListener('click', () => {
+        const found = PEOPLE.find(p => p.handle && currentChat.handle && p.handle.toLowerCase() === currentChat.handle.toLowerCase()) || currentChat;
+        openUserProfileModal(found);
+      });
+
+      document.getElementById('chat-profile-btn')?.addEventListener('click', () => {
+        const found = PEOPLE.find(p => p.handle && currentChat.handle && p.handle.toLowerCase() === currentChat.handle.toLowerCase()) || currentChat;
+        openUserProfileModal(found);
       });
 
       document.getElementById('chat-refresh-btn')?.addEventListener('click', async () => {
