@@ -9,21 +9,380 @@
   // ==========================================
   // 1. DATA STATE & PRESETS
   // ==========================================
+  const SAVED_USER = (() => {
+    try {
+      const data = localStorage.getItem('my_teta_current_user');
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      return null;
+    }
+  })();
+
   const CURRENT_USER = {
-    name: "Maya Chen",
-    handle: "@mayainmotion",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90",
-    cover: "linear-gradient(135deg, #0d9488, #6366f1, #059669)",
-    location: "Brooklyn, NY",
-    bio: "Collecting little things: good light, long walks, and meals that turn into stories.",
-    password: "password123",
-    is2FA: false,
-    isPrivate: false,
-    friendsCount: 248,
+    id: (SAVED_USER && SAVED_USER.id) || "user_maya_chen",
+    name: (SAVED_USER && SAVED_USER.name) || "Maya Chen",
+    handle: (SAVED_USER && SAVED_USER.handle) || "@mayainmotion",
+    email: (SAVED_USER && SAVED_USER.email) || "maya@myteta.social",
+    avatar: (SAVED_USER && SAVED_USER.avatar) || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90",
+    cover: (SAVED_USER && SAVED_USER.cover) || "linear-gradient(135deg, #0d9488, #6366f1, #059669)",
+    location: (SAVED_USER && SAVED_USER.location) || "Brooklyn, NY",
+    bio: (SAVED_USER && SAVED_USER.bio) || "Collecting little things: good light, long walks, and meals that turn into stories.",
+    password: (SAVED_USER && SAVED_USER.password) || "password123",
+    role: (SAVED_USER && SAVED_USER.role) || "Ceramicist & Visual Poet",
+    is2FA: Boolean(SAVED_USER && SAVED_USER.is2FA),
+    isPrivate: Boolean(SAVED_USER && SAVED_USER.isPrivate),
+    friendsCount: (SAVED_USER && SAVED_USER.friendsCount) || 248,
     momentsCount: 3,
     reelsCount: 2,
     circlesCount: 12
   };
+
+  // ==========================================
+  // SUPABASE INTEGRATION SERVICE
+  // ==========================================
+  const SUPABASE_CONFIG = {
+    url: "https://rhxniaajdutgtvrhpcgu.supabase.co",
+    anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJoeG5pYWFqZHV0Z3R2cmhwY2d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwNzQxMDUsImV4cCI6MjEwNzY1MDEwNX0.sK-Di3jDqMC24ZqKiBnxI5XTXH1LPik0qM3brYBmBLU"
+  };
+
+  const supabaseClient = (window.supabase && typeof window.supabase.createClient === 'function')
+    ? window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
+    : null;
+
+  const sentRequestHandles = new Set();
+
+  const SupabaseService = {
+    async request(endpoint, options = {}) {
+      const url = `${SUPABASE_CONFIG.url}/rest/v1/${endpoint}`;
+      const headers = {
+        "apikey": SUPABASE_CONFIG.anonKey,
+        "Authorization": `Bearer ${SUPABASE_CONFIG.anonKey}`,
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      };
+      const res = await fetch(url, { ...options, headers });
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        throw new Error(`Supabase error [${res.status}]: ${errText}`);
+      }
+      if (res.status === 204) return null;
+      return res.json().catch(() => null);
+    },
+
+    async syncProfile(profile) {
+      try {
+        const payload = {
+          id: profile.id || `user_${Date.now()}`,
+          name: profile.name,
+          handle: profile.handle.startsWith('@') ? profile.handle : `@${profile.handle}`,
+          email: profile.email || '',
+          avatar: profile.avatar || '',
+          role: profile.role || 'Member',
+          bio: profile.bio || 'Collecting moments on My Teta.',
+          location: profile.location || 'Brooklyn, NY',
+          mutual: profile.mutual || 'Connected on My Teta',
+          updated_at: new Date().toISOString()
+        };
+
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('profiles')
+            .upsert(payload, { onConflict: 'handle' });
+          if (error) console.warn("Supabase SDK syncProfile:", error);
+          return data;
+        } else {
+          return await this.request('profiles', {
+            method: 'POST',
+            headers: { "Prefer": "resolution=merge-duplicates" },
+            body: JSON.stringify(payload)
+          });
+        }
+      } catch (err) {
+        console.warn("SupabaseService.syncProfile fallback error:", err);
+        return null;
+      }
+    },
+
+    async fetchProfiles() {
+      try {
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .order('created_at', { ascending: false });
+          if (error) throw error;
+          return data || [];
+        } else {
+          const data = await this.request('profiles?select=*&order=created_at.desc');
+          return data || [];
+        }
+      } catch (err) {
+        console.warn("SupabaseService.fetchProfiles fallback error:", err);
+        return [];
+      }
+    },
+
+    async sendFriendRequest(reqData) {
+      try {
+        const payload = {
+          id: `req_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+          sender_name: reqData.sender_name || CURRENT_USER.name,
+          sender_handle: reqData.sender_handle || CURRENT_USER.handle,
+          sender_avatar: reqData.sender_avatar || CURRENT_USER.avatar,
+          sender_role: reqData.sender_role || 'Member',
+          sender_mutual: reqData.sender_mutual || 'In your circle',
+          receiver_handle: reqData.receiver_handle,
+          status: 'pending',
+          created_at: new Date().toISOString()
+        };
+
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('friend_requests')
+            .insert(payload);
+          if (error) throw error;
+          return data;
+        } else {
+          return await this.request('friend_requests', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+        }
+      } catch (err) {
+        console.warn("SupabaseService.sendFriendRequest error:", err);
+        return null;
+      }
+    },
+
+    async fetchIncomingRequests(userHandle) {
+      try {
+        if (!userHandle) return [];
+        const handle = userHandle.startsWith('@') ? userHandle : `@${userHandle}`;
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('friend_requests')
+            .select('*')
+            .eq('receiver_handle', handle)
+            .eq('status', 'pending');
+          if (error) throw error;
+          return data || [];
+        } else {
+          const data = await this.request(`friend_requests?receiver_handle=eq.${encodeURIComponent(handle)}&status=eq.pending`);
+          return data || [];
+        }
+      } catch (err) {
+        console.warn("SupabaseService.fetchIncomingRequests error:", err);
+        return [];
+      }
+    },
+
+    async fetchSentRequests(userHandle) {
+      try {
+        if (!userHandle) return [];
+        const handle = userHandle.startsWith('@') ? userHandle : `@${userHandle}`;
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('friend_requests')
+            .select('*')
+            .eq('sender_handle', handle)
+            .eq('status', 'pending');
+          if (error) throw error;
+          return data || [];
+        } else {
+          const data = await this.request(`friend_requests?sender_handle=eq.${encodeURIComponent(handle)}&status=eq.pending`);
+          return data || [];
+        }
+      } catch (err) {
+        console.warn("SupabaseService.fetchSentRequests error:", err);
+        return [];
+      }
+    },
+
+    async acceptFriendRequest(requestId) {
+      try {
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('friend_requests')
+            .update({ status: 'accepted', updated_at: new Date().toISOString() })
+            .eq('id', requestId);
+          if (error) throw error;
+          return data;
+        } else {
+          return await this.request(`friend_requests?id=eq.${encodeURIComponent(requestId)}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: 'accepted', updated_at: new Date().toISOString() })
+          });
+        }
+      } catch (err) {
+        console.warn("SupabaseService.acceptFriendRequest error:", err);
+        return null;
+      }
+    },
+
+    async findProfile(query) {
+      try {
+        if (!query) return null;
+        const clean = query.trim();
+        const handleSearch = clean.startsWith('@') ? clean : `@${clean}`;
+        if (supabaseClient) {
+          const { data: byEmail } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('email', clean)
+            .limit(1);
+          if (byEmail && byEmail.length > 0) return byEmail[0];
+
+          const { data: byHandle } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('handle', handleSearch)
+            .limit(1);
+          if (byHandle && byHandle.length > 0) return byHandle[0];
+
+          return null;
+        } else {
+          const byEmail = await this.request(`profiles?email=eq.${encodeURIComponent(clean)}&limit=1`);
+          if (byEmail && byEmail.length > 0) return byEmail[0];
+          const byHandle = await this.request(`profiles?handle=eq.${encodeURIComponent(handleSearch)}&limit=1`);
+          if (byHandle && byHandle.length > 0) return byHandle[0];
+          return null;
+        }
+      } catch (err) {
+        console.warn("SupabaseService.findProfile error:", err);
+        return null;
+      }
+    },
+
+    async declineFriendRequest(requestId) {
+      try {
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('friend_requests')
+            .update({ status: 'declined', updated_at: new Date().toISOString() })
+            .eq('id', requestId);
+          if (error) throw error;
+          return data;
+        } else {
+          return await this.request(`friend_requests?id=eq.${encodeURIComponent(requestId)}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: 'declined', updated_at: new Date().toISOString() })
+          });
+        }
+      } catch (err) {
+        console.warn("SupabaseService.declineFriendRequest error:", err);
+        return null;
+      }
+    }
+  };
+
+  async function syncCommunityFromSupabase() {
+    try {
+      const cloudProfiles = await SupabaseService.fetchProfiles();
+      if (cloudProfiles && cloudProfiles.length > 0) {
+        cloudProfiles.forEach(cp => {
+          if (cp.handle && cp.handle.toLowerCase() === CURRENT_USER.handle.toLowerCase()) return;
+          const existing = PEOPLE.find(p => p.handle && p.handle.toLowerCase() === cp.handle.toLowerCase());
+          if (existing) {
+            existing.name = cp.name || existing.name;
+            existing.role = cp.role || existing.role;
+            existing.avatar = cp.avatar || existing.avatar;
+            existing.mutual = cp.mutual || existing.mutual;
+          } else {
+            PEOPLE.push({
+              id: cp.id || Date.now(),
+              name: cp.name,
+              handle: cp.handle,
+              role: cp.role || 'Member',
+              mutual: cp.mutual || 'Community Member',
+              avatar: cp.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+              following: false
+            });
+          }
+        });
+      }
+
+      const sent = await SupabaseService.fetchSentRequests(CURRENT_USER.handle);
+      if (sent && sent.length > 0) {
+        sent.forEach(s => {
+          if (s.receiver_handle) sentRequestHandles.add(s.receiver_handle.toLowerCase());
+        });
+      }
+
+      const incoming = await SupabaseService.fetchIncomingRequests(CURRENT_USER.handle);
+      if (incoming && incoming.length > 0) {
+        incoming.forEach(inc => {
+          const alreadyExists = friendRequests.some(r => r.id === inc.id);
+          if (!alreadyExists) {
+            friendRequests.unshift({
+              id: inc.id,
+              name: inc.sender_name,
+              handle: inc.sender_handle,
+              avatar: inc.sender_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+              role: inc.sender_role || 'Member',
+              mutual: inc.sender_mutual || 'Requested connection via Supabase',
+              time: 'Just now',
+              isSupabase: true
+            });
+
+            if (typeof notifications !== 'undefined' && Array.isArray(notifications)) {
+              const notifAlready = notifications.some(n => n.requestId === inc.id);
+              if (!notifAlready) {
+                notifications.unshift({
+                  id: `notif_${inc.id}`,
+                  type: "request",
+                  icon: "👥",
+                  iconClass: "icon-request",
+                  actor: inc.sender_name,
+                  avatar: inc.sender_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+                  text: "sent you a friend request via Supabase",
+                  time: "Just now",
+                  read: false,
+                  isRequest: true,
+                  requestId: inc.id
+                });
+              }
+            }
+          }
+        });
+      }
+
+      if (typeof renderFriends === 'function') renderFriends(currentFriendFilter);
+      if (typeof renderChat === 'function') renderChat();
+      if (typeof renderNotifications === 'function') renderNotifications(activeNotifFilter);
+      if (typeof updateNotificationBadges === 'function') updateNotificationBadges();
+    } catch (e) {
+      console.warn("Failed to sync community from Supabase:", e);
+    }
+  }
+
+  function updateCurrentUserUI() {
+    const topbarAvatar = document.querySelector('.profile-trigger img');
+    if (topbarAvatar && CURRENT_USER.avatar) topbarAvatar.src = CURRENT_USER.avatar;
+
+    const railAvatar = document.querySelector('.rail-profile img');
+    const railName = document.querySelector('.rail-profile strong');
+    const railHandle = document.querySelector('.rail-profile small');
+    if (railAvatar && CURRENT_USER.avatar) railAvatar.src = CURRENT_USER.avatar;
+    if (railName && CURRENT_USER.name) railName.textContent = CURRENT_USER.name;
+    if (railHandle && CURRENT_USER.handle) railHandle.textContent = CURRENT_USER.handle;
+
+    const greetingHeader = document.querySelector('.greeting-row h1');
+    if (greetingHeader && CURRENT_USER.name) {
+      greetingHeader.innerHTML = `A little closer, <span>${CURRENT_USER.name.split(' ')[0]}.</span>`;
+    }
+
+    const composerAvatar = document.querySelector('.composer-main img');
+    if (composerAvatar && CURRENT_USER.avatar) composerAvatar.src = CURRENT_USER.avatar;
+
+    const summaryAvatar = document.getElementById('settings-summary-avatar');
+    const summaryName = document.getElementById('settings-summary-name');
+    const summaryHandle = document.getElementById('settings-summary-handle');
+    if (summaryAvatar && CURRENT_USER.avatar) summaryAvatar.src = CURRENT_USER.avatar;
+    if (summaryName && CURRENT_USER.name) summaryName.textContent = CURRENT_USER.name;
+    if (summaryHandle && CURRENT_USER.handle) summaryHandle.textContent = CURRENT_USER.handle;
+
+    if (typeof renderProfile === 'function') renderProfile();
+  }
 
   const STORIES = [
     {
@@ -1470,34 +1829,66 @@
       return;
     }
 
-    peopleGrid.innerHTML = list.map(person => `
+    peopleGrid.innerHTML = list.map(person => {
+      const handleKey = (person.handle || '').toLowerCase();
+      const isRequested = handleKey && sentRequestHandles.has(handleKey);
+      return `
       <div class="person-card">
         <img src="${person.avatar}" alt="${escapeHTML(person.name)}">
         <h3>${escapeHTML(person.name)}</h3>
         <p>${escapeHTML(person.role)} · <span style="color:var(--lagoon);">${escapeHTML(person.mutual)}</span></p>
         <div class="person-card-actions">
-          <button class="button ${person.following ? 'button-outline' : 'button-primary'} button-small" data-follow-id="${person.id}">
-            ${person.following ? 'Following ✓' : '＋ Connect'}
+          <button class="button ${person.following ? 'button-outline' : (isRequested ? 'button-outline' : 'button-primary')} button-small" data-follow-id="${person.id}">
+            ${person.following ? 'Following ✓' : (isRequested ? 'Requested ⏳' : '＋ Connect')}
           </button>
           ${person.following ? `<button class="button button-primary button-small" data-message-person-id="${person.id}" type="button" title="Message ${escapeHTML(person.name)}">💬 Chat</button>` : ''}
         </div>
       </div>
-    `).join('');
+    `;}).join('');
 
     peopleGrid.querySelectorAll('[data-follow-id]').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const id = btn.dataset.followId;
         const person = PEOPLE.find(p => p.id == id);
-        if (person) {
-          person.following = !person.following;
+        if (!person) return;
+
+        if (person.following) {
+          person.following = false;
           renderFriends(currentFriendFilter);
           renderChatFriendsTray();
           renderChat();
-          if (person.following) {
-            showToast(`Added ${person.name} to friendlist! You can now search & message them in Chat ✨`, "✨");
-          } else {
-            showToast(`Removed connection with ${person.name}`, "ℹ");
-          }
+          showToast(`Removed connection with ${person.name}`, "ℹ");
+          return;
+        }
+
+        const handleKey = (person.handle || '').toLowerCase();
+        if (handleKey && sentRequestHandles.has(handleKey)) {
+          showToast(`Friend request already sent to ${person.name}. Awaiting their reply! ⏳`, "⏳");
+          return;
+        }
+
+        // Send friend request via Supabase
+        if (person.handle) {
+          sentRequestHandles.add(handleKey);
+          btn.textContent = 'Requested ⏳';
+          btn.className = 'button button-outline button-small';
+          showToast(`Friend request sent to ${person.name}! 🚀`, "✨");
+
+          await SupabaseService.sendFriendRequest({
+            sender_name: CURRENT_USER.name,
+            sender_handle: CURRENT_USER.handle,
+            sender_avatar: CURRENT_USER.avatar,
+            sender_role: CURRENT_USER.role || 'Member',
+            sender_mutual: 'Connected via My Teta circle',
+            receiver_handle: person.handle
+          });
+          renderFriends(currentFriendFilter);
+        } else {
+          person.following = true;
+          renderFriends(currentFriendFilter);
+          renderChatFriendsTray();
+          renderChat();
+          showToast(`Connected with ${person.name}! Added to chat circle ✨`, "✨");
         }
       });
     });
@@ -2719,19 +3110,22 @@
     });
   }
 
-  function acceptFriendRequest(reqId) {
+  async function acceptFriendRequest(reqId) {
     const req = friendRequests.find(r => r.id === reqId);
     if (!req) return;
 
+    // Send acceptance to Supabase
+    SupabaseService.acceptFriendRequest(reqId);
+
     // Add to PEOPLE list
-    const existingPerson = PEOPLE.find(p => p.name === req.name);
+    const existingPerson = PEOPLE.find(p => p.name === req.name || (p.handle && req.handle && p.handle.toLowerCase() === req.handle.toLowerCase()));
     if (!existingPerson) {
       PEOPLE.unshift({
         id: Date.now(),
         name: req.name,
         handle: req.handle,
         role: req.role,
-        mutual: req.mutual,
+        mutual: req.mutual || 'Connected on My Teta',
         avatar: req.avatar,
         following: true
       });
@@ -2754,9 +3148,13 @@
     showToast(`Connected with ${req.name}! Added to chat circle ✨`, '✨');
   }
 
-  function declineFriendRequest(reqId) {
+  async function declineFriendRequest(reqId) {
     const req = friendRequests.find(r => r.id === reqId);
     const reqName = req ? req.name : "person";
+
+    // Send decline to Supabase
+    SupabaseService.declineFriendRequest(reqId);
+
     friendRequests = friendRequests.filter(r => r.id !== reqId);
     notifications = notifications.filter(n => !(n.isRequest && n.requestId === reqId));
 
@@ -3083,65 +3481,114 @@
 
   // Dedicated Page Log In Form Submit
   if (pageLoginForm) {
-    pageLoginForm.addEventListener('submit', (e) => {
+    pageLoginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('page-login-email')?.value.trim();
+      const emailOrHandle = document.getElementById('page-login-email')?.value.trim();
       const submitBtn = document.getElementById('btn-execute-page-login');
 
       if (submitBtn) {
         submitBtn.disabled = true;
         const textSpan = submitBtn.querySelector('.btn-text');
-        if (textSpan) textSpan.textContent = "Authenticating...";
+        if (textSpan) textSpan.textContent = "Connecting to Supabase...";
       }
 
-      setTimeout(() => {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          const textSpan = submitBtn.querySelector('.btn-text');
-          if (textSpan) textSpan.textContent = "Log In to My Teta";
-        }
+      let profile = await SupabaseService.findProfile(emailOrHandle);
+      if (profile) {
+        CURRENT_USER.name = profile.name || CURRENT_USER.name;
+        CURRENT_USER.handle = profile.handle || CURRENT_USER.handle;
+        CURRENT_USER.avatar = profile.avatar || CURRENT_USER.avatar;
+        CURRENT_USER.role = profile.role || CURRENT_USER.role;
+        CURRENT_USER.bio = profile.bio || CURRENT_USER.bio;
+        CURRENT_USER.email = profile.email || emailOrHandle;
+      } else {
+        const cleanName = emailOrHandle ? emailOrHandle.split('@')[0] : 'Member';
+        const formattedHandle = emailOrHandle && emailOrHandle.startsWith('@') ? emailOrHandle : `@${cleanName}`;
+        CURRENT_USER.name = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+        CURRENT_USER.handle = formattedHandle;
+        CURRENT_USER.email = emailOrHandle || '';
+        await SupabaseService.syncProfile({
+          name: CURRENT_USER.name,
+          handle: CURRENT_USER.handle,
+          email: CURRENT_USER.email,
+          avatar: CURRENT_USER.avatar,
+          role: CURRENT_USER.role,
+          bio: CURRENT_USER.bio,
+          mutual: 'Active in circle'
+        });
+      }
 
-        const namePart = email ? email.split('@')[0] : 'friend';
-        showToast(`Welcome back, ${namePart}! ✨`, "✨");
-        switchView('home');
-      }, 450);
+      try {
+        localStorage.setItem('my_teta_current_user', JSON.stringify(CURRENT_USER));
+      } catch (err) {}
+
+      updateCurrentUserUI();
+      await syncCommunityFromSupabase();
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        const textSpan = submitBtn.querySelector('.btn-text');
+        if (textSpan) textSpan.textContent = "Log In to My Teta";
+      }
+
+      showToast(`Welcome back, ${CURRENT_USER.name}! ✨`, "✨");
+      switchView('home');
     });
   }
 
   // Dedicated Page Sign Up Form Submit
   if (pageSignupForm) {
-    pageSignupForm.addEventListener('submit', (e) => {
+    pageSignupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fullName = document.getElementById('page-signup-fullname')?.value.trim() || 'New Member';
-      const handle = document.getElementById('page-signup-handle')?.value.trim() || 'newmember';
-      const email = document.getElementById('page-signup-email')?.value.trim();
+      const rawHandle = document.getElementById('page-signup-handle')?.value.trim() || 'newmember';
+      const handle = rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`;
+      const email = document.getElementById('page-signup-email')?.value.trim() || '';
+      const password = document.getElementById('page-signup-password')?.value || '';
       const submitBtn = document.getElementById('btn-execute-page-signup');
 
       if (submitBtn) {
         submitBtn.disabled = true;
         const textSpan = submitBtn.querySelector('.btn-text');
-        if (textSpan) textSpan.textContent = "Setting up your circle...";
+        if (textSpan) textSpan.textContent = "Saving profile to Supabase...";
       }
 
-      setTimeout(() => {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          const textSpan = submitBtn.querySelector('.btn-text');
-          if (textSpan) textSpan.textContent = "Create Free Account ✨";
-        }
+      const avatarSeed = encodeURIComponent(handle.replace('@', ''));
+      const avatarUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${avatarSeed}`;
 
-        CURRENT_USER.name = fullName;
-        CURRENT_USER.handle = handle.startsWith('@') ? handle : `@${handle}`;
+      CURRENT_USER.name = fullName;
+      CURRENT_USER.handle = handle;
+      CURRENT_USER.email = email;
+      CURRENT_USER.avatar = avatarUrl;
+      CURRENT_USER.password = password;
+      CURRENT_USER.role = 'Community Member & Creator';
 
-        // Update greeting in Home view
-        const greetingHeader = document.querySelector('.greeting-row h1');
-        if (greetingHeader) {
-          greetingHeader.innerHTML = `A little closer, <span>${fullName.split(' ')[0]}.</span>`;
-        }
+      try {
+        localStorage.setItem('my_teta_current_user', JSON.stringify(CURRENT_USER));
+      } catch (err) {}
 
-        showToast(`Account created! Welcome to My Teta, ${fullName}! 🎉`, "🎉");
-        switchView('home');
-      }, 500);
+      // Save user to Supabase profiles
+      await SupabaseService.syncProfile({
+        name: CURRENT_USER.name,
+        handle: CURRENT_USER.handle,
+        email: CURRENT_USER.email,
+        avatar: CURRENT_USER.avatar,
+        role: CURRENT_USER.role,
+        bio: CURRENT_USER.bio,
+        location: CURRENT_USER.location,
+        mutual: 'Just joined My Teta'
+      });
+
+      updateCurrentUserUI();
+      await syncCommunityFromSupabase();
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        const textSpan = submitBtn.querySelector('.btn-text');
+        if (textSpan) textSpan.textContent = "Create Free Account ✨";
+      }
+
+      showToast(`Account created & synced to Supabase! Welcome, ${fullName}! 🎉`, "🎉");
+      switchView('home');
     });
   }
 
@@ -3178,15 +3625,39 @@
 
   const authForm = document.getElementById('auth-form');
   if (authForm) {
-    authForm.addEventListener('submit', (e) => {
+    authForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('auth-email').value;
+      const email = document.getElementById('auth-email').value.trim();
       const isSignup = authSignupTab?.classList.contains('is-selected');
       if (authModal) authModal.hidden = true;
+
+      const cleanName = email ? email.split('@')[0] : 'friend';
+      const formattedHandle = `@${cleanName.replace(/[^a-zA-Z0-9_]/g, '') || 'member'}`;
+      CURRENT_USER.name = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+      CURRENT_USER.handle = formattedHandle;
+      CURRENT_USER.email = email;
+
+      try {
+        localStorage.setItem('my_teta_current_user', JSON.stringify(CURRENT_USER));
+      } catch (err) {}
+
+      await SupabaseService.syncProfile({
+        name: CURRENT_USER.name,
+        handle: CURRENT_USER.handle,
+        email: CURRENT_USER.email,
+        avatar: CURRENT_USER.avatar,
+        role: CURRENT_USER.role || 'Member',
+        bio: CURRENT_USER.bio,
+        mutual: 'Active in circle'
+      });
+
+      updateCurrentUserUI();
+      await syncCommunityFromSupabase();
+
       if (isSignup) {
-        showToast(`Account created! Welcome to My Teta, ${email.split('@')[0]}!`, "🎉");
+        showToast(`Account created & saved to Supabase! Welcome, ${CURRENT_USER.name}! 🎉`, "🎉");
       } else {
-        showToast(`Welcome back, ${email.split('@')[0]}!`, "✨");
+        showToast(`Welcome back, ${CURRENT_USER.name}! ✨`, "✨");
       }
       switchView('home');
     });
@@ -4381,6 +4852,13 @@
   renderSettings();
   renderContactView();
   renderNotifications('all');
+
+  // Supabase sync and background polling
+  updateCurrentUserUI();
+  syncCommunityFromSupabase();
+  setInterval(() => {
+    syncCommunityFromSupabase();
+  }, 25000);
 
   console.log("My Teta initialized successfully with Supabase and Vercel endpoints configured.");
 })();
