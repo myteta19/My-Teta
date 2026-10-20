@@ -297,6 +297,108 @@
         console.warn("SupabaseService.cancelSentRequest error:", err);
         return null;
       }
+    },
+
+    async sendMessage(msg) {
+      try {
+        const payload = {
+          id: msg.id || `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+          sender_handle: msg.sender_handle,
+          receiver_handle: msg.receiver_handle,
+          sender_name: msg.sender_name || CURRENT_USER.name,
+          sender_avatar: msg.sender_avatar || CURRENT_USER.avatar,
+          content: msg.content,
+          created_at: msg.created_at || new Date().toISOString(),
+          read: false
+        };
+
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('messages')
+            .insert(payload);
+          if (error) console.warn("Supabase sendMessage error:", error);
+          return data || payload;
+        } else {
+          return await this.request('messages', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+        }
+      } catch (err) {
+        console.warn("SupabaseService.sendMessage error:", err);
+        return null;
+      }
+    },
+
+    async fetchConversation(handleA, handleB) {
+      try {
+        if (!handleA || !handleB) return [];
+        const hA = handleA.startsWith('@') ? handleA : `@${handleA}`;
+        const hB = handleB.startsWith('@') ? handleB : `@${handleB}`;
+
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('messages')
+            .select('*')
+            .or(`and(sender_handle.eq.${hA},receiver_handle.eq.${hB}),and(sender_handle.eq.${hB},receiver_handle.eq.${hA})`)
+            .order('created_at', { ascending: true });
+          if (error) console.warn("Supabase fetchConversation error:", error);
+          return data || [];
+        } else {
+          const filter = `messages?select=*&or=(and(sender_handle.eq.${encodeURIComponent(hA)},receiver_handle.eq.${encodeURIComponent(hB)}),and(sender_handle.eq.${encodeURIComponent(hB)},receiver_handle.eq.${encodeURIComponent(hA)}))&order=created_at.asc`;
+          const data = await this.request(filter);
+          return data || [];
+        }
+      } catch (err) {
+        console.warn("SupabaseService.fetchConversation error:", err);
+        return [];
+      }
+    },
+
+    async fetchRecentMessagesForUser(userHandle) {
+      try {
+        if (!userHandle) return [];
+        const handle = userHandle.startsWith('@') ? userHandle : `@${userHandle}`;
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('messages')
+            .select('*')
+            .or(`sender_handle.eq.${handle},receiver_handle.eq.${handle}`)
+            .order('created_at', { ascending: false });
+          if (error) console.warn("Supabase fetchRecentMessagesForUser error:", error);
+          return data || [];
+        } else {
+          const filter = `messages?select=*&or=(sender_handle.eq.${encodeURIComponent(handle)},receiver_handle.eq.${encodeURIComponent(handle)})&order=created_at.desc`;
+          const data = await this.request(filter);
+          return data || [];
+        }
+      } catch (err) {
+        console.warn("SupabaseService.fetchRecentMessagesForUser error:", err);
+        return [];
+      }
+    },
+
+    async fetchAcceptedFriendships(userHandle) {
+      try {
+        if (!userHandle) return [];
+        const handle = userHandle.startsWith('@') ? userHandle : `@${userHandle}`;
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('friend_requests')
+            .select('*')
+            .eq('status', 'accepted')
+            .or(`sender_handle.eq.${handle},receiver_handle.eq.${handle}`);
+          if (error) console.warn("Supabase fetchAcceptedFriendships error:", error);
+          return data || [];
+        } else {
+          const filter = `friend_requests?status=eq.accepted&or=(sender_handle.eq.${encodeURIComponent(handle)},receiver_handle.eq.${encodeURIComponent(handle)})`;
+          const data = await this.request(filter);
+          return data || [];
+        }
+      } catch (err) {
+        console.warn("SupabaseService.fetchAcceptedFriendships error:", err);
+        return [];
+      }
     }
   };
 
@@ -361,6 +463,38 @@
             }
           }
         });
+      }
+
+      // Fetch accepted friendships involving CURRENT_USER from Supabase
+      const acceptedFriendships = await SupabaseService.fetchAcceptedFriendships(CURRENT_USER.handle);
+      if (acceptedFriendships && acceptedFriendships.length > 0) {
+        const myHandle = (CURRENT_USER.handle || '').toLowerCase();
+        acceptedFriendships.forEach(af => {
+          const isSender = (af.sender_handle || '').toLowerCase() === myHandle;
+          const partnerHandle = isSender ? af.receiver_handle : af.sender_handle;
+          if (!partnerHandle) return;
+
+          let person = PEOPLE.find(p => p.handle && p.handle.toLowerCase() === partnerHandle.toLowerCase());
+          if (person) {
+            person.following = true;
+          } else {
+            person = {
+              id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+              name: isSender ? partnerHandle.replace('@', '') : (af.sender_name || partnerHandle.replace('@', '')),
+              handle: partnerHandle,
+              role: isSender ? 'Community Member' : (af.sender_role || 'Community Member'),
+              mutual: 'Connected friend in circle',
+              avatar: isSender ? `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(partnerHandle)}` : (af.sender_avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(partnerHandle)}`),
+              following: true
+            };
+            PEOPLE.push(person);
+          }
+        });
+      }
+
+      // Sync direct messages and chat conversations from Supabase
+      if (typeof syncChatsFromSupabase === 'function') {
+        await syncChatsFromSupabase();
       }
 
       if (typeof updateSentBadgeCounts === 'function') updateSentBadgeCounts();
@@ -783,90 +917,8 @@
     }
   };
 
-  let CHATS = [
-    {
-      id: 1,
-      name: "Amara Vance",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
-      status: "Active now · Ceramicist & Sculptor",
-      online: true,
-      lastMsg: "Did the tea arrive yet? Let me know!",
-      time: "10:14 AM",
-      unread: 2,
-      messages: [
-        { type: "received", text: "Hey Maya! Are we still on for farmer's market on Saturday?", time: "10:08 AM" },
-        { type: "sent", text: "Yes absolutely! Let's meet at 9:30 before the peaches sell out.", time: "10:11 AM" },
-        { type: "received", text: "Did the tea arrive yet? Let me know!", time: "10:14 AM" }
-      ],
-      autoReplies: [
-        "Yes! Brewing some fresh sencha right now 🍵",
-        "Can't wait! I'll bring the new porcelain tea cups from the kiln.",
-        "Sounds delightful! See you at 9:30 sharp ✨",
-        "Perfect, let me know when you're on your way!"
-      ]
-    },
-    {
-      id: 2,
-      name: "Soren Kierkegaard",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-      status: "Active 20m ago · Sunday Table Host",
-      online: true,
-      lastMsg: "I saved two slices of the sourdough for you.",
-      time: "Yesterday",
-      unread: 0,
-      messages: [
-        { type: "received", text: "I saved two slices of the sourdough for you with whipped honey butter.", time: "Yesterday, 4:15 PM" },
-        { type: "sent", text: "You're an angel! I'll swing by after the studio session.", time: "Yesterday, 4:22 PM" },
-        { type: "received", text: "I saved two slices of the sourdough for you.", time: "Yesterday, 4:28 PM" }
-      ],
-      autoReplies: [
-        "Anytime! The crust came out super crispy today 🍞",
-        "Let me know when you arrive, I'll put the kettle on.",
-        "Save room for apple cinnamon tart too! 🍎"
-      ]
-    },
-    {
-      id: 3,
-      name: "Lucas Dubois",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
-      status: "Active 1h ago · Hudson Valley Explorer",
-      online: false,
-      lastMsg: "The trail photos look unreal! Did you see the sunset?",
-      time: "Oct 17",
-      unread: 1,
-      messages: [
-        { type: "received", text: "Did you catch the mist rolling over the ridges this morning?", time: "Oct 17, 8:10 AM" },
-        { type: "sent", text: "Yes! Captured some 35mm film shots from the ridge overlook.", time: "Oct 17, 9:02 AM" },
-        { type: "received", text: "The trail photos look unreal! Did you see the sunset?", time: "Oct 17, 7:45 PM" }
-      ],
-      autoReplies: [
-        "Film colors hit different out here! Can't wait for your prints.",
-        "Next weekend we're hiking the north ridge trail if you're up for it 🌲",
-        "Sending good vibes from upstate!"
-      ]
-    },
-    {
-      id: 4,
-      name: "Priya Patel",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-      status: "Active in circle · Botanist & Maker",
-      online: true,
-      lastMsg: "Loved the tea recommendation, thank you so much!",
-      time: "Oct 15",
-      unread: 0,
-      messages: [
-        { type: "sent", text: "Priya, have you tried the roasted oolong from the small farm yet?", time: "Oct 15, 2:10 PM" },
-        { type: "received", text: "Loved the tea recommendation, thank you so much!", time: "Oct 15, 2:40 PM" }
-      ],
-      autoReplies: [
-        "The botanical garden gathering starts at 4pm on Sunday if you'd like to join!",
-        "I saved some jasmine cuttings for you as well 🌿",
-        "Have a wonderful week Maya!"
-      ]
-    }
-  ];
-
-  let activeChatId = 1;
+  let CHATS = [];
+  let activeChatId = null;
   let chatFilterMode = 'all';
 
   // ==========================================
@@ -2778,45 +2830,198 @@
     });
   }
 
-  function startOrOpenChatWithPerson(person) {
+  // ==========================================
+  // REAL-TIME DIRECT MESSAGING & CHAT SYSTEM
+  // ==========================================
+  async function syncChatsFromSupabase() {
+    try {
+      const myHandle = (CURRENT_USER.handle || '').toLowerCase();
+      if (!myHandle) return;
+
+      // 1. Fetch recent messages involving CURRENT_USER from Supabase
+      const recentMessages = await SupabaseService.fetchRecentMessagesForUser(CURRENT_USER.handle);
+
+      // 2. Map of conversation partners by normalized handle
+      const partnersMap = new Map();
+
+      // First populate from accepted friends in PEOPLE (who are following / connected)
+      PEOPLE.filter(p => p.following).forEach(friend => {
+        const h = (friend.handle || '').toLowerCase();
+        if (!h || h === myHandle) return;
+        partnersMap.set(h, {
+          id: friend.handle || friend.id,
+          personId: friend.id,
+          handle: friend.handle,
+          name: friend.name,
+          avatar: friend.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(friend.name)}`,
+          status: `Active recently · ${friend.role || 'In your circle'}`,
+          online: true,
+          lastMsg: `Connected with ${friend.name.split(' ')[0]}`,
+          time: 'Just now',
+          unread: 0,
+          messages: []
+        });
+      });
+
+      // Keep any active conversation that was manually opened in this session
+      CHATS.forEach(c => {
+        const h = (c.handle || '').toLowerCase();
+        if (h && !partnersMap.has(h)) {
+          partnersMap.set(h, { ...c });
+        }
+      });
+
+      // Process real messages from Supabase
+      if (recentMessages && recentMessages.length > 0) {
+        // Chronological order
+        const sorted = [...recentMessages].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+        sorted.forEach(msg => {
+          const sHandle = (msg.sender_handle || '').toLowerCase();
+          const rHandle = (msg.receiver_handle || '').toLowerCase();
+          const isMeSender = sHandle === myHandle;
+          const partnerHandle = isMeSender ? msg.receiver_handle : msg.sender_handle;
+          if (!partnerHandle) return;
+          const pKey = partnerHandle.toLowerCase();
+
+          if (!partnersMap.has(pKey)) {
+            const foundPerson = PEOPLE.find(p => p.handle && p.handle.toLowerCase() === pKey);
+            partnersMap.set(pKey, {
+              id: partnerHandle,
+              personId: foundPerson ? foundPerson.id : null,
+              handle: partnerHandle,
+              name: foundPerson ? foundPerson.name : (isMeSender ? partnerHandle.replace('@', '') : (msg.sender_name || partnerHandle.replace('@', ''))),
+              avatar: foundPerson ? foundPerson.avatar : (isMeSender ? `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(partnerHandle)}` : (msg.sender_avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(partnerHandle)}`)),
+              status: foundPerson ? `Active recently · ${foundPerson.role}` : 'Community Member',
+              online: true,
+              lastMsg: '',
+              time: '',
+              unread: 0,
+              messages: []
+            });
+          }
+
+          const chatObj = partnersMap.get(pKey);
+          const msgTime = new Date(msg.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+          if (!chatObj.messages.some(m => m.id === msg.id)) {
+            chatObj.messages.push({
+              id: msg.id,
+              sender_handle: msg.sender_handle,
+              receiver_handle: msg.receiver_handle,
+              type: isMeSender ? 'sent' : 'received',
+              text: msg.content,
+              isHTML: typeof msg.content === 'string' && (msg.content.includes('<img ') || msg.content.includes('<br>')),
+              time: msgTime,
+              created_at: msg.created_at
+            });
+          }
+
+          chatObj.lastMsg = (typeof msg.content === 'string' && msg.content.includes('<img ')) ? '📷 Shared a photo moment' : msg.content;
+          chatObj.time = msgTime;
+        });
+      }
+
+      // Convert map to array
+      CHATS = Array.from(partnersMap.values());
+
+      // Sort chats: latest message first
+      CHATS.sort((a, b) => {
+        const timeA = (a.messages && a.messages.length > 0) ? new Date(a.messages[a.messages.length - 1].created_at).getTime() : 0;
+        const timeB = (b.messages && b.messages.length > 0) ? new Date(b.messages[b.messages.length - 1].created_at).getTime() : 0;
+        return timeB - timeA;
+      });
+
+      // Preserve active chat selection if valid
+      if (activeChatId) {
+        const found = CHATS.find(c => c.id === activeChatId || (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()));
+        if (found) {
+          activeChatId = found.id;
+        } else if (CHATS.length > 0) {
+          activeChatId = CHATS[0].id;
+        } else {
+          activeChatId = null;
+        }
+      } else if (CHATS.length > 0 && window.innerWidth > 768) {
+        activeChatId = CHATS[0].id;
+      }
+
+      updateChatBadges();
+      renderChat();
+      renderConversation();
+    } catch (err) {
+      console.warn("syncChatsFromSupabase error:", err);
+    }
+  }
+
+  async function loadConversationHistory(currentChat) {
+    if (!currentChat || !currentChat.handle || !CURRENT_USER.handle) return;
+    try {
+      const history = await SupabaseService.fetchConversation(CURRENT_USER.handle, currentChat.handle);
+      if (history && Array.isArray(history)) {
+        const myHandle = (CURRENT_USER.handle || '').toLowerCase();
+        currentChat.messages = history.map(m => {
+          const sHandle = (m.sender_handle || '').toLowerCase();
+          const isSent = sHandle === myHandle;
+          const msgTime = new Date(m.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+          return {
+            id: m.id,
+            sender_handle: m.sender_handle,
+            receiver_handle: m.receiver_handle,
+            type: isSent ? 'sent' : 'received',
+            text: m.content,
+            isHTML: typeof m.content === 'string' && (m.content.includes('<img ') || m.content.includes('<br>')),
+            time: msgTime,
+            created_at: m.created_at
+          };
+        });
+
+        if (currentChat.messages.length > 0) {
+          const latest = currentChat.messages[currentChat.messages.length - 1];
+          currentChat.lastMsg = (typeof latest.text === 'string' && latest.text.includes('<img ')) ? '📷 Shared a photo moment' : latest.text;
+          currentChat.time = latest.time;
+        }
+
+        if (activeChatId === currentChat.id) {
+          renderConversation();
+          updateChatBadges();
+        }
+      }
+    } catch (e) {
+      console.warn("loadConversationHistory error:", e);
+    }
+  }
+
+  function startOrOpenChatWithPerson(person, shouldSwitchView = true) {
     if (!person) return;
+    const personHandle = person.handle || `@${person.name.toLowerCase().replace(/\s+/g, '')}`;
+
     let existingChat = CHATS.find(c => 
+      (c.handle && person.handle && c.handle.toLowerCase() === person.handle.toLowerCase()) ||
       c.name.toLowerCase() === person.name.toLowerCase() || 
-      (c.personId && c.personId == person.id)
+      (c.personId && person.id && c.personId == person.id)
     );
 
     if (!existingChat) {
-      const newId = Math.max(0, ...CHATS.map(c => c.id)) + 1;
       existingChat = {
-        id: newId,
+        id: personHandle,
         personId: person.id,
+        handle: personHandle,
         name: person.name,
-        avatar: person.avatar,
+        avatar: person.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(person.name)}`,
         status: `Active recently · ${person.role || 'In your circle'}`,
         online: true,
         lastMsg: `Connected with ${person.name.split(' ')[0]}`,
         time: "Just now",
         unread: 0,
-        messages: [
-          {
-            type: "received",
-            text: `Hi Maya! Great connecting with you on My Teta ✨`,
-            time: "Just now"
-          }
-        ],
-        autoReplies: [
-          `Hey Maya! How is your day going? 😊`,
-          `Loved your latest post on the feed!`,
-          `So good connecting with you here! Catch you later today ☕`,
-          `Thanks for reaching out! Let's collaborate soon ✨`
-        ]
+        messages: []
       };
       CHATS.unshift(existingChat);
     }
 
     if (!person.following) {
       person.following = true;
-      renderFriends(currentFriendFilter);
+      if (typeof renderFriends === 'function') renderFriends(currentFriendFilter);
     }
     renderChatFriendsTray();
 
@@ -2824,9 +3029,13 @@
       chatSearchInput.value = '';
     }
 
-    switchView('chat');
-    selectChat(existingChat.id);
-    showToast(`Opened chat with ${person.name}`, "💬");
+    if (shouldSwitchView) {
+      switchView('chat');
+      selectChat(existingChat.id);
+      showToast(`Opened chat with ${person.name}`, "💬");
+    } else {
+      renderChat();
+    }
   }
 
   function renderChat() {
@@ -2839,12 +3048,13 @@
       const matchesFilter = (chatFilterMode === 'unread') ? (chat.unread > 0) : true;
       const matchesSearch = !query || 
         chat.name.toLowerCase().includes(query) || 
+        (chat.handle && chat.handle.toLowerCase().includes(query)) ||
         (chat.lastMsg && chat.lastMsg.toLowerCase().includes(query)) ||
         (chat.status && chat.status.toLowerCase().includes(query));
       return matchesFilter && matchesSearch;
     });
 
-    // Also search across PEOPLE (all friends you added to friendlist and circle contacts)
+    // Also search across PEOPLE (real members in circle or community)
     let matchingPeople = [];
     if (query) {
       matchingPeople = PEOPLE.filter(p => {
@@ -2852,6 +3062,7 @@
           (p.handle && p.handle.toLowerCase().includes(query)) ||
           (p.role && p.role.toLowerCase().includes(query));
         const alreadyInChats = filteredChats.some(c => 
+          (c.handle && p.handle && c.handle.toLowerCase() === p.handle.toLowerCase()) ||
           c.name.toLowerCase() === p.name.toLowerCase() || 
           (c.personId && c.personId == p.id)
         );
@@ -2862,8 +3073,8 @@
     if (filteredChats.length === 0 && matchingPeople.length === 0) {
       chatContactList.innerHTML = `
         <div style="padding: 36px 16px; text-align: center; color: var(--ink-faint); font-size: 0.85rem;">
-          <p style="margin: 0 0 4px; font-weight: 700; color: var(--ink-soft);">No results found</p>
-          <small>${query ? `No contacts or friends matching "${escapeHTML(query)}"` : 'Try clearing your search or filter'}</small>
+          <p style="margin: 0 0 4px; font-weight: 700; color: var(--ink-soft);">${query ? 'No results found' : 'No real conversations yet'}</p>
+          <small>${query ? `No contacts or friends matching "${escapeHTML(query)}"` : 'Accept friend requests or message community members to start chatting'}</small>
         </div>
       `;
       return;
@@ -2871,7 +3082,7 @@
 
     let html = '';
 
-    // 1. Render matching active chats
+    // 1. Render active real user chats
     if (filteredChats.length > 0) {
       if (query && matchingPeople.length > 0) {
         html += `
@@ -2881,7 +3092,7 @@
         `;
       }
       html += filteredChats.map(chat => `
-        <div class="chat-item ${chat.id === activeChatId ? 'is-selected' : ''}" data-chat-id="${chat.id}" role="button" tabindex="0" aria-label="Chat with ${escapeHTML(chat.name)}">
+        <div class="chat-item ${chat.id === activeChatId ? 'is-selected' : ''}" data-chat-id="${escapeHTML(chat.id)}" role="button" tabindex="0" aria-label="Chat with ${escapeHTML(chat.name)}">
           <div class="chat-avatar-wrap">
             <img src="${chat.avatar}" alt="${escapeHTML(chat.name)}">
             ${chat.online ? '<span class="chat-online-dot" title="Active now"></span>' : ''}
@@ -2892,7 +3103,7 @@
               <time>${chat.time}</time>
             </div>
             <div class="chat-item-preview">
-              <p>${escapeHTML(chat.lastMsg)}</p>
+              <p>${escapeHTML(chat.lastMsg || 'Tap to message')}</p>
               ${chat.unread > 0 ? `<span class="chat-unread-badge">${chat.unread}</span>` : ''}
             </div>
           </div>
@@ -2900,11 +3111,11 @@
       `).join('');
     }
 
-    // 2. Render matching friends from friendlist or circle
+    // 2. Render matching community members from friendlist or circle
     if (matchingPeople.length > 0) {
       html += `
         <div class="chat-search-section-header">
-          <span>Friends & People (${matchingPeople.length})</span>
+          <span>Community Members (${matchingPeople.length})</span>
           <small>Tap to message</small>
         </div>
       `;
@@ -2912,12 +3123,12 @@
         <div class="chat-item chat-item-friend-result" data-search-person-id="${p.id}" role="button" tabindex="0" aria-label="Start chat with ${escapeHTML(p.name)}">
           <div class="chat-avatar-wrap">
             <img src="${p.avatar}" alt="${escapeHTML(p.name)}">
-            <span class="chat-online-dot" title="Active in circle"></span>
+            <span class="chat-online-dot" title="Active member"></span>
           </div>
           <div class="chat-item-body">
             <div class="chat-item-header">
               <strong>${escapeHTML(p.name)}</strong>
-              <span class="chat-friend-badge">${p.following ? 'Friend' : 'Person'}</span>
+              <span class="chat-friend-badge">${p.following ? 'Friend' : 'Member'}</span>
             </div>
             <div class="chat-item-preview">
               <p>${escapeHTML(p.role || p.handle)} · Tap to message</p>
@@ -2932,7 +3143,7 @@
 
     chatContactList.querySelectorAll('[data-chat-id]').forEach(item => {
       item.addEventListener('click', () => {
-        const id = Number(item.dataset.chatId);
+        const id = item.dataset.chatId;
         selectChat(id);
       });
     });
@@ -2950,15 +3161,23 @@
     renderConversation();
   }
 
-  function selectChat(id) {
+  async function selectChat(id) {
     activeChatId = id;
-    const currentChat = CHATS.find(c => c.id === activeChatId);
-    if (currentChat && currentChat.unread > 0) {
-      currentChat.unread = 0;
-      updateChatBadges();
-    }
-    if (messageInput && currentChat) {
-      messageInput.placeholder = `Write a message to ${currentChat.name.split(' ')[0]}...`;
+    const currentChat = CHATS.find(c => c.id === activeChatId || (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()));
+    if (currentChat) {
+      activeChatId = currentChat.id;
+      if (currentChat.unread > 0) {
+        currentChat.unread = 0;
+        updateChatBadges();
+      }
+      if (messageInput) {
+        messageInput.disabled = false;
+        messageInput.placeholder = `Write a message to ${currentChat.name.split(' ')[0]}...`;
+      }
+      // Load Supabase message history
+      if (currentChat.handle && CURRENT_USER.handle) {
+        await loadConversationHistory(currentChat);
+      }
     }
     renderChat();
     renderConversation();
@@ -2972,8 +3191,50 @@
   }
 
   function renderConversation() {
-    const currentChat = CHATS.find(c => c.id === activeChatId) || CHATS[0];
-    if (!currentChat) return;
+    const currentChat = CHATS.find(c => c.id === activeChatId) || (CHATS.length > 0 ? CHATS[0] : null);
+
+    if (!currentChat) {
+      if (conversationHeader) {
+        conversationHeader.innerHTML = `
+          <div class="conversation-header-user">
+            <div class="conversation-header-info">
+              <strong>Direct Messages</strong>
+              <small>Real-time end-to-end chat with real users</small>
+            </div>
+          </div>
+        `;
+      }
+      if (conversationMessages) {
+        conversationMessages.innerHTML = `
+          <div class="chat-empty-conversation-state">
+            <div class="chat-empty-icon">💬</div>
+            <h3>No conversation selected</h3>
+            <p>Connect with real users from your circle or accept incoming friend requests to start chatting in real time.</p>
+            <button type="button" class="chat-empty-action-btn" id="chat-empty-find-btn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <span>Explore Community & People</span>
+            </button>
+          </div>
+        `;
+        document.getElementById('chat-empty-find-btn')?.addEventListener('click', () => {
+          switchView('friends');
+        });
+      }
+      if (messageInput) {
+        messageInput.placeholder = "Select or add a friend to start chatting...";
+        messageInput.disabled = true;
+      }
+      const sendBtn = messageForm ? messageForm.querySelector('.send-button') : null;
+      if (sendBtn) sendBtn.disabled = true;
+      return;
+    }
+
+    if (messageInput) {
+      messageInput.disabled = false;
+      messageInput.placeholder = `Write a message to ${currentChat.name.split(' ')[0]}...`;
+    }
+    const sendBtn = messageForm ? messageForm.querySelector('.send-button') : null;
+    if (sendBtn) sendBtn.disabled = false;
 
     if (conversationHeader) {
       const roleText = currentChat.status ? (currentChat.status.split('·')[1]?.trim() || currentChat.status) : 'In your circle';
@@ -2987,13 +3248,13 @@
             ${currentChat.online ? '<span class="chat-online-dot"></span>' : ''}
           </div>
           <div class="conversation-header-info">
-            <strong>${escapeHTML(currentChat.name)}</strong>
+            <strong>${escapeHTML(currentChat.name)} <span class="chat-user-handle">${escapeHTML(currentChat.handle || '')}</span></strong>
             <small>${currentChat.online ? '● Active now' : 'Active recently'} · ${escapeHTML(roleText)}</small>
           </div>
         </div>
         <div class="conversation-header-actions">
-          <button class="chat-action-btn" type="button" id="chat-info-btn" title="Conversation info" aria-label="Conversation info">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <button class="chat-action-btn" type="button" id="chat-refresh-btn" title="Refresh messages from Supabase" aria-label="Refresh conversation">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
           </button>
         </div>
       `;
@@ -3006,43 +3267,82 @@
         }
       });
 
-      document.getElementById('chat-info-btn')?.addEventListener('click', () => {
-        showToast(`${currentChat.name} · ${currentChat.status || 'Active now'}`, "ℹ");
+      document.getElementById('chat-refresh-btn')?.addEventListener('click', async () => {
+        if (currentChat) {
+          await loadConversationHistory(currentChat);
+          showToast(`Messages refreshed! 💬`, "💬");
+        }
       });
     }
 
     if (conversationMessages) {
-      conversationMessages.innerHTML = `
-        <div class="msg-date-divider"><span>Today</span></div>
-        ${currentChat.messages.map(msg => `
-          <div class="msg-wrap ${msg.type === 'sent' ? 'msg-sent' : 'msg-received'}">
-            <div class="msg-bubble">${msg.isHTML ? msg.text : escapeHTML(msg.text)}</div>
-            <span class="msg-time">${msg.time || 'Just now'}</span>
+      if (!currentChat.messages || currentChat.messages.length === 0) {
+        conversationMessages.innerHTML = `
+          <div class="chat-empty-history-state">
+            <div class="chat-empty-avatar-pair">
+              <img src="${CURRENT_USER.avatar}" alt="${escapeHTML(CURRENT_USER.name)}">
+              <img src="${currentChat.avatar}" alt="${escapeHTML(currentChat.name)}">
+            </div>
+            <h4>Conversation with ${escapeHTML(currentChat.name)}</h4>
+            <p>This is the start of your direct conversation on My Teta.</p>
+            <div class="chat-start-hints">
+              <span>Send a message below to start chatting! 👋</span>
+            </div>
           </div>
-        `).join('')}
-      `;
-      conversationMessages.scrollTop = conversationMessages.scrollHeight;
+        `;
+      } else {
+        conversationMessages.innerHTML = `
+          <div class="msg-date-divider"><span>Direct Conversation</span></div>
+          ${currentChat.messages.map(msg => `
+            <div class="msg-wrap ${msg.type === 'sent' ? 'msg-sent' : 'msg-received'}">
+              <div class="msg-bubble">${msg.isHTML ? msg.text : escapeHTML(msg.text)}</div>
+              <span class="msg-time">${msg.time || 'Just now'}</span>
+            </div>
+          `).join('')}
+        `;
+        conversationMessages.scrollTop = conversationMessages.scrollHeight;
+      }
     }
   }
 
-  // Handle Send Message
+  // Handle Send Message (Pure Real-Time to Supabase)
   if (messageForm && messageInput) {
-    messageForm.addEventListener('submit', (e) => {
+    messageForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const text = messageInput.value.trim();
       if (!text) return;
 
-      const currentChat = CHATS.find(c => c.id === activeChatId);
-      if (!currentChat) return;
+      const currentChat = CHATS.find(c => c.id === activeChatId || (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()));
+      if (!currentChat) {
+        showToast("Please select a person to message first", "💬");
+        return;
+      }
 
       const now = new Date();
       const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      const targetHandle = currentChat.handle || (currentChat.personId ? `@${currentChat.name.toLowerCase().replace(/\s+/g, '')}` : '');
 
-      // Append user's sent message
+      const newMsgId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+      const messagePayload = {
+        id: newMsgId,
+        sender_handle: CURRENT_USER.handle,
+        receiver_handle: targetHandle,
+        sender_name: CURRENT_USER.name,
+        sender_avatar: CURRENT_USER.avatar,
+        content: text,
+        created_at: now.toISOString(),
+        read: false
+      };
+
+      // Append user's sent message immediately to UI
       currentChat.messages.push({
+        id: newMsgId,
+        sender_handle: CURRENT_USER.handle,
+        receiver_handle: targetHandle,
         type: 'sent',
         text: text,
-        time: timeStr
+        time: timeStr,
+        created_at: messagePayload.created_at
       });
       currentChat.lastMsg = text;
       currentChat.time = "Just now";
@@ -3051,51 +3351,19 @@
       renderConversation();
       renderChat();
 
-      // Show typing indicator after brief delay
-      if (typingIndicator) {
-        setTimeout(() => {
-          typingIndicator.hidden = false;
-          if (typingLabel) {
-            typingLabel.textContent = `${currentChat.name.split(' ')[0]} is typing...`;
-          }
-          if (conversationMessages) {
-            conversationMessages.scrollTop = conversationMessages.scrollHeight;
-          }
-        }, 300);
-      }
-
-      // Simulate realistic incoming reply
-      setTimeout(() => {
-        if (typingIndicator) typingIndicator.hidden = true;
-
-        let replyText = "Sounds great! Catch you later today ☕";
-        if (currentChat.autoReplies && currentChat.autoReplies.length > 0) {
-          const randIdx = Math.floor(Math.random() * currentChat.autoReplies.length);
-          replyText = currentChat.autoReplies[randIdx];
-        }
-
-        const replyNow = new Date();
-        const replyTimeStr = replyNow.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-
-        currentChat.messages.push({
-          type: 'received',
-          text: replyText,
-          time: replyTimeStr
-        });
-        currentChat.lastMsg = replyText;
-        currentChat.time = "Just now";
-
-        renderConversation();
-        renderChat();
-      }, 1400);
+      // Persist real message to Supabase
+      await SupabaseService.sendMessage(messagePayload);
     });
   }
 
   // Photo / Moment Attachment
   if (attachMessageBtn) {
-    attachMessageBtn.addEventListener('click', () => {
-      const currentChat = CHATS.find(c => c.id === activeChatId);
-      if (!currentChat) return;
+    attachMessageBtn.addEventListener('click', async () => {
+      const currentChat = CHATS.find(c => c.id === activeChatId || (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()));
+      if (!currentChat) {
+        showToast("Please select a person to message first", "💬");
+        return;
+      }
 
       const photoMoments = [
         "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80",
@@ -3105,19 +3373,39 @@
       const randomPhoto = photoMoments[Math.floor(Math.random() * photoMoments.length)];
       const now = new Date();
       const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      const targetHandle = currentChat.handle || (currentChat.personId ? `@${currentChat.name.toLowerCase().replace(/\s+/g, '')}` : '');
+
+      const htmlContent = `📷 Shared a photo moment:<br><img src="${randomPhoto}" alt="Photo moment" style="max-width:240px; width:100%; border-radius:12px; margin-top:8px; display:block; box-shadow:0 2px 8px rgba(0,0,0,0.1);">`;
+      const newMsgId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+      const messagePayload = {
+        id: newMsgId,
+        sender_handle: CURRENT_USER.handle,
+        receiver_handle: targetHandle,
+        sender_name: CURRENT_USER.name,
+        sender_avatar: CURRENT_USER.avatar,
+        content: htmlContent,
+        created_at: now.toISOString(),
+        read: false
+      };
 
       currentChat.messages.push({
+        id: newMsgId,
+        sender_handle: CURRENT_USER.handle,
+        receiver_handle: targetHandle,
         type: 'sent',
-        text: `📷 Shared a photo moment:<br><img src="${randomPhoto}" alt="Photo moment" style="max-width:240px; width:100%; border-radius:12px; margin-top:8px; display:block; box-shadow:0 2px 8px rgba(0,0,0,0.1);">`,
+        text: htmlContent,
         isHTML: true,
-        time: timeStr
+        time: timeStr,
+        created_at: messagePayload.created_at
       });
       currentChat.lastMsg = "📷 Shared a photo moment";
       currentChat.time = "Just now";
 
       renderConversation();
       renderChat();
-      showToast(`Photo sent to ${currentChat.name}!`, "📷");
+      showToast(`Photo moment sent to ${currentChat.name}! 📷`, "📷");
+
+      await SupabaseService.sendMessage(messagePayload);
     });
   }
 
@@ -3316,23 +3604,27 @@
     if (!req) return;
 
     // Send acceptance to Supabase
-    SupabaseService.acceptFriendRequest(reqId);
+    await SupabaseService.acceptFriendRequest(reqId);
 
     // Add to PEOPLE list
-    const existingPerson = PEOPLE.find(p => p.name === req.name || (p.handle && req.handle && p.handle.toLowerCase() === req.handle.toLowerCase()));
+    let existingPerson = PEOPLE.find(p => p.name === req.name || (p.handle && req.handle && p.handle.toLowerCase() === req.handle.toLowerCase()));
     if (!existingPerson) {
-      PEOPLE.unshift({
+      existingPerson = {
         id: Date.now(),
         name: req.name,
         handle: req.handle,
-        role: req.role,
+        role: req.role || 'Community Member',
         mutual: req.mutual || 'Connected on My Teta',
-        avatar: req.avatar,
+        avatar: req.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(req.handle || req.name)}`,
         following: true
-      });
+      };
+      PEOPLE.unshift(existingPerson);
     } else {
       existingPerson.following = true;
     }
+
+    // Add to CHATS immediately as a real user conversation!
+    startOrOpenChatWithPerson(existingPerson, false);
 
     // Remove from friendRequests and notifications
     friendRequests = friendRequests.filter(r => r.id !== reqId);
@@ -3346,7 +3638,7 @@
     renderChatFriendsTray();
     renderChat();
     renderNotifications(activeNotifFilter);
-    showToast(`Connected with ${req.name}! Added to chat circle ✨`, '✨');
+    showToast(`Connected with ${req.name}! Added to your chat list 💬`, '💬');
   }
 
   async function declineFriendRequest(reqId) {
@@ -5062,6 +5354,24 @@
   setInterval(() => {
     syncCommunityFromSupabase();
   }, 25000);
+
+  // Fast 4-second real-time polling for active chat messages
+  setInterval(async () => {
+    try {
+      if (!CURRENT_USER.handle) return;
+      const activeView = document.querySelector('.view-panel:not([hidden])');
+      const isChatView = activeView && activeView.id === 'chat-view';
+
+      if (isChatView && activeChatId) {
+        const currentChat = CHATS.find(c => c.id === activeChatId || (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()));
+        if (currentChat && currentChat.handle) {
+          await loadConversationHistory(currentChat);
+        }
+      }
+    } catch (e) {
+      // Quiet background poll
+    }
+  }, 4000);
 
   console.log("My Teta initialized successfully with Supabase and Vercel endpoints configured.");
 })();
