@@ -2081,8 +2081,13 @@
     const unreadCount = CHATS.filter(c => c.unread > 0).length;
     const elAll = document.getElementById('chat-count-all');
     const elUnread = document.getElementById('chat-count-unread');
+    const mobileChatBadge = document.getElementById('mobile-chat-badge');
     if (elAll) elAll.textContent = allCount;
     if (elUnread) elUnread.textContent = unreadCount;
+    if (mobileChatBadge) {
+      mobileChatBadge.textContent = unreadCount;
+      mobileChatBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
+    }
   }
 
   function getFilteredChats() {
@@ -2153,9 +2158,12 @@
     renderChat();
     renderConversation();
 
-    // Mobile sidebar toggle support
+    // Mobile conversation state
     const shell = document.querySelector('.chat-shell');
-    if (shell) shell.classList.remove('show-sidebar');
+    if (shell) {
+      shell.classList.add('is-in-conversation');
+      shell.classList.remove('show-sidebar');
+    }
   }
 
   function renderConversation() {
@@ -2166,6 +2174,9 @@
       const roleText = currentChat.status ? (currentChat.status.split('·')[1]?.trim() || currentChat.status) : 'In your circle';
       conversationHeader.innerHTML = `
         <div class="conversation-header-user">
+          <button class="chat-back-btn" id="chat-mobile-back" type="button" aria-label="Back to contacts list" title="Back to messages">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          </button>
           <div class="conversation-header-avatar">
             <img src="${currentChat.avatar}" alt="${escapeHTML(currentChat.name)}">
             ${currentChat.online ? '<span class="chat-online-dot"></span>' : ''}
@@ -2181,6 +2192,14 @@
           </button>
         </div>
       `;
+
+      document.getElementById('chat-mobile-back')?.addEventListener('click', () => {
+        const shell = document.querySelector('.chat-shell');
+        if (shell) {
+          shell.classList.remove('is-in-conversation');
+          shell.classList.add('show-sidebar');
+        }
+      });
 
       document.getElementById('chat-info-btn')?.addEventListener('click', () => {
         showToast(`${currentChat.name} · ${currentChat.status || 'Active now'}`, "ℹ");
