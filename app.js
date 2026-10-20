@@ -162,12 +162,12 @@
           const { data, error } = await supabaseClient
             .from('friend_requests')
             .select('*')
-            .eq('receiver_handle', handle)
+            .ilike('receiver_handle', handle)
             .eq('status', 'pending');
           if (error) throw error;
           return data || [];
         } else {
-          const data = await this.request(`friend_requests?receiver_handle=eq.${encodeURIComponent(handle)}&status=eq.pending`);
+          const data = await this.request(`friend_requests?receiver_handle=ilike.${encodeURIComponent(handle)}&status=eq.pending`);
           return data || [];
         }
       } catch (err) {
@@ -184,12 +184,12 @@
           const { data, error } = await supabaseClient
             .from('friend_requests')
             .select('*')
-            .eq('sender_handle', handle)
+            .ilike('sender_handle', handle)
             .eq('status', 'pending');
           if (error) throw error;
           return data || [];
         } else {
-          const data = await this.request(`friend_requests?sender_handle=eq.${encodeURIComponent(handle)}&status=eq.pending`);
+          const data = await this.request(`friend_requests?sender_handle=ilike.${encodeURIComponent(handle)}&status=eq.pending`);
           return data || [];
         }
       } catch (err) {
@@ -301,10 +301,15 @@
 
     async sendMessage(msg) {
       try {
+        const rawSender = msg.sender_handle || CURRENT_USER.handle || '';
+        const rawReceiver = msg.receiver_handle || '';
+        const sHandle = rawSender.startsWith('@') ? rawSender : `@${rawSender}`;
+        const rHandle = rawReceiver.startsWith('@') ? rawReceiver : `@${rawReceiver}`;
+
         const payload = {
           id: msg.id || `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
-          sender_handle: msg.sender_handle,
-          receiver_handle: msg.receiver_handle,
+          sender_handle: sHandle.toLowerCase(),
+          receiver_handle: rHandle.toLowerCase(),
           sender_name: msg.sender_name || CURRENT_USER.name,
           sender_avatar: msg.sender_avatar || CURRENT_USER.avatar,
           content: msg.content,
@@ -333,22 +338,30 @@
     async fetchConversation(handleA, handleB) {
       try {
         if (!handleA || !handleB) return [];
-        const hA = handleA.startsWith('@') ? handleA : `@${handleA}`;
-        const hB = handleB.startsWith('@') ? handleB : `@${handleB}`;
+        const normA = (handleA.startsWith('@') ? handleA : `@${handleA}`).toLowerCase();
+        const normB = (handleB.startsWith('@') ? handleB : `@${handleB}`).toLowerCase();
 
+        let allMessages = [];
         if (supabaseClient) {
           const { data, error } = await supabaseClient
             .from('messages')
             .select('*')
-            .or(`and(sender_handle.eq.${hA},receiver_handle.eq.${hB}),and(sender_handle.eq.${hB},receiver_handle.eq.${hA})`)
+            .or(`sender_handle.ilike.${normA},receiver_handle.ilike.${normA}`)
             .order('created_at', { ascending: true });
           if (error) console.warn("Supabase fetchConversation error:", error);
-          return data || [];
+          allMessages = data || [];
         } else {
-          const filter = `messages?select=*&or=(and(sender_handle.eq.${encodeURIComponent(hA)},receiver_handle.eq.${encodeURIComponent(hB)}),and(sender_handle.eq.${encodeURIComponent(hB)},receiver_handle.eq.${encodeURIComponent(hA)}))&order=created_at.asc`;
+          const filter = `messages?select=*&or=(sender_handle.ilike.${encodeURIComponent(normA)},receiver_handle.ilike.${encodeURIComponent(normA)})&order=created_at.asc`;
           const data = await this.request(filter);
-          return data || [];
+          allMessages = data || [];
         }
+
+        // Accurately filter messages between user A and user B regardless of case
+        return allMessages.filter(m => {
+          const s = (m.sender_handle || '').toLowerCase();
+          const r = (m.receiver_handle || '').toLowerCase();
+          return (s === normA && r === normB) || (s === normB && r === normA);
+        });
       } catch (err) {
         console.warn("SupabaseService.fetchConversation error:", err);
         return [];
@@ -358,17 +371,17 @@
     async fetchRecentMessagesForUser(userHandle) {
       try {
         if (!userHandle) return [];
-        const handle = userHandle.startsWith('@') ? userHandle : `@${userHandle}`;
+        const handle = (userHandle.startsWith('@') ? userHandle : `@${userHandle}`).toLowerCase();
         if (supabaseClient) {
           const { data, error } = await supabaseClient
             .from('messages')
             .select('*')
-            .or(`sender_handle.eq.${handle},receiver_handle.eq.${handle}`)
+            .or(`sender_handle.ilike.${handle},receiver_handle.ilike.${handle}`)
             .order('created_at', { ascending: false });
           if (error) console.warn("Supabase fetchRecentMessagesForUser error:", error);
           return data || [];
         } else {
-          const filter = `messages?select=*&or=(sender_handle.eq.${encodeURIComponent(handle)},receiver_handle.eq.${encodeURIComponent(handle)})&order=created_at.desc`;
+          const filter = `messages?select=*&or=(sender_handle.ilike.${encodeURIComponent(handle)},receiver_handle.ilike.${encodeURIComponent(handle)})&order=created_at.desc`;
           const data = await this.request(filter);
           return data || [];
         }
@@ -381,17 +394,17 @@
     async fetchAcceptedFriendships(userHandle) {
       try {
         if (!userHandle) return [];
-        const handle = userHandle.startsWith('@') ? userHandle : `@${userHandle}`;
+        const handle = (userHandle.startsWith('@') ? userHandle : `@${userHandle}`).toLowerCase();
         if (supabaseClient) {
           const { data, error } = await supabaseClient
             .from('friend_requests')
             .select('*')
             .eq('status', 'accepted')
-            .or(`sender_handle.eq.${handle},receiver_handle.eq.${handle}`);
+            .or(`sender_handle.ilike.${handle},receiver_handle.ilike.${handle}`);
           if (error) console.warn("Supabase fetchAcceptedFriendships error:", error);
           return data || [];
         } else {
-          const filter = `friend_requests?status=eq.accepted&or=(sender_handle.eq.${encodeURIComponent(handle)},receiver_handle.eq.${encodeURIComponent(handle)})`;
+          const filter = `friend_requests?status=eq.accepted&or=(sender_handle.ilike.${encodeURIComponent(handle)},receiver_handle.ilike.${encodeURIComponent(handle)})`;
           const data = await this.request(filter);
           return data || [];
         }
@@ -2822,15 +2835,21 @@
 
   function updateChatBadges() {
     const allCount = CHATS.length;
-    const unreadCount = CHATS.filter(c => c.unread > 0).length;
+    const unreadCount = CHATS.filter(c => (c.unread || 0) > 0).length;
     const elAll = document.getElementById('chat-count-all');
     const elUnread = document.getElementById('chat-count-unread');
     const mobileChatBadge = document.getElementById('mobile-chat-badge');
+    const desktopChatBadge = document.getElementById('desktop-chat-badge') || document.querySelector('.nav-tab[data-view="chat"] .nav-badge');
+
     if (elAll) elAll.textContent = allCount;
     if (elUnread) elUnread.textContent = unreadCount;
     if (mobileChatBadge) {
       mobileChatBadge.textContent = unreadCount;
       mobileChatBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
+    }
+    if (desktopChatBadge) {
+      desktopChatBadge.textContent = unreadCount;
+      desktopChatBadge.style.display = unreadCount > 0 ? 'inline-flex' : 'none';
     }
   }
 
@@ -2898,6 +2917,7 @@
       PEOPLE.filter(p => p.following).forEach(friend => {
         const h = (friend.handle || '').toLowerCase();
         if (!h || h === myHandle) return;
+        const existing = CHATS.find(c => (c.handle && c.handle.toLowerCase() === h) || c.id === friend.id);
         partnersMap.set(h, {
           id: friend.handle || friend.id,
           personId: friend.id,
@@ -2906,10 +2926,10 @@
           avatar: friend.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(friend.name)}`,
           status: `Active recently · ${friend.role || 'In your circle'}`,
           online: true,
-          lastMsg: `Connected with ${friend.name.split(' ')[0]}`,
-          time: 'Just now',
-          unread: 0,
-          messages: []
+          lastMsg: existing ? existing.lastMsg : `Connected with ${friend.name.split(' ')[0]}`,
+          time: existing ? existing.time : 'Just now',
+          unread: existing ? (existing.unread || 0) : 0,
+          messages: (existing && existing.messages) ? [...existing.messages] : []
         });
       });
 
@@ -2917,7 +2937,7 @@
       CHATS.forEach(c => {
         const h = (c.handle || '').toLowerCase();
         if (h && !partnersMap.has(h)) {
-          partnersMap.set(h, { ...c });
+          partnersMap.set(h, { ...c, messages: c.messages ? [...c.messages] : [] });
         }
       });
 
@@ -2965,6 +2985,16 @@
               time: msgTime,
               created_at: msg.created_at
             });
+
+            // If received message and not actively looking at this conversation, increment unread
+            const isViewingThisChat = activeChatId && (
+              String(activeChatId).toLowerCase() === pKey ||
+              String(activeChatId).toLowerCase() === String(chatObj.id).toLowerCase() ||
+              (chatObj.handle && String(activeChatId).toLowerCase() === chatObj.handle.toLowerCase())
+            );
+            if (!isMeSender && !isViewingThisChat) {
+              chatObj.unread = (chatObj.unread || 0) + 1;
+            }
           }
 
           chatObj.lastMsg = (typeof msg.content === 'string' && msg.content.includes('<img ')) ? '📷 Shared a photo moment' : msg.content;
@@ -2984,7 +3014,11 @@
 
       // Preserve active chat selection if valid
       if (activeChatId) {
-        const found = CHATS.find(c => c.id === activeChatId || (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()));
+        const found = CHATS.find(c => 
+          c.id === activeChatId || 
+          (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()) ||
+          (c.id && String(c.id).toLowerCase() === String(activeChatId).toLowerCase())
+        );
         if (found) {
           activeChatId = found.id;
         } else if (CHATS.length > 0) {
@@ -2998,7 +3032,6 @@
 
       updateChatBadges();
       renderChat();
-      renderConversation();
     } catch (err) {
       console.warn("syncChatsFromSupabase error:", err);
     }
@@ -3010,7 +3043,7 @@
       const history = await SupabaseService.fetchConversation(CURRENT_USER.handle, currentChat.handle);
       if (history && Array.isArray(history)) {
         const myHandle = (CURRENT_USER.handle || '').toLowerCase();
-        currentChat.messages = history.map(m => {
+        const mappedMessages = history.map(m => {
           const sHandle = (m.sender_handle || '').toLowerCase();
           const isSent = sHandle === myHandle;
           const msgTime = new Date(m.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -3026,14 +3059,31 @@
           };
         });
 
+        // Check if messages actually changed
+        const prevCount = (currentChat.messages || []).length;
+        const newCount = mappedMessages.length;
+        const lastPrevId = prevCount > 0 ? currentChat.messages[prevCount - 1].id : null;
+        const lastNewId = newCount > 0 ? mappedMessages[newCount - 1].id : null;
+        const hasChanged = prevCount !== newCount || lastPrevId !== lastNewId;
+
+        currentChat.messages = mappedMessages;
+
         if (currentChat.messages.length > 0) {
           const latest = currentChat.messages[currentChat.messages.length - 1];
           currentChat.lastMsg = (typeof latest.text === 'string' && latest.text.includes('<img ')) ? '📷 Shared a photo moment' : latest.text;
           currentChat.time = latest.time;
         }
 
-        if (activeChatId === currentChat.id) {
-          renderConversation();
+        const isActive = activeChatId && (
+          activeChatId === currentChat.id ||
+          String(activeChatId).toLowerCase() === String(currentChat.id).toLowerCase() ||
+          (currentChat.handle && String(activeChatId).toLowerCase() === currentChat.handle.toLowerCase())
+        );
+
+        if (isActive) {
+          if (hasChanged) {
+            renderConversation();
+          }
           updateChatBadges();
         }
       }
@@ -3279,7 +3329,11 @@
 
   async function selectChat(id) {
     activeChatId = id;
-    const currentChat = CHATS.find(c => c.id === activeChatId || (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()));
+    const currentChat = CHATS.find(c => 
+      c.id === activeChatId || 
+      (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()) ||
+      (c.id && String(c.id).toLowerCase() === String(activeChatId).toLowerCase())
+    );
     if (currentChat) {
       activeChatId = currentChat.id;
       if (currentChat.unread > 0) {
@@ -3307,7 +3361,11 @@
   }
 
   function renderConversation() {
-    const currentChat = CHATS.find(c => c.id === activeChatId) || (CHATS.length > 0 ? CHATS[0] : null);
+    const currentChat = CHATS.find(c => 
+      c.id === activeChatId || 
+      (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()) ||
+      (c.id && String(c.id).toLowerCase() === String(activeChatId).toLowerCase())
+    ) || (CHATS.length > 0 ? CHATS[0] : null);
 
     if (!currentChat) {
       if (conversationHeader) {
@@ -3442,7 +3500,11 @@
       const text = messageInput.value.trim();
       if (!text) return;
 
-      const currentChat = CHATS.find(c => c.id === activeChatId || (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()));
+      const currentChat = CHATS.find(c => 
+        c.id === activeChatId || 
+        (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()) ||
+        (c.id && String(c.id).toLowerCase() === String(activeChatId).toLowerCase())
+      );
       if (!currentChat) {
         showToast("Please select a person to message first", "💬");
         return;
@@ -3450,12 +3512,17 @@
 
       const now = new Date();
       const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-      const targetHandle = currentChat.handle || (currentChat.personId ? `@${currentChat.name.toLowerCase().replace(/\s+/g, '')}` : '');
+      let targetHandle = currentChat.handle || (currentChat.personId ? `@${currentChat.name.toLowerCase().replace(/\s+/g, '')}` : '');
+      if (targetHandle && !targetHandle.startsWith('@')) targetHandle = `@${targetHandle}`;
+      let senderHandle = CURRENT_USER.handle || '';
+      if (senderHandle && !senderHandle.startsWith('@')) senderHandle = `@${senderHandle}`;
+      targetHandle = targetHandle.toLowerCase();
+      senderHandle = senderHandle.toLowerCase();
 
       const newMsgId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
       const messagePayload = {
         id: newMsgId,
-        sender_handle: CURRENT_USER.handle,
+        sender_handle: senderHandle,
         receiver_handle: targetHandle,
         sender_name: CURRENT_USER.name,
         sender_avatar: CURRENT_USER.avatar,
@@ -3465,9 +3532,10 @@
       };
 
       // Append user's sent message immediately to UI
+      if (!currentChat.messages) currentChat.messages = [];
       currentChat.messages.push({
         id: newMsgId,
-        sender_handle: CURRENT_USER.handle,
+        sender_handle: senderHandle,
         receiver_handle: targetHandle,
         type: 'sent',
         text: text,
@@ -3489,7 +3557,11 @@
   // Photo / Moment Attachment
   if (attachMessageBtn) {
     attachMessageBtn.addEventListener('click', async () => {
-      const currentChat = CHATS.find(c => c.id === activeChatId || (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()));
+      const currentChat = CHATS.find(c => 
+        c.id === activeChatId || 
+        (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()) ||
+        (c.id && String(c.id).toLowerCase() === String(activeChatId).toLowerCase())
+      );
       if (!currentChat) {
         showToast("Please select a person to message first", "💬");
         return;
@@ -3503,13 +3575,18 @@
       const randomPhoto = photoMoments[Math.floor(Math.random() * photoMoments.length)];
       const now = new Date();
       const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-      const targetHandle = currentChat.handle || (currentChat.personId ? `@${currentChat.name.toLowerCase().replace(/\s+/g, '')}` : '');
+      let targetHandle = currentChat.handle || (currentChat.personId ? `@${currentChat.name.toLowerCase().replace(/\s+/g, '')}` : '');
+      if (targetHandle && !targetHandle.startsWith('@')) targetHandle = `@${targetHandle}`;
+      let senderHandle = CURRENT_USER.handle || '';
+      if (senderHandle && !senderHandle.startsWith('@')) senderHandle = `@${senderHandle}`;
+      targetHandle = targetHandle.toLowerCase();
+      senderHandle = senderHandle.toLowerCase();
 
       const htmlContent = `📷 Shared a photo moment:<br><img src="${randomPhoto}" alt="Photo moment" style="max-width:240px; width:100%; border-radius:12px; margin-top:8px; display:block; box-shadow:0 2px 8px rgba(0,0,0,0.1);">`;
       const newMsgId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
       const messagePayload = {
         id: newMsgId,
-        sender_handle: CURRENT_USER.handle,
+        sender_handle: senderHandle,
         receiver_handle: targetHandle,
         sender_name: CURRENT_USER.name,
         sender_avatar: CURRENT_USER.avatar,
@@ -3518,9 +3595,10 @@
         read: false
       };
 
+      if (!currentChat.messages) currentChat.messages = [];
       currentChat.messages.push({
         id: newMsgId,
-        sender_handle: CURRENT_USER.handle,
+        sender_handle: senderHandle,
         receiver_handle: targetHandle,
         type: 'sent',
         text: htmlContent,
@@ -5485,23 +5563,69 @@
     syncCommunityFromSupabase();
   }, 25000);
 
-  // Fast 4-second real-time polling for active chat messages
+  // Fast 2.5-second real-time polling for two-way direct messages
+  let isMessagePolling = false;
   setInterval(async () => {
+    if (isMessagePolling || !CURRENT_USER.handle) return;
+    isMessagePolling = true;
     try {
-      if (!CURRENT_USER.handle) return;
+      // 1. Sync messages and conversation list from Supabase
+      await syncChatsFromSupabase();
+
+      // 2. If user is actively inside chat-view looking at a conversation, refresh it immediately
       const activeView = document.querySelector('.view-panel:not([hidden])');
       const isChatView = activeView && activeView.id === 'chat-view';
 
       if (isChatView && activeChatId) {
-        const currentChat = CHATS.find(c => c.id === activeChatId || (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()));
+        const currentChat = CHATS.find(c => 
+          c.id === activeChatId || 
+          (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()) ||
+          (c.id && String(c.id).toLowerCase() === String(activeChatId).toLowerCase())
+        );
         if (currentChat && currentChat.handle) {
           await loadConversationHistory(currentChat);
         }
       }
     } catch (e) {
       // Quiet background poll
+    } finally {
+      isMessagePolling = false;
     }
-  }, 4000);
+  }, 2500);
+
+  // Supabase Realtime WebSocket subscription for instant message delivery
+  if (supabaseClient) {
+    try {
+      supabaseClient
+        .channel('public:messages')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async (payload) => {
+          const newMsg = payload && payload.new;
+          if (!newMsg) return;
+          const myHandle = (CURRENT_USER.handle || '').toLowerCase();
+          const sHandle = (newMsg.sender_handle || '').toLowerCase();
+          const rHandle = (newMsg.receiver_handle || '').toLowerCase();
+
+          if (sHandle === myHandle || rHandle === myHandle) {
+            await syncChatsFromSupabase();
+            const activeView = document.querySelector('.view-panel:not([hidden])');
+            const isChatView = activeView && activeView.id === 'chat-view';
+            if (isChatView && activeChatId) {
+              const currentChat = CHATS.find(c => 
+                c.id === activeChatId || 
+                (c.handle && c.handle.toLowerCase() === String(activeChatId).toLowerCase()) ||
+                (c.id && String(c.id).toLowerCase() === String(activeChatId).toLowerCase())
+              );
+              if (currentChat && currentChat.handle) {
+                await loadConversationHistory(currentChat);
+              }
+            }
+          }
+        })
+        .subscribe();
+    } catch (err) {
+      console.warn("Supabase Realtime subscription notice:", err);
+    }
+  }
 
   console.log("My Teta initialized successfully with Supabase and Vercel endpoints configured.");
 })();
