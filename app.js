@@ -9,8 +9,17 @@
   // ==========================================
   // 1. DATA STATE & PRESETS
   // ==========================================
+  const isLoggedOutState = (() => {
+    try {
+      return localStorage.getItem('my_teta_logged_out') === 'true' && !localStorage.getItem('my_teta_current_user');
+    } catch (e) {
+      return false;
+    }
+  })();
+
   const SAVED_USER = (() => {
     try {
+      if (isLoggedOutState) return null;
       const data = localStorage.getItem('my_teta_current_user');
       return data ? JSON.parse(data) : null;
     } catch (e) {
@@ -19,19 +28,19 @@
   })();
 
   const CURRENT_USER = {
-    id: (SAVED_USER && SAVED_USER.id) || "user_maya_chen",
-    name: (SAVED_USER && SAVED_USER.name) || "Maya Chen",
-    handle: (SAVED_USER && SAVED_USER.handle) || "@mayainmotion",
-    email: (SAVED_USER && SAVED_USER.email) || "maya@myteta.social",
-    avatar: (SAVED_USER && SAVED_USER.avatar) || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90",
+    id: isLoggedOutState ? null : ((SAVED_USER && SAVED_USER.id) || "user_maya_chen"),
+    name: isLoggedOutState ? "Guest Explorer" : ((SAVED_USER && SAVED_USER.name) || "Maya Chen"),
+    handle: isLoggedOutState ? "@guest" : ((SAVED_USER && SAVED_USER.handle) || "@mayainmotion"),
+    email: isLoggedOutState ? "" : ((SAVED_USER && SAVED_USER.email) || "maya@myteta.social"),
+    avatar: isLoggedOutState ? "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=220&h=220&q=90" : ((SAVED_USER && SAVED_USER.avatar) || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90"),
     cover: (SAVED_USER && SAVED_USER.cover) || "linear-gradient(135deg, #0d9488, #6366f1, #059669)",
-    location: (SAVED_USER && SAVED_USER.location) || "Brooklyn, NY",
-    bio: (SAVED_USER && SAVED_USER.bio) || "Collecting little things: good light, long walks, and meals that turn into stories.",
+    location: isLoggedOutState ? "New York, NY" : ((SAVED_USER && SAVED_USER.location) || "Brooklyn, NY"),
+    bio: isLoggedOutState ? "Exploring moments on My Teta." : ((SAVED_USER && SAVED_USER.bio) || "Collecting little things: good light, long walks, and meals that turn into stories."),
     password: (SAVED_USER && SAVED_USER.password) || "password123",
-    role: (SAVED_USER && SAVED_USER.role) || "Ceramicist & Visual Poet",
+    role: isLoggedOutState ? "Visitor" : ((SAVED_USER && SAVED_USER.role) || "Ceramicist & Visual Poet"),
     is2FA: Boolean(SAVED_USER && SAVED_USER.is2FA),
     isPrivate: Boolean(SAVED_USER && SAVED_USER.isPrivate),
-    friendsCount: (SAVED_USER && SAVED_USER.friendsCount) || 248,
+    friendsCount: isLoggedOutState ? 0 : ((SAVED_USER && SAVED_USER.friendsCount) || 248),
     momentsCount: 3,
     reelsCount: 2,
     circlesCount: 12
@@ -541,6 +550,8 @@
   }
 
   function updateCurrentUserUI() {
+    const isLoggedOut = !CURRENT_USER.id || CURRENT_USER.handle === '@guest';
+
     const topbarAvatar = document.querySelector('.profile-trigger img');
     if (topbarAvatar && CURRENT_USER.avatar) topbarAvatar.src = CURRENT_USER.avatar;
 
@@ -565,6 +576,17 @@
     if (summaryAvatar && CURRENT_USER.avatar) summaryAvatar.src = CURRENT_USER.avatar;
     if (summaryName && CURRENT_USER.name) summaryName.textContent = CURRENT_USER.name;
     if (summaryHandle && CURRENT_USER.handle) summaryHandle.textContent = CURRENT_USER.handle;
+
+    // Synchronize Topbar & Sidebar Logout Buttons
+    const topbarLogoutBtn = document.getElementById('topbar-logout-btn');
+    if (topbarLogoutBtn) {
+      topbarLogoutBtn.style.display = isLoggedOut ? 'none' : 'inline-flex';
+    }
+
+    const railLogoutBtn = document.getElementById('rail-logout-btn');
+    if (railLogoutBtn) {
+      railLogoutBtn.title = isLoggedOut ? 'Log in or sign up first' : `Log out of ${CURRENT_USER.handle || 'account'}`;
+    }
 
     if (typeof renderProfile === 'function') renderProfile();
   }
@@ -4102,6 +4124,75 @@
     setAuthPageTab('login');
   });
 
+  // Logout Modal and Action Handlers
+  function openLogoutModal() {
+    const modal = document.getElementById('logout-modal');
+    const subtitle = document.getElementById('logout-modal-subtitle');
+    if (subtitle && CURRENT_USER) {
+      const displayName = CURRENT_USER.name || 'Member';
+      const userHandle = CURRENT_USER.handle || '';
+      subtitle.innerHTML = `Are you sure you want to log out, <strong>${displayName}</strong> ${userHandle ? `(${userHandle})` : ''}? You can sign back into your account anytime.`;
+    }
+    if (modal) modal.hidden = false;
+  }
+
+  function closeLogoutModal() {
+    const modal = document.getElementById('logout-modal');
+    if (modal) modal.hidden = true;
+  }
+
+  async function performLogout() {
+    closeLogoutModal();
+
+    try {
+      localStorage.removeItem('my_teta_current_user');
+      localStorage.setItem('my_teta_logged_out', 'true');
+    } catch (e) {}
+
+    // Reset CURRENT_USER to guest state
+    CURRENT_USER.id = null;
+    CURRENT_USER.name = "Guest Explorer";
+    CURRENT_USER.handle = "@guest";
+    CURRENT_USER.email = "";
+    CURRENT_USER.avatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=220&h=220&q=90";
+    CURRENT_USER.bio = "Exploring moments on My Teta.";
+    CURRENT_USER.role = "Visitor";
+    CURRENT_USER.friendsCount = 0;
+
+    updateCurrentUserUI();
+    showToast("You have been safely logged out. See you soon! 👋", "👋");
+
+    // Transition smoothly to the auth page
+    switchView('auth');
+    setAuthPageTab('login');
+  }
+
+  // Bind logout triggers
+  document.getElementById('rail-logout-btn')?.addEventListener('click', openLogoutModal);
+  document.getElementById('topbar-logout-btn')?.addEventListener('click', openLogoutModal);
+  document.getElementById('btn-settings-logout')?.addEventListener('click', openLogoutModal);
+
+  document.getElementById('btn-cancel-logout')?.addEventListener('click', closeLogoutModal);
+  document.querySelectorAll('[data-close-logout-modal]').forEach(btn => {
+    btn.addEventListener('click', closeLogoutModal);
+  });
+  document.getElementById('btn-confirm-logout')?.addEventListener('click', performLogout);
+
+  document.getElementById('logout-modal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+      closeLogoutModal();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const modal = document.getElementById('logout-modal');
+      if (modal && !modal.hidden) {
+        closeLogoutModal();
+      }
+    }
+  });
+
   // Tab buttons on Auth Page
   btnTabLogin?.addEventListener('click', () => setAuthPageTab('login'));
   btnTabSignup?.addEventListener('click', () => setAuthPageTab('signup'));
@@ -4219,6 +4310,7 @@
       }
 
       try {
+        localStorage.removeItem('my_teta_logged_out');
         localStorage.setItem('my_teta_current_user', JSON.stringify(CURRENT_USER));
       } catch (err) {}
 
@@ -4264,6 +4356,7 @@
       CURRENT_USER.role = 'Community Member & Creator';
 
       try {
+        localStorage.removeItem('my_teta_logged_out');
         localStorage.setItem('my_teta_current_user', JSON.stringify(CURRENT_USER));
       } catch (err) {}
 
@@ -4339,6 +4432,7 @@
       CURRENT_USER.email = email;
 
       try {
+        localStorage.removeItem('my_teta_logged_out');
         localStorage.setItem('my_teta_current_user', JSON.stringify(CURRENT_USER));
       } catch (err) {}
 
