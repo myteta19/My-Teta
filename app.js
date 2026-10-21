@@ -421,8 +421,62 @@
         console.warn("SupabaseService.fetchAcceptedFriendships error:", err);
         return [];
       }
+    },
+
+    async updateHeartbeat(userHandle) {
+      if (!userHandle || userHandle === '@guest') return;
+      try {
+        const handle = userHandle.startsWith('@') ? userHandle : `@${userHandle}`;
+        const now = new Date().toISOString();
+        if (supabaseClient) {
+          await supabaseClient
+            .from('profiles')
+            .update({ updated_at: now })
+            .ilike('handle', handle);
+        } else {
+          await this.request(`profiles?handle=ilike.${encodeURIComponent(handle)}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ updated_at: now })
+          });
+        }
+      } catch (err) {
+        // Silently ignore heartbeat failure
+      }
     }
   };
+
+  function evaluatePresence(updatedAt) {
+    if (!updatedAt) {
+      return { online: false, text: 'Offline' };
+    }
+    const timeMs = new Date(updatedAt).getTime();
+    if (isNaN(timeMs)) {
+      return { online: false, text: 'Offline' };
+    }
+    const diffMinutes = Math.max(0, (Date.now() - timeMs) / 60000);
+
+    // Active within the last 3 minutes counts as Online / Active now
+    if (diffMinutes <= 3) {
+      return { online: true, text: 'Active now' };
+    }
+
+    if (diffMinutes < 60) {
+      const mins = Math.max(1, Math.round(diffMinutes));
+      return { online: false, text: `Active ${mins}m ago` };
+    }
+
+    if (diffMinutes < 1440) {
+      const hrs = Math.round(diffMinutes / 60);
+      return { online: false, text: `Active ${hrs}h ago` };
+    }
+
+    if (diffMinutes < 2880) {
+      return { online: false, text: 'Active yesterday' };
+    }
+
+    const days = Math.round(diffMinutes / 1440);
+    return { online: false, text: `Active ${days}d ago` };
+  }
 
   async function syncCommunityFromSupabase() {
     try {
@@ -442,6 +496,7 @@
             cover: cp.cover || 'linear-gradient(135deg, #0d9488, #6366f1, #059669)',
             mutual: cp.mutual || 'Community Member',
             avatar: cp.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cp.handle || 'member')}`,
+            updated_at: cp.updated_at || cp.created_at || null,
             following: false
           });
         });
@@ -2923,11 +2978,12 @@
 
     chatFriendsScroll.innerHTML = friends.map(f => {
       const firstName = f.name.split(' ')[0];
+      const presence = evaluatePresence(f.updated_at);
       return `
-        <button class="chat-friend-bubble" data-start-friend-chat="${f.id}" type="button" title="Chat with ${escapeHTML(f.name)}" aria-label="Chat with ${escapeHTML(f.name)}">
+        <button class="chat-friend-bubble" data-start-friend-chat="${f.id}" type="button" title="${escapeHTML(f.name)} (${presence.online ? 'Active now' : presence.text})" aria-label="Chat with ${escapeHTML(f.name)}">
           <div class="chat-friend-bubble-avatar">
             <img src="${f.avatar}" alt="${escapeHTML(f.name)}">
-            <span class="chat-online-dot"></span>
+            <span class="chat-online-dot ${presence.online ? 'is-online' : 'is-offline'}" title="${presence.online ? 'Active now' : presence.text}"></span>
           </div>
           <span class="chat-friend-bubble-name">${escapeHTML(firstName)}</span>
         </button>
@@ -2970,14 +3026,16 @@
         const h = (friend.handle || '').toLowerCase();
         if (!h || h === myHandle) return;
         const existing = CHATS.find(c => (c.handle && c.handle.toLowerCase() === h) || c.id === friend.id);
+        const presence = evaluatePresence(friend.updated_at);
         partnersMap.set(h, {
           id: friend.handle || friend.id,
           personId: friend.id,
           handle: friend.handle,
           name: friend.name,
           avatar: friend.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(friend.name)}`,
-          status: `Active recently · ${friend.role || 'In your circle'}`,
-          online: true,
+          status: `${presence.text} · ${friend.role || 'In your circle'}`,
+          online: presence.online,
+          lastActiveText: presence.text,
           lastMsg: existing ? existing.lastMsg : `Connected with ${friend.name.split(' ')[0]}`,
           time: existing ? existing.time : 'Just now',
           unread: existing ? (existing.unread || 0) : 0,
@@ -3008,14 +3066,16 @@
 
           if (!partnersMap.has(pKey)) {
             const foundPerson = PEOPLE.find(p => p.handle && p.handle.toLowerCase() === pKey);
+            const presence = evaluatePresence(foundPerson ? foundPerson.updated_at : null);
             partnersMap.set(pKey, {
               id: partnerHandle,
               personId: foundPerson ? foundPerson.id : null,
               handle: partnerHandle,
               name: foundPerson ? foundPerson.name : (isMeSender ? partnerHandle.replace('@', '') : (msg.sender_name || partnerHandle.replace('@', ''))),
               avatar: foundPerson ? foundPerson.avatar : (isMeSender ? `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(partnerHandle)}` : (msg.sender_avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(partnerHandle)}`)),
-              status: foundPerson ? `Active recently · ${foundPerson.role}` : 'Community Member',
-              online: true,
+              status: `${presence.text} · ${foundPerson ? foundPerson.role : 'Community Member'}`,
+              online: presence.online,
+              lastActiveText: presence.text,
               lastMsg: '',
               time: '',
               unread: 0,
@@ -3024,6 +3084,13 @@
           }
 
           const chatObj = partnersMap.get(pKey);
+          const foundPerson = PEOPLE.find(p => p.handle && p.handle.toLowerCase() === pKey);
+          if (foundPerson) {
+            const presence = evaluatePresence(foundPerson.updated_at);
+            chatObj.online = presence.online;
+            chatObj.lastActiveText = presence.text;
+            chatObj.status = `${presence.text} · ${foundPerson.role || 'In your circle'}`;
+          }
           const msgTime = new Date(msg.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
           if (!chatObj.messages.some(m => m.id === msg.id)) {
@@ -3154,6 +3221,7 @@
       (c.personId && person.id && c.personId == person.id)
     );
 
+    const presence = evaluatePresence(person.updated_at);
     if (!existingChat) {
       existingChat = {
         id: personHandle,
@@ -3165,14 +3233,19 @@
         location: person.location || 'Brooklyn, NY',
         cover: person.cover || 'linear-gradient(135deg, #0d9488 0%, #6366f1 50%, #059669 100%)',
         avatar: person.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(person.name)}`,
-        status: `Active recently · ${person.role || 'In your circle'}`,
-        online: true,
+        status: `${presence.text} · ${person.role || 'In your circle'}`,
+        online: presence.online,
+        lastActiveText: presence.text,
         lastMsg: `Connected with ${person.name.split(' ')[0]}`,
         time: "Just now",
         unread: 0,
         messages: []
       };
       CHATS.unshift(existingChat);
+    } else {
+      existingChat.online = presence.online;
+      existingChat.lastActiveText = presence.text;
+      existingChat.status = `${presence.text} · ${person.role || 'In your circle'}`;
     }
 
     if (!person.following) {
@@ -3233,6 +3306,13 @@
     if (btnStatus) {
       btnStatus.textContent = person.following ? 'In Circle ✨' : 'Community Member';
       btnStatus.className = person.following ? 'button button-outline button-small' : 'button button-primary button-small';
+    }
+
+    const presence = evaluatePresence(person.updated_at);
+    const onlineBadge = modal.querySelector('.user-modal-online-badge');
+    if (onlineBadge) {
+      onlineBadge.className = `user-modal-online-badge ${presence.online ? 'is-online' : 'is-offline'}`;
+      onlineBadge.title = presence.online ? 'Active now on My Teta' : (presence.text || 'Offline');
     }
 
     if (btnChat) {
@@ -3313,7 +3393,7 @@
         <div class="chat-item ${chat.id === activeChatId ? 'is-selected' : ''}" data-chat-id="${escapeHTML(chat.id)}" role="button" tabindex="0" aria-label="Chat with ${escapeHTML(chat.name)}">
           <div class="chat-avatar-wrap">
             <img src="${chat.avatar}" alt="${escapeHTML(chat.name)}">
-            ${chat.online ? '<span class="chat-online-dot" title="Active now"></span>' : ''}
+            <span class="chat-online-dot ${chat.online ? 'is-online' : 'is-offline'}" title="${chat.online ? 'Active now' : (chat.lastActiveText || 'Offline')}"></span>
           </div>
           <div class="chat-item-body">
             <div class="chat-item-header">
@@ -3337,11 +3417,13 @@
           <small>Tap to message</small>
         </div>
       `;
-      html += matchingPeople.map(p => `
+      html += matchingPeople.map(p => {
+        const presence = evaluatePresence(p.updated_at);
+        return `
         <div class="chat-item chat-item-friend-result" data-search-person-id="${p.id}" role="button" tabindex="0" aria-label="Start chat with ${escapeHTML(p.name)}">
           <div class="chat-avatar-wrap">
             <img src="${p.avatar}" alt="${escapeHTML(p.name)}">
-            <span class="chat-online-dot" title="Active member"></span>
+            <span class="chat-online-dot ${presence.online ? 'is-online' : 'is-offline'}" title="${presence.online ? 'Active now' : presence.text}"></span>
           </div>
           <div class="chat-item-body">
             <div class="chat-item-header">
@@ -3349,12 +3431,13 @@
               <span class="chat-friend-badge">${p.following ? 'Friend' : 'Member'}</span>
             </div>
             <div class="chat-item-preview">
-              <p>${escapeHTML(p.role || p.handle)} · Tap to message</p>
+              <p>${escapeHTML(p.role || p.handle)} · <span class="chat-status-pill ${presence.online ? 'is-online' : 'is-offline'}"><span class="chat-status-dot-glyph">●</span> ${presence.online ? 'Active now' : presence.text}</span></p>
             </div>
           </div>
           <button class="chat-quick-start-btn" type="button" title="Message ${escapeHTML(p.name)}">💬</button>
         </div>
-      `).join('');
+      `;
+      }).join('');
     }
 
     chatContactList.innerHTML = html;
@@ -3464,6 +3547,8 @@
 
     if (conversationHeader) {
       const roleText = currentChat.status ? (currentChat.status.split('·')[1]?.trim() || currentChat.status) : 'In your circle';
+      const isOnline = Boolean(currentChat.online);
+      const statusLabel = isOnline ? 'Active now' : (currentChat.lastActiveText || 'Offline');
       conversationHeader.innerHTML = `
         <div class="conversation-header-user" id="chat-header-user-info" role="button" tabindex="0" title="Click to view ${escapeHTML(currentChat.name)}'s profile" style="cursor:pointer;">
           <button class="chat-back-btn" id="chat-mobile-back" type="button" aria-label="Back to contacts list" title="Back to messages">
@@ -3471,11 +3556,15 @@
           </button>
           <div class="conversation-header-avatar">
             <img src="${currentChat.avatar}" alt="${escapeHTML(currentChat.name)}">
-            ${currentChat.online ? '<span class="chat-online-dot"></span>' : ''}
+            <span class="chat-online-dot ${isOnline ? 'is-online' : 'is-offline'}" title="${isOnline ? 'Active now' : statusLabel}"></span>
           </div>
           <div class="conversation-header-info">
             <strong>${escapeHTML(currentChat.name)} <span class="chat-user-handle">${escapeHTML(currentChat.handle || '')}</span></strong>
-            <small>${currentChat.online ? '● Active now' : 'Active recently'} · ${escapeHTML(roleText)} · <span style="text-decoration:underline; font-weight:600;">View Profile</span></small>
+            <small>
+              <span class="chat-status-pill ${isOnline ? 'is-online' : 'is-offline'}">
+                <span class="chat-status-dot-glyph">●</span> ${escapeHTML(statusLabel)}
+              </span> · ${escapeHTML(roleText)} · <span style="text-decoration:underline; font-weight:600;">View Profile</span>
+            </small>
           </div>
         </div>
         <div class="conversation-header-actions">
@@ -5695,9 +5784,21 @@
   // Supabase sync and background polling
   updateCurrentUserUI();
   syncCommunityFromSupabase();
+  if (CURRENT_USER.handle && CURRENT_USER.handle !== '@guest') {
+    SupabaseService.updateHeartbeat(CURRENT_USER.handle);
+  }
+
+  // Periodic community profiles sync & presence update
   setInterval(() => {
     syncCommunityFromSupabase();
-  }, 25000);
+  }, 20000);
+
+  // Presence heartbeat for active user (every 30 seconds)
+  setInterval(() => {
+    if (CURRENT_USER.handle && CURRENT_USER.handle !== '@guest' && localStorage.getItem('my_teta_logged_out') !== 'true') {
+      SupabaseService.updateHeartbeat(CURRENT_USER.handle);
+    }
+  }, 30000);
 
   // Fast 2.5-second real-time polling for two-way direct messages
   let isMessagePolling = false;

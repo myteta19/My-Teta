@@ -4112,9 +4112,18 @@ body.is-logged-out #btn-settings-logout {
   right: 1px;
   width: 10px;
   height: 10px;
-  background: #10b981;
   border-radius: 50%;
-  border: 2px solid #fff;
+  border: 2px solid var(--surface, #ffffff);
+  background: #94a3b8;
+  transition: all 0.2s ease;
+}
+.chat-online-dot.is-online {
+  background: #10b981;
+  box-shadow: 0 0 0 1.5px rgba(16, 185, 129, 0.4);
+}
+.chat-online-dot.is-offline {
+  background: #94a3b8;
+  box-shadow: 0 0 0 1.5px rgba(148, 163, 184, 0.3);
 }
 .chat-item-body {
   flex: 1;
@@ -4217,8 +4226,27 @@ body.is-logged-out #btn-settings-logout {
   align-items: center;
   gap: 5px;
   font-size: 0.75rem;
-  color: #10b981;
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+.chat-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  transition: color 0.2s ease;
+}
+.chat-status-pill.is-online {
+  color: #059669;
+}
+.chat-status-pill.is-offline {
+  color: #64748b;
   font-weight: 600;
+}
+.chat-status-dot-glyph {
+  font-size: 0.65rem;
+  line-height: 1;
+  vertical-align: 1px;
 }
 .conversation-header-actions {
   display: flex;
@@ -4628,9 +4656,16 @@ body.is-logged-out #btn-settings-logout {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #10b981;
   border: 3px solid var(--surface);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+.user-modal-online-badge.is-online {
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.35);
+}
+.user-modal-online-badge.is-offline {
+  background: #94a3b8;
+  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.25);
 }
 
 .user-modal-actions {
