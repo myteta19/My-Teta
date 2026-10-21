@@ -368,6 +368,36 @@ body {
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
   transform: translateY(-1px);
 }
+
+/* Declarative visibility rules based on authentication status */
+body.is-logged-in #topbar-login-btn,
+body.is-logged-in #topbar-signup-btn,
+body.is-logged-in #rail-auth-btn {
+  display: none !important;
+}
+
+body.is-logged-in #topbar-logout-btn {
+  display: inline-flex !important;
+}
+
+body.is-logged-in #rail-logout-btn {
+  display: flex !important;
+}
+
+body.is-logged-out #topbar-login-btn,
+body.is-logged-out #topbar-signup-btn {
+  display: inline-flex !important;
+}
+
+body.is-logged-out #rail-auth-btn {
+  display: flex !important;
+}
+
+body.is-logged-out #topbar-logout-btn,
+body.is-logged-out #rail-logout-btn,
+body.is-logged-out #btn-settings-logout {
+  display: none !important;
+}
 .logout-confirm-modal {
   max-width: 440px !important;
   text-align: center;

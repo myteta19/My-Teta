@@ -550,7 +550,13 @@
   }
 
   function updateCurrentUserUI() {
-    const isLoggedOut = !CURRENT_USER.id || CURRENT_USER.handle === '@guest';
+    const isLoggedOut = !CURRENT_USER.id || CURRENT_USER.handle === '@guest' || localStorage.getItem('my_teta_logged_out') === 'true';
+
+    // Synchronize body class for declarative styling
+    if (document.body) {
+      document.body.classList.toggle('is-logged-in', !isLoggedOut);
+      document.body.classList.toggle('is-logged-out', isLoggedOut);
+    }
 
     const topbarAvatar = document.querySelector('.profile-trigger img');
     if (topbarAvatar && CURRENT_USER.avatar) topbarAvatar.src = CURRENT_USER.avatar;
@@ -560,11 +566,15 @@
     const railHandle = document.querySelector('.rail-profile small');
     if (railAvatar && CURRENT_USER.avatar) railAvatar.src = CURRENT_USER.avatar;
     if (railName && CURRENT_USER.name) railName.textContent = CURRENT_USER.name;
-    if (railHandle && CURRENT_USER.handle) railHandle.textContent = CURRENT_USER.handle;
+    if (railHandle) railHandle.textContent = isLoggedOut ? 'Not signed in' : (CURRENT_USER.handle || '');
 
     const greetingHeader = document.querySelector('.greeting-row h1');
-    if (greetingHeader && CURRENT_USER.name) {
-      greetingHeader.innerHTML = `A little closer, <span>${CURRENT_USER.name.split(' ')[0]}.</span>`;
+    if (greetingHeader) {
+      if (isLoggedOut) {
+        greetingHeader.innerHTML = `Welcome to <span>My Teta.</span>`;
+      } else if (CURRENT_USER.name) {
+        greetingHeader.innerHTML = `A little closer, <span>${CURRENT_USER.name.split(' ')[0]}.</span>`;
+      }
     }
 
     const composerAvatar = document.querySelector('.composer-main img');
@@ -577,15 +587,35 @@
     if (summaryName && CURRENT_USER.name) summaryName.textContent = CURRENT_USER.name;
     if (summaryHandle && CURRENT_USER.handle) summaryHandle.textContent = CURRENT_USER.handle;
 
-    // Synchronize Topbar & Sidebar Logout Buttons
+    // Control visibility of Auth vs Logout buttons:
+    // When LOGGED IN -> Hide Log in & Sign up on the page; Show Log out.
+    // When LOGGED OUT -> Show Log in & Sign up; Hide Log out.
+    const topbarLoginBtn = document.getElementById('topbar-login-btn');
+    const topbarSignupBtn = document.getElementById('topbar-signup-btn');
     const topbarLogoutBtn = document.getElementById('topbar-logout-btn');
-    if (topbarLogoutBtn) {
-      topbarLogoutBtn.style.display = isLoggedOut ? 'none' : 'inline-flex';
-    }
-
+    const railAuthBtn = document.getElementById('rail-auth-btn');
     const railLogoutBtn = document.getElementById('rail-logout-btn');
-    if (railLogoutBtn) {
-      railLogoutBtn.title = isLoggedOut ? 'Log in or sign up first' : `Log out of ${CURRENT_USER.handle || 'account'}`;
+    const btnSettingsLogout = document.getElementById('btn-settings-logout');
+
+    if (isLoggedOut) {
+      if (topbarLoginBtn) topbarLoginBtn.style.display = 'inline-flex';
+      if (topbarSignupBtn) topbarSignupBtn.style.display = 'inline-flex';
+      if (topbarLogoutBtn) topbarLogoutBtn.style.display = 'none';
+
+      if (railAuthBtn) railAuthBtn.style.display = 'flex';
+      if (railLogoutBtn) railLogoutBtn.style.display = 'none';
+      if (btnSettingsLogout) btnSettingsLogout.style.display = 'none';
+    } else {
+      if (topbarLoginBtn) topbarLoginBtn.style.display = 'none';
+      if (topbarSignupBtn) topbarSignupBtn.style.display = 'none';
+      if (topbarLogoutBtn) topbarLogoutBtn.style.display = 'inline-flex';
+
+      if (railAuthBtn) railAuthBtn.style.display = 'none';
+      if (railLogoutBtn) {
+        railLogoutBtn.style.display = 'flex';
+        railLogoutBtn.title = `Log out of ${CURRENT_USER.handle || 'account'}`;
+      }
+      if (btnSettingsLogout) btnSettingsLogout.style.display = 'inline-flex';
     }
 
     if (typeof renderProfile === 'function') renderProfile();
@@ -4286,6 +4316,7 @@
 
       let profile = await SupabaseService.findProfile(emailOrHandle);
       if (profile) {
+        CURRENT_USER.id = profile.id || CURRENT_USER.id || ('user_' + Date.now());
         CURRENT_USER.name = profile.name || CURRENT_USER.name;
         CURRENT_USER.handle = profile.handle || CURRENT_USER.handle;
         CURRENT_USER.avatar = profile.avatar || CURRENT_USER.avatar;
@@ -4295,6 +4326,7 @@
       } else {
         const cleanName = emailOrHandle ? emailOrHandle.split('@')[0] : 'Member';
         const formattedHandle = emailOrHandle && emailOrHandle.startsWith('@') ? emailOrHandle : `@${cleanName}`;
+        CURRENT_USER.id = CURRENT_USER.id || ('user_' + Date.now());
         CURRENT_USER.name = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
         CURRENT_USER.handle = formattedHandle;
         CURRENT_USER.email = emailOrHandle || '';
@@ -4348,6 +4380,7 @@
       const avatarSeed = encodeURIComponent(handle.replace('@', ''));
       const avatarUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${avatarSeed}`;
 
+      CURRENT_USER.id = 'user_' + Date.now();
       CURRENT_USER.name = fullName;
       CURRENT_USER.handle = handle;
       CURRENT_USER.email = email;
@@ -4396,6 +4429,14 @@
       showToast(`Connecting securely to ${provider}...`, "🔒");
       setTimeout(() => {
         if (authModal) authModal.hidden = true;
+        try {
+          localStorage.removeItem('my_teta_logged_out');
+          CURRENT_USER.id = CURRENT_USER.id || ('user_' + Date.now());
+          CURRENT_USER.name = `${provider} Member`;
+          CURRENT_USER.handle = `@${provider.toLowerCase()}_user`;
+          localStorage.setItem('my_teta_current_user', JSON.stringify(CURRENT_USER));
+        } catch (err) {}
+        updateCurrentUserUI();
         showToast(`Connected successfully with ${provider}!`, "✨");
         switchView('home');
       }, 700);
@@ -4427,6 +4468,7 @@
 
       const cleanName = email ? email.split('@')[0] : 'friend';
       const formattedHandle = `@${cleanName.replace(/[^a-zA-Z0-9_]/g, '') || 'member'}`;
+      CURRENT_USER.id = CURRENT_USER.id || ('user_' + Date.now());
       CURRENT_USER.name = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
       CURRENT_USER.handle = formattedHandle;
       CURRENT_USER.email = email;
