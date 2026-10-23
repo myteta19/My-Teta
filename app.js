@@ -442,6 +442,301 @@
       } catch (err) {
         // Silently ignore heartbeat failure
       }
+    },
+
+    async fetchPosts() {
+      try {
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('posts')
+            .select('*')
+            .order('created_at', { ascending: false });
+          if (error) throw error;
+          return data || [];
+        } else {
+          const data = await this.request('posts?select=*&order=created_at.desc');
+          return data || [];
+        }
+      } catch (err) {
+        console.warn("SupabaseService.fetchPosts error:", err);
+        return [];
+      }
+    },
+
+    async createPost(post) {
+      try {
+        const payload = {
+          id: post.id,
+          author: post.author,
+          handle: post.handle,
+          avatar: post.avatar || '',
+          circle: post.circle || 'Sunday table',
+          content: post.content,
+          image: post.image || null,
+          likes: post.likes || 0,
+          liked_by: post.liked_by || [],
+          comments_count: (post.commentsList && post.commentsList.length) || post.comments || 0,
+          comments_list: post.commentsList || [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('posts')
+            .upsert(payload, { onConflict: 'id' });
+          if (error) console.warn("Supabase createPost error:", error);
+          return data || payload;
+        } else {
+          return await this.request('posts', {
+            method: 'POST',
+            headers: { "Prefer": "resolution=merge-duplicates" },
+            body: JSON.stringify(payload)
+          });
+        }
+      } catch (err) {
+        console.warn("SupabaseService.createPost error:", err);
+        return null;
+      }
+    },
+
+    async togglePostLike(postId, userHandle) {
+      try {
+        const normHandle = (userHandle || '').toLowerCase();
+        let currentPost = null;
+        if (supabaseClient) {
+          const { data } = await supabaseClient
+            .from('posts')
+            .select('liked_by')
+            .eq('id', postId)
+            .limit(1);
+          currentPost = data && data[0];
+        } else {
+          const res = await this.request(`posts?id=eq.${encodeURIComponent(postId)}&limit=1`);
+          currentPost = res && res[0];
+        }
+
+        let likedBy = (currentPost && Array.isArray(currentPost.liked_by)) ? currentPost.liked_by : [];
+        const isLiked = likedBy.some(h => (h || '').toLowerCase() === normHandle);
+        const newLikedBy = isLiked 
+          ? likedBy.filter(h => (h || '').toLowerCase() !== normHandle)
+          : [...likedBy, userHandle];
+        const newLikes = Math.max(0, newLikedBy.length);
+
+        const patch = {
+          likes: newLikes,
+          liked_by: newLikedBy,
+          updated_at: new Date().toISOString()
+        };
+
+        if (supabaseClient) {
+          await supabaseClient
+            .from('posts')
+            .update(patch)
+            .eq('id', postId);
+        } else {
+          await this.request(`posts?id=eq.${encodeURIComponent(postId)}`, {
+            method: 'PATCH',
+            body: JSON.stringify(patch)
+          });
+        }
+        return { isLiked: !isLiked, likes: newLikes, liked_by: newLikedBy };
+      } catch (err) {
+        console.warn("SupabaseService.togglePostLike error:", err);
+        return null;
+      }
+    },
+
+    async addPostComment(postId, comment) {
+      try {
+        let currentPost = null;
+        if (supabaseClient) {
+          const { data } = await supabaseClient
+            .from('posts')
+            .select('comments_list, comments_count')
+            .eq('id', postId)
+            .limit(1);
+          currentPost = data && data[0];
+        } else {
+          const res = await this.request(`posts?id=eq.${encodeURIComponent(postId)}&limit=1`);
+          currentPost = res && res[0];
+        }
+
+        let commentsList = (currentPost && Array.isArray(currentPost.comments_list)) ? currentPost.comments_list : [];
+        commentsList.push(comment);
+        const count = commentsList.length;
+
+        const patch = {
+          comments_count: count,
+          comments_list: commentsList,
+          updated_at: new Date().toISOString()
+        };
+
+        if (supabaseClient) {
+          await supabaseClient
+            .from('posts')
+            .update(patch)
+            .eq('id', postId);
+        } else {
+          await this.request(`posts?id=eq.${encodeURIComponent(postId)}`, {
+            method: 'PATCH',
+            body: JSON.stringify(patch)
+          });
+        }
+        return commentsList;
+      } catch (err) {
+        console.warn("SupabaseService.addPostComment error:", err);
+        return null;
+      }
+    },
+
+    async fetchReels() {
+      try {
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('reels')
+            .select('*')
+            .order('created_at', { ascending: false });
+          if (error) throw error;
+          return data || [];
+        } else {
+          const data = await this.request('reels?select=*&order=created_at.desc');
+          return data || [];
+        }
+      } catch (err) {
+        console.warn("SupabaseService.fetchReels error:", err);
+        return [];
+      }
+    },
+
+    async createReel(reel) {
+      try {
+        const payload = {
+          id: String(reel.id),
+          author: reel.author,
+          handle: reel.handle || `@${reel.author.toLowerCase().replace(/\s+/g, '')}`,
+          avatar: reel.avatar || '',
+          caption: reel.caption || '',
+          image: reel.image || '',
+          video_url: reel.videoUrl || 'https://vjs.zencdn.net/v/oceans.mp4',
+          category: reel.category || 'atmosphere',
+          music: reel.music || 'Lo-Fi Rain · Brooklyn Chill',
+          duration: reel.duration || '0:24',
+          views: reel.views || '1',
+          likes: reel.likes || 0,
+          liked_by: reel.liked_by || [],
+          comments: reel.comments || [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('reels')
+            .upsert(payload, { onConflict: 'id' });
+          if (error) console.warn("Supabase createReel error:", error);
+          return data || payload;
+        } else {
+          return await this.request('reels', {
+            method: 'POST',
+            headers: { "Prefer": "resolution=merge-duplicates" },
+            body: JSON.stringify(payload)
+          });
+        }
+      } catch (err) {
+        console.warn("SupabaseService.createReel error:", err);
+        return null;
+      }
+    },
+
+    async toggleReelLike(reelId, userHandle) {
+      try {
+        const rId = String(reelId);
+        const normHandle = (userHandle || '').toLowerCase();
+        let currentReel = null;
+        if (supabaseClient) {
+          const { data } = await supabaseClient
+            .from('reels')
+            .select('liked_by')
+            .eq('id', rId)
+            .limit(1);
+          currentReel = data && data[0];
+        } else {
+          const res = await this.request(`reels?id=eq.${encodeURIComponent(rId)}&limit=1`);
+          currentReel = res && res[0];
+        }
+
+        let likedBy = (currentReel && Array.isArray(currentReel.liked_by)) ? currentReel.liked_by : [];
+        const isLiked = likedBy.some(h => (h || '').toLowerCase() === normHandle);
+        const newLikedBy = isLiked 
+          ? likedBy.filter(h => (h || '').toLowerCase() !== normHandle)
+          : [...likedBy, userHandle];
+        const newLikes = Math.max(0, newLikedBy.length);
+
+        const patch = {
+          likes: newLikes,
+          liked_by: newLikedBy,
+          updated_at: new Date().toISOString()
+        };
+
+        if (supabaseClient) {
+          await supabaseClient
+            .from('reels')
+            .update(patch)
+            .eq('id', rId);
+        } else {
+          await this.request(`reels?id=eq.${encodeURIComponent(rId)}`, {
+            method: 'PATCH',
+            body: JSON.stringify(patch)
+          });
+        }
+        return { isLiked: !isLiked, likes: newLikes, liked_by: newLikedBy };
+      } catch (err) {
+        console.warn("SupabaseService.toggleReelLike error:", err);
+        return null;
+      }
+    },
+
+    async addReelComment(reelId, comment) {
+      try {
+        const rId = String(reelId);
+        let currentReel = null;
+        if (supabaseClient) {
+          const { data } = await supabaseClient
+            .from('reels')
+            .select('comments')
+            .eq('id', rId)
+            .limit(1);
+          currentReel = data && data[0];
+        } else {
+          const res = await this.request(`reels?id=eq.${encodeURIComponent(rId)}&limit=1`);
+          currentReel = res && res[0];
+        }
+
+        let comments = (currentReel && Array.isArray(currentReel.comments)) ? currentReel.comments : [];
+        comments.push(comment);
+
+        const patch = {
+          comments: comments,
+          updated_at: new Date().toISOString()
+        };
+
+        if (supabaseClient) {
+          await supabaseClient
+            .from('reels')
+            .update(patch)
+            .eq('id', rId);
+        } else {
+          await this.request(`reels?id=eq.${encodeURIComponent(rId)}`, {
+            method: 'PATCH',
+            body: JSON.stringify(patch)
+          });
+        }
+        return comments;
+      } catch (err) {
+        console.warn("SupabaseService.addReelComment error:", err);
+        return null;
+      }
     }
   };
 
@@ -732,7 +1027,7 @@
     } catch (e) {}
   }
 
-  const REELS = (() => {
+  let REELS = (() => {
     try {
       const saved = localStorage.getItem('my_teta_reels');
       if (saved) {
@@ -742,6 +1037,158 @@
     } catch (e) {}
     return [];
   })();
+
+  function formatRelativeTime(isoOrText) {
+    if (!isoOrText) return "Just now";
+    const date = new Date(isoOrText);
+    if (isNaN(date.getTime())) return isoOrText;
+    const diffSec = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (diffSec < 60) return "Just now";
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHours = Math.floor(diffMin / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  let isSyncingPosts = false;
+  async function syncPostsFromSupabase(isBackground = false) {
+    if (isSyncingPosts) return;
+    isSyncingPosts = true;
+    try {
+      const remote = await SupabaseService.fetchPosts();
+      if (Array.isArray(remote)) {
+        const myHandle = (CURRENT_USER.handle || '').toLowerCase();
+        const mapped = remote.map(r => {
+          const likedBy = Array.isArray(r.liked_by) ? r.liked_by : [];
+          const isLiked = likedBy.some(h => (h || '').toLowerCase() === myHandle);
+          const commentsList = Array.isArray(r.comments_list) ? r.comments_list : [];
+          
+          const existing = posts.find(p => p.id === r.id);
+          const wasOpen = existing ? existing._commentsOpen : false;
+
+          // Notify author if another user commented
+          if (isBackground && (r.handle || '').toLowerCase() === myHandle && existing) {
+            const oldCommentsCount = (existing.commentsList && existing.commentsList.length) || 0;
+            if (commentsList.length > oldCommentsCount) {
+              const latestComment = commentsList[commentsList.length - 1];
+              if (latestComment && (latestComment.handle || '').toLowerCase() !== myHandle) {
+                showToast(`${latestComment.author} commented: "${(latestComment.text || '').substring(0, 28)}"`, "💬");
+              }
+            }
+          }
+
+          return {
+            id: r.id,
+            author: r.author,
+            handle: r.handle,
+            avatar: r.avatar || CURRENT_USER.avatar,
+            time: formatRelativeTime(r.created_at),
+            circle: r.circle || 'Sunday table',
+            content: r.content,
+            image: r.image,
+            likes: r.likes || likedBy.length || 0,
+            liked_by: likedBy,
+            comments: r.comments_count || commentsList.length || 0,
+            commentsList: commentsList,
+            isLiked: isLiked,
+            _commentsOpen: wasOpen
+          };
+        });
+
+        // Merge any local unsynced posts
+        const remoteIds = new Set(mapped.map(m => m.id));
+        posts.forEach(p => {
+          if (!remoteIds.has(p.id)) {
+            mapped.push(p);
+            SupabaseService.createPost(p).catch(() => {});
+          }
+        });
+
+        posts = mapped;
+        savePostsToStorage();
+        if (typeof renderFeed === 'function') renderFeed();
+        if (typeof renderProfileMoments === 'function') renderProfileMoments();
+      }
+    } catch (e) {
+      console.warn("syncPostsFromSupabase error:", e);
+    } finally {
+      isSyncingPosts = false;
+    }
+  }
+
+  let isSyncingReels = false;
+  async function syncReelsFromSupabase(isBackground = false) {
+    if (isSyncingReels) return;
+    isSyncingReels = true;
+    try {
+      const remote = await SupabaseService.fetchReels();
+      if (Array.isArray(remote)) {
+        const myHandle = (CURRENT_USER.handle || '').toLowerCase();
+        const mapped = remote.map(r => {
+          const likedBy = Array.isArray(r.liked_by) ? r.liked_by : [];
+          const isLiked = likedBy.some(h => (h || '').toLowerCase() === myHandle);
+          const comments = Array.isArray(r.comments) ? r.comments : [];
+
+          // Notify author if another user commented
+          const existing = REELS.find(item => item.id == r.id);
+          if (isBackground && (r.handle || '').toLowerCase() === myHandle && existing) {
+            const oldCommentsCount = (existing.comments && existing.comments.length) || 0;
+            if (comments.length > oldCommentsCount) {
+              const latestComment = comments[comments.length - 1];
+              if (latestComment && (latestComment.handle || '').toLowerCase() !== myHandle) {
+                showToast(`${latestComment.author} commented on your reel: "${(latestComment.text || '').substring(0, 28)}"`, "💬");
+              }
+            }
+          }
+
+          return {
+            id: r.id,
+            author: r.author,
+            handle: r.handle || `@${r.author.toLowerCase().replace(/\s+/g, '')}`,
+            avatar: r.avatar || CURRENT_USER.avatar,
+            caption: r.caption || '',
+            image: r.image || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80',
+            videoUrl: r.video_url || 'https://vjs.zencdn.net/v/oceans.mp4',
+            category: r.category || 'atmosphere',
+            music: r.music || 'Lo-Fi Rain · Brooklyn Chill',
+            duration: r.duration || '0:24',
+            views: r.views || '1',
+            likes: r.likes || likedBy.length || 0,
+            liked_by: likedBy,
+            isLiked: isLiked,
+            isSaved: false,
+            isFollowing: false,
+            comments: comments
+          };
+        });
+
+        // Merge any local unsynced reels
+        const remoteIds = new Set(mapped.map(m => String(m.id)));
+        REELS.forEach(r => {
+          if (!remoteIds.has(String(r.id))) {
+            mapped.push(r);
+            SupabaseService.createReel(r).catch(() => {});
+          }
+        });
+
+        REELS = mapped;
+        saveReelsToStorage();
+        if (typeof renderHomeReels === 'function') renderHomeReels();
+        if (typeof renderProfileReels === 'function') renderProfileReels();
+        if (typeof renderReelThumbnails === 'function') renderReelThumbnails();
+        if (typeof renderReelComments === 'function' && typeof currentReelIndex === 'number' && REELS[currentReelIndex]) {
+          renderReelComments();
+        }
+      }
+    } catch (e) {
+      console.warn("syncReelsFromSupabase error:", e);
+    } finally {
+      isSyncingReels = false;
+    }
+  }
 
   function getPersonReels(person) {
     if (!person) return [];
@@ -1602,12 +2049,22 @@
         const id = btn.dataset.likeBtn;
         const post = posts.find(p => p.id === id);
         if (post) {
-          post.isLiked = !post.isLiked;
-          post.likes = Math.max(0, (post.likes || 0) + (post.isLiked ? 1 : -1));
+          const myHandle = CURRENT_USER.handle || '@guest';
+          if (!Array.isArray(post.liked_by)) post.liked_by = [];
+          const idx = post.liked_by.findIndex(h => (h || '').toLowerCase() === myHandle.toLowerCase());
+          if (idx !== -1) {
+            post.liked_by.splice(idx, 1);
+            post.isLiked = false;
+          } else {
+            post.liked_by.push(myHandle);
+            post.isLiked = true;
+          }
+          post.likes = Math.max(0, post.liked_by.length);
           savePostsToStorage();
           renderFeed();
           if (post.isLiked) showToast("Liked moment ♥", "♥");
           else showToast("Unliked moment", "♡");
+          SupabaseService.togglePostLike(post.id, myHandle);
         }
       });
     });
@@ -1649,20 +2106,23 @@
           post.commentsList = [];
         }
 
-        post.commentsList.push({
+        const newComment = {
           id: "c_" + Date.now(),
           author: CURRENT_USER.name,
           handle: CURRENT_USER.handle,
           avatar: CURRENT_USER.avatar,
           time: "Just now",
           text: text
-        });
+        };
+
+        post.commentsList.push(newComment);
         post.comments = post.commentsList.length;
         post._commentsOpen = true;
 
         savePostsToStorage();
         renderFeed();
         showToast("Comment posted! 💬", "💬");
+        SupabaseService.addPostComment(post.id, newComment);
       });
     });
 
@@ -1703,6 +2163,7 @@
         content: text,
         image: null,
         likes: 0,
+        liked_by: [],
         comments: 0,
         commentsList: [],
         isLiked: false
@@ -1714,6 +2175,7 @@
       renderFeed();
       if (typeof renderProfileMoments === 'function') renderProfileMoments();
       showToast("Moment shared with your circles!", "✳");
+      SupabaseService.createPost(newPost);
     });
   }
 
@@ -2214,14 +2676,24 @@
         const reelId = btn.dataset.reelLike;
         const reel = REELS.find(r => r.id == reelId);
         if (reel) {
-          reel.isLiked = !reel.isLiked;
-          reel.likes = Math.max(0, (reel.likes || 0) + (reel.isLiked ? 1 : -1));
+          const myHandle = CURRENT_USER.handle || '@guest';
+          if (!Array.isArray(reel.liked_by)) reel.liked_by = [];
+          const idx = reel.liked_by.findIndex(h => (h || '').toLowerCase() === myHandle.toLowerCase());
+          if (idx !== -1) {
+            reel.liked_by.splice(idx, 1);
+            reel.isLiked = false;
+          } else {
+            reel.liked_by.push(myHandle);
+            reel.isLiked = true;
+          }
+          reel.likes = Math.max(0, reel.liked_by.length);
           saveReelsToStorage();
           renderHomeReels();
           if (typeof currentReelIndex === 'number' && REELS[currentReelIndex]) {
             loadActiveReel(currentReelIndex, false);
           }
           showToast(reel.isLiked ? "Saved reel to your moments ♥" : "Unliked reel", reel.isLiked ? "♥" : "♡");
+          SupabaseService.toggleReelLike(reel.id, myHandle);
         }
       });
     });
@@ -2503,12 +2975,17 @@
       e.stopPropagation();
       const reel = REELS[currentReelIndex];
       if (reel) {
-        if (!reel.isLiked) {
+        const myHandle = CURRENT_USER.handle || '@guest';
+        if (!Array.isArray(reel.liked_by)) reel.liked_by = [];
+        const idx = reel.liked_by.findIndex(h => (h || '').toLowerCase() === myHandle.toLowerCase());
+        if (idx === -1) {
+          reel.liked_by.push(myHandle);
           reel.isLiked = true;
-          reel.likes = (reel.likes || 0) + 1;
+          reel.likes = Math.max(0, reel.liked_by.length);
           saveReelsToStorage();
           loadActiveReel(currentReelIndex, false);
           renderHomeReels();
+          SupabaseService.toggleReelLike(reel.id, myHandle);
         }
         showToast("Loved this reel ♥", "♥");
       }
@@ -2521,12 +2998,22 @@
     document.getElementById('player-like-btn')?.addEventListener('click', () => {
       const reel = REELS[currentReelIndex];
       if (reel) {
-        reel.isLiked = !reel.isLiked;
-        reel.likes = Math.max(0, (reel.likes || 0) + (reel.isLiked ? 1 : -1));
+        const myHandle = CURRENT_USER.handle || '@guest';
+        if (!Array.isArray(reel.liked_by)) reel.liked_by = [];
+        const idx = reel.liked_by.findIndex(h => (h || '').toLowerCase() === myHandle.toLowerCase());
+        if (idx !== -1) {
+          reel.liked_by.splice(idx, 1);
+          reel.isLiked = false;
+        } else {
+          reel.liked_by.push(myHandle);
+          reel.isLiked = true;
+        }
+        reel.likes = Math.max(0, reel.liked_by.length);
         saveReelsToStorage();
         loadActiveReel(currentReelIndex, false);
         renderHomeReels();
         showToast(reel.isLiked ? "Saved to your liked moments ♥" : "Unliked reel", reel.isLiked ? "♥" : "♡");
+        SupabaseService.toggleReelLike(reel.id, myHandle);
       }
     });
 
@@ -2672,7 +3159,7 @@
         const posterImg = uploadedPosterUrl || "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=600&q=80";
 
         const newReel = {
-          id: Date.now(),
+          id: String(Date.now()),
           author: CURRENT_USER.name,
           handle: CURRENT_USER.handle,
           avatar: CURRENT_USER.avatar,
@@ -2680,28 +3167,22 @@
           image: posterImg,
           videoUrl: videoUrl,
           category: category,
-          likes: 1,
+          likes: 0,
+          liked_by: [],
           views: "1",
           duration: "0:24",
           music: soundtrack,
-          isLiked: true,
+          isLiked: false,
           isSaved: false,
           isFollowing: false,
-          comments: [
-            {
-              id: 1,
-              author: CURRENT_USER.name,
-              avatar: CURRENT_USER.avatar,
-              time: "Just now",
-              text: "Freshly uploaded reel! Welcome to this moment 🌿"
-            }
-          ]
+          comments: []
         };
 
         REELS.unshift(newReel);
         saveReelsToStorage();
         renderHomeReels();
         loadActiveReel(0, true);
+        SupabaseService.createReel(newReel);
 
         // Reset form
         studioUploadForm.reset();
@@ -2726,18 +3207,21 @@
         const reel = REELS[currentReelIndex];
         if (reel) {
           reel.comments = reel.comments || [];
-          reel.comments.push({
+          const newComment = {
             id: Date.now(),
             author: CURRENT_USER.name,
+            handle: CURRENT_USER.handle,
             avatar: CURRENT_USER.avatar,
             time: "Just now",
             text: text
-          });
+          };
+          reel.comments.push(newComment);
           saveReelsToStorage();
           reelCommentInput.value = "";
           renderReelComments();
           renderHomeReels();
           showToast("Reflection posted! 💬", "💬");
+          SupabaseService.addReelComment(reel.id, newComment);
         }
       });
     }
@@ -4088,7 +4572,7 @@
       e.preventDefault();
       const caption = (reelCaption && reelCaption.value.trim()) ? reelCaption.value.trim() : "A moment in the making ✨";
       const newReel = {
-        id: Date.now(),
+        id: String(Date.now()),
         author: CURRENT_USER.name,
         handle: CURRENT_USER.handle,
         avatar: CURRENT_USER.avatar,
@@ -4096,21 +4580,21 @@
         image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
         videoUrl: modalUploadedBlobUrl || "https://vjs.zencdn.net/v/oceans.mp4",
         category: "atmosphere",
-        likes: 1,
+        likes: 0,
+        liked_by: [],
         views: "1",
         duration: "0:24",
         music: "Lo-Fi Rain · Brooklyn Chill",
-        isLiked: true,
+        isLiked: false,
         isSaved: false,
         isFollowing: false,
-        comments: [
-          { id: 1, author: CURRENT_USER.name, avatar: CURRENT_USER.avatar, time: "Just now", text: "Fresh reel shared via studio modal 🌿" }
-        ]
+        comments: []
       };
 
       REELS.unshift(newReel);
       saveReelsToStorage();
       renderHomeReels();
+      SupabaseService.createReel(newReel);
       if (reelModal) reelModal.hidden = true;
       reelForm.reset();
       if (reelUploadPreview) {
@@ -5843,6 +6327,36 @@
         .subscribe();
     } catch (err) {
       console.warn("Supabase Realtime subscription notice:", err);
+    }
+  }
+
+  // ==========================================
+  // REAL-TIME POSTS & REELS LIVE CLOUD SYNC
+  // ==========================================
+  // 1. Initial Sync for Posts and Reels from Supabase
+  syncPostsFromSupabase(false);
+  syncReelsFromSupabase(false);
+
+  // 2. Continuous Live Polling every 4 seconds for instant cross-device updates
+  setInterval(() => {
+    syncPostsFromSupabase(true);
+    syncReelsFromSupabase(true);
+  }, 4000);
+
+  // 3. Supabase Realtime WebSocket subscription for live posts and reels
+  if (supabaseClient) {
+    try {
+      supabaseClient
+        .channel('public:posts_reels_live')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => {
+          syncPostsFromSupabase(true);
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'reels' }, () => {
+          syncReelsFromSupabase(true);
+        })
+        .subscribe();
+    } catch (err) {
+      console.warn("Supabase Realtime posts/reels subscription notice:", err);
     }
   }
 
