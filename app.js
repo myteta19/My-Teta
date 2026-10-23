@@ -1022,8 +1022,103 @@
       comments: [
         { id: 1, author: "Amara Vance", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80", time: "25m ago", text: "That golden morning light is unmatched Maya!" }
       ]
+    },
+    {
+      id: 6901,
+      author: "test69",
+      handle: "@test69",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=test69",
+      caption: "Night coding & lo-fi chill 🌙 crafting smooth web spaces and clean layouts on My Teta.",
+      image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80",
+      videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
+      category: "craft",
+      likes: 89,
+      views: "14.2k",
+      duration: "0:22",
+      music: "Lo-Fi Synth · Night Codes",
+      isLiked: false,
+      isSaved: false,
+      isFollowing: true,
+      comments: [
+        { id: 1, author: "Maya Chen", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=mayachen", time: "2h ago", text: "Vibe is incredible! Love the ambient audio." }
+      ]
+    },
+    {
+      id: 6902,
+      author: "test69",
+      handle: "@test69",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=test69",
+      caption: "Sunset golden hour from the rooftop workspace 🌆 finding calm focus in the evening rhythm.",
+      image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80",
+      videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      category: "atmosphere",
+      likes: 134,
+      views: "21.5k",
+      duration: "0:31",
+      music: "Golden Sunset · Horizon Wave",
+      isLiked: true,
+      isSaved: false,
+      isFollowing: true,
+      comments: []
+    },
+    {
+      id: 7001,
+      author: "tayyab",
+      handle: "@tayyab",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=tayyab",
+      caption: "Morning espresso & creative design thoughts ☕✨ every detail matters in the craft.",
+      image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80",
+      videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+      category: "escapes",
+      likes: 76,
+      views: "9.8k",
+      duration: "0:25",
+      music: "Morning Brew · Acoustic Flow",
+      isLiked: false,
+      isSaved: false,
+      isFollowing: true,
+      comments: []
     }
   ];
+
+  function saveReelsToStorage() {
+    try {
+      localStorage.setItem('my_teta_reels', JSON.stringify(REELS));
+    } catch (e) {}
+  }
+
+  try {
+    const savedCustomReels = localStorage.getItem('my_teta_reels');
+    if (savedCustomReels) {
+      const parsed = JSON.parse(savedCustomReels);
+      if (Array.isArray(parsed)) {
+        parsed.forEach(r => {
+          if (!REELS.some(existing => existing.id == r.id)) {
+            REELS.unshift(r);
+          }
+        });
+      }
+    }
+  } catch (e) {}
+
+  function getPersonReels(person) {
+    if (!person) return [];
+    const pName = (person.name || '').trim().toLowerCase();
+    const pHandle = (person.handle || '').trim().toLowerCase().replace(/^@/, '');
+    const pHandleWithAt = '@' + pHandle;
+
+    return REELS.filter(r => {
+      const rAuthor = (r.author || '').trim().toLowerCase();
+      const rHandle = (r.handle || '').trim().toLowerCase().replace(/^@/, '');
+      const rHandleWithAt = '@' + rHandle;
+
+      if (pHandle && (rHandle === pHandle || rHandleWithAt === pHandleWithAt)) return true;
+      if (pName && rAuthor === pName) return true;
+      if (pHandle && rAuthor === pHandle) return true;
+      if (pName && (rHandle === pName || rHandleWithAt === '@' + pName)) return true;
+      return false;
+    });
+  }
 
   const DEMO_PRESETS = {
     rain: {
@@ -3303,16 +3398,121 @@
     if (elLocText) elLocText.textContent = person.location || 'Brooklyn, NY';
     if (elMutualText) elMutualText.textContent = person.following ? 'Connected in Circle ✨' : (person.mutual || 'Community Member');
 
-    if (btnStatus) {
-      btnStatus.textContent = person.following ? 'In Circle ✨' : 'Community Member';
-      btnStatus.className = person.following ? 'button button-outline button-small' : 'button button-primary button-small';
-    }
-
     const presence = evaluatePresence(person.updated_at);
     const onlineBadge = modal.querySelector('.user-modal-online-badge');
     if (onlineBadge) {
       onlineBadge.className = `user-modal-online-badge ${presence.online ? 'is-online' : 'is-offline'}`;
       onlineBadge.title = presence.online ? 'Active now on My Teta' : (presence.text || 'Offline');
+    }
+
+    // Dynamic Modal Stats
+    const statCircle = document.getElementById('modal-stat-circle');
+    const statCircleSub = document.getElementById('modal-stat-circle-sub');
+    if (statCircle) statCircle.textContent = person.following ? 'Friend' : 'Member';
+    if (statCircleSub) statCircleSub.textContent = person.following ? 'In Your Circle' : 'Community';
+
+    const statPresence = document.getElementById('modal-stat-presence');
+    const statPresenceSub = document.getElementById('modal-stat-presence-sub');
+    if (statPresence) {
+      statPresence.textContent = presence.online ? 'Active' : 'Offline';
+      statPresence.style.color = presence.online ? '#059669' : 'var(--ink)';
+    }
+    if (statPresenceSub) statPresenceSub.textContent = presence.online ? '● Active now' : (presence.text || 'Offline');
+
+    // Interactive Circle / Add Friend Button
+    if (btnStatus) {
+      const updateStatusBtn = () => {
+        btnStatus.textContent = person.following ? '✓ In Circle (Friend)' : '＋ Add to Circle';
+        btnStatus.className = person.following ? 'button button-outline button-small' : 'button button-primary button-small';
+      };
+      updateStatusBtn();
+
+      btnStatus.onclick = async () => {
+        person.following = !person.following;
+        updateStatusBtn();
+        if (elMutualText) {
+          elMutualText.textContent = person.following ? 'Connected in Circle ✨' : (person.mutual || 'Community Member');
+        }
+        if (statCircle) statCircle.textContent = person.following ? 'Friend' : 'Member';
+        if (statCircleSub) statCircleSub.textContent = person.following ? 'In Your Circle' : 'Community';
+
+        if (person.following) {
+          CURRENT_USER.friendsCount = (CURRENT_USER.friendsCount || 0) + 1;
+          showToast(`Connected with ${person.name}! Added to your circle ✨`, "✨");
+          if (person.handle) {
+            SupabaseService.sendFriendRequest({
+              sender_name: CURRENT_USER.name,
+              sender_handle: CURRENT_USER.handle,
+              sender_avatar: CURRENT_USER.avatar,
+              sender_role: CURRENT_USER.role || 'Member',
+              sender_mutual: 'Connected in circle',
+              receiver_handle: person.handle
+            }).catch(() => {});
+          }
+        } else {
+          if (CURRENT_USER.friendsCount > 0) CURRENT_USER.friendsCount--;
+          showToast(`Removed connection with ${person.name}`, "ℹ");
+        }
+
+        renderFriends(currentFriendFilter);
+        renderHomeSearch();
+        renderChatFriendsTray();
+        renderChat();
+        updateCurrentUserUI();
+      };
+    }
+
+    // Render Friend's Uploaded Reels Showcase
+    const reelsGrid = document.getElementById('modal-profile-reels-grid');
+    const reelsBadge = document.getElementById('modal-profile-reels-badge');
+    const statReelsCount = document.getElementById('modal-stat-reels-count');
+    const reelsSub = document.getElementById('modal-profile-reels-sub');
+
+    const friendReels = getPersonReels(person);
+    if (reelsBadge) reelsBadge.textContent = `${friendReels.length} ${friendReels.length === 1 ? 'reel' : 'reels'}`;
+    if (statReelsCount) statReelsCount.textContent = friendReels.length;
+    if (reelsSub) reelsSub.textContent = friendReels.length > 0
+      ? `Moments & short stories by ${person.name.split(' ')[0]}`
+      : `No short reels shared yet by this member`;
+
+    if (reelsGrid) {
+      if (friendReels.length === 0) {
+        reelsGrid.innerHTML = `
+          <div class="modal-reels-empty">
+            <span class="modal-reels-empty-icon">🎬</span>
+            <p>No reels uploaded yet</p>
+            <small>When ${escapeHTML(person.name)} publishes video reels, you will be able to watch them here.</small>
+          </div>
+        `;
+      } else {
+        reelsGrid.innerHTML = friendReels.map(reel => `
+          <div class="modal-reel-card" data-modal-reel-id="${reel.id}" role="button" tabindex="0" title="Watch ${escapeHTML(reel.caption || 'Reel')}">
+            <img class="modal-reel-poster" src="${reel.image}" alt="${escapeHTML(reel.caption || 'Reel')}" loading="lazy">
+            <span class="modal-reel-duration">${reel.duration || '0:30'}</span>
+            <div class="modal-reel-play-icon" aria-hidden="true">▷</div>
+            <div class="modal-reel-overlay">
+              <p class="modal-reel-caption">${escapeHTML(reel.caption || '')}</p>
+              <div class="modal-reel-meta-row">
+                <span>👁 ${reel.views || '1.2k'}</span>
+                <span>♥ ${reel.likes || '0'}</span>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        reelsGrid.querySelectorAll('[data-modal-reel-id]').forEach(card => {
+          card.addEventListener('click', () => {
+            const reelId = card.dataset.modalReelId;
+            const targetIdx = REELS.findIndex(r => r.id == reelId);
+            if (targetIdx !== -1) {
+              modal.hidden = true;
+              switchView('reels');
+              loadActiveReel(targetIdx, true);
+              showToast(`Playing ${person.name}'s reel in Theater ▷`, "▷");
+            }
+          });
+        });
+      }
     }
 
     if (btnChat) {

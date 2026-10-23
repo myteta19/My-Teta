@@ -2287,16 +2287,33 @@
 				</div>
 				<div class="user-modal-stats">
 					<div class="user-modal-stat-box">
-						<strong>Circle</strong>
-						<small>Connected</small>
+						<strong id="modal-stat-circle">Circle</strong>
+						<small id="modal-stat-circle-sub">Connected</small>
 					</div>
 					<div class="user-modal-stat-box">
-						<strong>Direct</strong>
-						<small>Real-time Chat</small>
+						<strong id="modal-stat-reels-count">0</strong>
+						<small>Uploaded Reels</small>
 					</div>
 					<div class="user-modal-stat-box">
-						<strong>Active</strong>
-						<small>Verified Member</small>
+						<strong id="modal-stat-presence">Active</strong>
+						<small id="modal-stat-presence-sub">Status</small>
+					</div>
+				</div>
+
+				<!-- Uploaded Reels Showcase Section -->
+				<div class="user-modal-reels-section">
+					<div class="user-modal-reels-header">
+						<div class="user-modal-reels-title-wrap">
+							<span class="user-modal-reels-title-icon">🎬</span>
+							<div>
+								<h3 class="user-modal-reels-title">Uploaded Reels</h3>
+								<p class="user-modal-reels-subtitle" id="modal-profile-reels-sub">Moments & short stories by this member</p>
+							</div>
+						</div>
+						<span class="user-modal-reels-badge" id="modal-profile-reels-badge">0 reels</span>
+					</div>
+					<div class="user-modal-reels-grid" id="modal-profile-reels-grid">
+						<!-- Dynamically populated with friend's uploaded reels -->
 					</div>
 				</div>
 			</div>
