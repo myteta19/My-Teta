@@ -743,7 +743,12 @@
 
 						<!-- Choose Cover Gradient Banner -->
 						<div class="form-group">
-							<label>Cover Banner Theme</label>
+							<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+								<label style="margin:0;">Cover Banner Theme</label>
+								<button type="button" class="button button-primary button-small" id="open-cover-studio-from-edit" style="font-size:0.75rem; padding:4px 10px;">
+									🎨 Open Cover Studio
+								</button>
+							</div>
 							<div class="cover-theme-picker">
 								<button type="button" class="cover-theme-chip is-active" data-cover-gradient="linear-gradient(135deg, #0d9488, #6366f1, #059669)">
 									<span style="background:linear-gradient(135deg, #0d9488, #6366f1, #059669);"></span> Teal Aurora
@@ -2238,13 +2243,18 @@
 			<button class="modal-close" id="close-user-profile-modal" type="button" aria-label="Close profile">×</button>
 			<div class="user-modal-cover" id="modal-profile-cover">
 				<div class="user-modal-cover-gradient"></div>
+				<button class="cover-change-btn modal-cover-edit-btn" id="modal-edit-friend-cover-btn" type="button" title="Customize this member's cover banner">
+					🎨 Change Cover
+				</button>
 			</div>
 			<div class="user-modal-identity">
 				<div class="user-modal-avatar-wrap">
 					<img id="modal-profile-avatar" src="" alt="User avatar">
+					<button class="avatar-edit-badge modal-avatar-edit-badge" id="modal-edit-friend-avatar-btn" type="button" title="Customize this member's avatar photo">📷</button>
 					<span class="user-modal-online-badge" title="Active on My Teta"></span>
 				</div>
 				<div class="user-modal-actions">
+					<button class="button button-outline button-small" id="modal-profile-switch-btn" type="button" title="Switch active account to this user">👤 Switch User</button>
 					<button class="button button-primary button-small" id="modal-profile-chat-btn" type="button">💬 Chat Now</button>
 					<button class="button button-outline button-small" id="modal-profile-status-btn" type="button">In Circle ✨</button>
 				</div>
@@ -2447,6 +2457,100 @@
 				<button type="button" class="button button-outline" id="btn-cancel-avatar-studio">Cancel</button>
 				<button type="button" class="button button-primary" id="btn-save-avatar-studio">
 					<span>✓ Save & Apply Avatar</span>
+				</button>
+			</div>
+		</section>
+	</div>
+
+	<!-- Cover Studio & Custom Banner Creator Modal -->
+	<div class="modal-backdrop" id="cover-studio-modal" hidden>
+		<section class="modal cover-studio-modal" role="dialog" aria-modal="true" aria-labelledby="cover-studio-title">
+			<button class="modal-close" id="close-cover-studio" type="button" aria-label="Close modal">×</button>
+			<div class="cover-studio-header">
+				<span class="avatar-studio-badge">🎨 Cover Banner Studio</span>
+				<h2 id="cover-studio-title">Customize Profile Cover Banner</h2>
+				<p class="modal-subtitle" id="cover-studio-subtitle">Choose vibrant gradient themes, aesthetic scenic photography, upload a custom banner, or paste an image link.</p>
+			</div>
+
+			<!-- Live Cover Preview Banner with Avatar & Name Overlay -->
+			<div class="cover-studio-preview-wrap">
+				<div class="cover-studio-live-banner" id="cover-studio-live-banner" style="background: linear-gradient(135deg, #0d9488 0%, #6366f1 50%, #059669 100%);">
+					<div class="cover-gradient-overlay"></div>
+					<div class="cover-studio-banner-overlay">
+						<img id="cover-studio-mock-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=tayyab" alt="Mock avatar">
+						<div>
+							<h3 id="cover-studio-mock-name">Tayyab</h3>
+							<small id="cover-studio-mock-handle">@tayyab</small>
+						</div>
+					</div>
+					<span class="cover-preview-tag" id="cover-preview-tag">Teal Aurora</span>
+				</div>
+			</div>
+
+			<div class="cover-studio-body">
+				<!-- Tabs -->
+				<div class="avatar-studio-tabs cover-studio-tabs" role="tablist">
+					<button type="button" class="avatar-studio-tab is-active" data-cover-tab="gradients" role="tab">
+						🌈 Gradients
+					</button>
+					<button type="button" class="avatar-studio-tab" data-cover-tab="scenic" role="tab">
+						🏞 Landscapes & Scenery
+					</button>
+					<button type="button" class="avatar-studio-tab" data-cover-tab="upload" role="tab">
+						📸 Upload Banner
+					</button>
+					<button type="button" class="avatar-studio-tab" data-cover-tab="url" role="tab">
+						🌐 Image URL
+					</button>
+				</div>
+
+				<!-- Pane 1: Gradients -->
+				<div class="cover-studio-pane" id="pane-cover-gradients">
+					<div class="cover-gradients-grid" id="cover-gradients-grid">
+						<!-- Populated dynamically -->
+					</div>
+				</div>
+
+				<!-- Pane 2: Scenic Presets -->
+				<div class="cover-studio-pane" id="pane-cover-scenic" hidden>
+					<div class="cover-scenic-grid" id="cover-scenic-grid">
+						<!-- Curated Unsplash scenic landscape banners -->
+					</div>
+				</div>
+
+				<!-- Pane 3: Upload Banner Photo -->
+				<div class="cover-studio-pane" id="pane-cover-upload" hidden>
+					<div class="avatar-upload-dropzone cover-upload-dropzone" id="cover-dropzone">
+						<input type="file" id="cover-device-file-input" accept="image/*" class="avatar-file-hidden">
+						<div class="avatar-upload-prompt">
+							<span class="avatar-upload-icon">🌄</span>
+							<h4>Choose a banner image from your device</h4>
+							<p>Supports JPG, PNG, GIF, and WebP panorama photos (recommended: 1200×400px)</p>
+							<button type="button" class="button button-primary button-small" id="btn-browse-cover-file">
+								Browse Banner Photos
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Pane 4: Image URL -->
+				<div class="cover-studio-pane" id="pane-cover-url" hidden>
+					<div class="avatar-control-group">
+						<label class="avatar-control-label" for="cover-web-url-input">Direct Banner Image Link</label>
+						<div class="avatar-url-input-wrap">
+							<input type="url" id="cover-web-url-input" placeholder="https://images.unsplash.com/photo-..." autocomplete="off">
+							<button type="button" class="button button-outline button-small" id="btn-apply-cover-url-preview">Preview Banner</button>
+						</div>
+						<small style="color:var(--ink-muted); font-size:0.75rem; margin-top:6px; display:block;">Paste any high-resolution image URL from Unsplash, Imgur, or cloud storage.</small>
+					</div>
+				</div>
+			</div>
+
+			<!-- Studio Footer -->
+			<div class="avatar-studio-footer">
+				<button type="button" class="button button-outline" id="btn-cancel-cover-studio">Cancel</button>
+				<button type="button" class="button button-primary" id="btn-save-cover-studio">
+					<span>✓ Save & Apply Cover Banner</span>
 				</button>
 			</div>
 		</section>

@@ -90,6 +90,7 @@
           bio: profile.bio || 'Collecting moments on My Teta.',
           location: profile.location || 'Brooklyn, NY',
           mutual: profile.mutual || 'Connected on My Teta',
+          cover: profile.cover || '',
           updated_at: new Date().toISOString()
         };
 
@@ -776,21 +777,31 @@
   async function syncCommunityFromSupabase() {
     try {
       const cloudProfiles = await SupabaseService.fetchProfiles();
+      const customFriends = (() => {
+        try {
+          return JSON.parse(localStorage.getItem('my_teta_custom_friends') || '{}');
+        } catch(e) {
+          return {};
+        }
+      })();
+
       PEOPLE = [];
       if (cloudProfiles && cloudProfiles.length > 0) {
         cloudProfiles.forEach(cp => {
           if (cp.handle && CURRENT_USER.handle && cp.handle.toLowerCase() === CURRENT_USER.handle.toLowerCase()) return;
+          const handleKey = (cp.handle || '').toLowerCase();
+          const custom = customFriends[handleKey];
           PEOPLE.push({
             id: cp.id || `user_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
-            name: cp.name,
+            name: (custom && custom.name) || cp.name,
             handle: cp.handle,
             email: cp.email || '',
             role: cp.role || 'Community Member & Creator',
             bio: cp.bio || 'Collecting moments on My Teta.',
             location: cp.location || 'Brooklyn, NY',
-            cover: cp.cover || 'linear-gradient(135deg, #0d9488, #6366f1, #059669)',
+            cover: (custom && custom.cover) || cp.cover || 'linear-gradient(135deg, #0d9488, #6366f1, #059669)',
             mutual: cp.mutual || 'Community Member',
-            avatar: cp.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cp.handle || 'member')}`,
+            avatar: (custom && custom.avatar) || cp.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cp.handle || 'member')}`,
             updated_at: cp.updated_at || cp.created_at || null,
             following: false
           });
@@ -3793,6 +3804,31 @@
       };
     }
 
+    // Friend Profile Edit Triggers (Cover, Avatar, Switch User)
+    const btnEditCover = document.getElementById('modal-edit-friend-cover-btn');
+    if (btnEditCover) {
+      btnEditCover.onclick = (e) => {
+        e.stopPropagation();
+        openCoverStudio({ type: 'friend', person });
+      };
+    }
+
+    const btnEditAvatar = document.getElementById('modal-edit-friend-avatar-btn');
+    if (btnEditAvatar) {
+      btnEditAvatar.onclick = (e) => {
+        e.stopPropagation();
+        openAvatarStudio({ type: 'friend', person });
+      };
+    }
+
+    const btnSwitchUser = document.getElementById('modal-profile-switch-btn');
+    if (btnSwitchUser) {
+      btnSwitchUser.onclick = (e) => {
+        e.stopPropagation();
+        switchToUserProfile(person);
+      };
+    }
+
     modal.hidden = false;
   }
 
@@ -5078,12 +5114,68 @@
   let selectedCoverGradient = CURRENT_USER.cover;
 
   // ==========================================
+  // HELPER: CUSTOM FRIEND & SESSION SWITCHER
+  // ==========================================
+  function saveCustomFriend(person) {
+    if (!person || !person.handle) return;
+    try {
+      const stored = JSON.parse(localStorage.getItem('my_teta_custom_friends') || '{}');
+      stored[person.handle.toLowerCase()] = {
+        name: person.name,
+        handle: person.handle,
+        avatar: person.avatar,
+        cover: person.cover
+      };
+      localStorage.setItem('my_teta_custom_friends', JSON.stringify(stored));
+    } catch (e) {}
+  }
+
+  function getCustomFriends() {
+    try {
+      return JSON.parse(localStorage.getItem('my_teta_custom_friends') || '{}');
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function switchToUserProfile(person) {
+    if (!person) return;
+    CURRENT_USER.id = person.id || `user_${(person.handle || 'user').replace('@', '')}`;
+    CURRENT_USER.name = person.name;
+    CURRENT_USER.handle = person.handle || `@${person.name.toLowerCase().replace(/\s+/g, '')}`;
+    CURRENT_USER.avatar = person.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(person.name)}`;
+    CURRENT_USER.cover = person.cover || 'linear-gradient(135deg, #0d9488, #6366f1, #059669)';
+    CURRENT_USER.role = person.role || 'Community Member & Creator';
+    CURRENT_USER.bio = person.bio || 'Collecting moments on My Teta.';
+    CURRENT_USER.location = person.location || 'Brooklyn, NY';
+    CURRENT_USER.email = person.email || `${(person.handle || 'user').replace('@', '')}@myteta.app`;
+
+    try {
+      localStorage.removeItem('my_teta_logged_out');
+      localStorage.setItem('my_teta_current_user', JSON.stringify(CURRENT_USER));
+    } catch (e) {}
+
+    const modal = document.getElementById('user-profile-modal');
+    if (modal) modal.hidden = true;
+    document.body.style.overflow = '';
+
+    updateCurrentUserUI();
+    renderProfile();
+    renderFeed();
+    renderReels();
+    renderHomeReels();
+    switchView('profile');
+    showToast(`Switched account to ${person.name}! You can now edit their avatar & cover directly. 👤`, "👤");
+  }
+
+  // ==========================================
   // AVATAR CREATOR STUDIO & UPLOADER
   // ==========================================
   let studioCurrentStyle = 'bottts';
   let studioCurrentSeed = (CURRENT_USER.name || 'tayyab').toLowerCase();
   let studioCurrentBg = '0d9488';
   let studioPreviewUrl = CURRENT_USER.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=tayyab';
+  let activeStudioTarget = null; // null for CURRENT_USER, or { type: 'friend', person: person }
 
   const STUDIO_PRESETS = [
     { name: "Cyber Spark", style: "bottts", seed: "CyberSpark", bg: "0d9488", url: "https://api.dicebear.com/7.x/bottts/svg?seed=CyberSpark&backgroundColor=0d9488" },
@@ -5133,16 +5225,30 @@
     if (seedTag) seedTag.textContent = seedLabel || ('Seed: ' + (studioCurrentSeed || 'custom'));
   }
 
-  function openAvatarStudio() {
+  function openAvatarStudio(target = null) {
+    activeStudioTarget = target;
     const modal = document.getElementById('avatar-studio-modal');
     if (!modal) return;
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
 
-    // Populate state from current user avatar if possible
-    if (CURRENT_USER.avatar && CURRENT_USER.avatar.includes('dicebear.com/7.x/')) {
+    const targetUser = (target && target.person) ? target.person : CURRENT_USER;
+    const isFriend = Boolean(target && target.type === 'friend' && target.person);
+
+    const titleEl = document.getElementById('avatar-studio-title');
+    if (titleEl) {
+      titleEl.textContent = isFriend ? `Customize ${targetUser.name}'s Avatar` : "Customize Your Profile Photo";
+    }
+
+    const saveBtn = document.getElementById('btn-save-avatar-studio');
+    if (saveBtn) {
+      saveBtn.innerHTML = `<span>✓ Save & Apply ${isFriend ? targetUser.name.split(' ')[0] + "'s" : ''} Avatar</span>`;
+    }
+
+    // Populate state from targetUser avatar if possible
+    if (targetUser.avatar && targetUser.avatar.includes('dicebear.com/7.x/')) {
       try {
-        const urlObj = new URL(CURRENT_USER.avatar);
+        const urlObj = new URL(targetUser.avatar);
         const parts = urlObj.pathname.split('/');
         const styleIdx = parts.indexOf('7.x');
         if (styleIdx !== -1 && parts[styleIdx + 1]) {
@@ -5153,32 +5259,28 @@
         const bgParam = urlObj.searchParams.get('backgroundColor');
         if (bgParam) studioCurrentBg = bgParam;
       } catch (err) {}
-    } else if (CURRENT_USER.avatar) {
-      studioPreviewUrl = CURRENT_USER.avatar;
+    } else if (targetUser.avatar) {
+      studioPreviewUrl = targetUser.avatar;
+    } else {
+      studioCurrentSeed = (targetUser.name || 'member').toLowerCase().replace(/\s+/g, '-');
     }
 
     const seedInput = document.getElementById('avatar-seed-input');
     if (seedInput) seedInput.value = studioCurrentSeed;
 
-    // Highlight active style chip
     document.querySelectorAll('.avatar-style-chip').forEach(chip => {
       chip.classList.toggle('is-active', chip.dataset.avatarStyle === studioCurrentStyle);
     });
 
-    // Highlight active color swatch
     document.querySelectorAll('.avatar-color-swatch').forEach(swatch => {
       swatch.classList.toggle('is-active', swatch.dataset.color === studioCurrentBg);
     });
 
-    // Render presets if not rendered
     renderStudioPresets();
-
-    // Reset tabs to Creator
     switchStudioTab('creator');
 
-    // Update preview display
-    if (CURRENT_USER.avatar && !CURRENT_USER.avatar.includes('dicebear.com/7.x/')) {
-      updateStudioPreview(CURRENT_USER.avatar, 'Personal Photo 📸', 'Current Image');
+    if (targetUser.avatar && !targetUser.avatar.includes('dicebear.com/7.x/')) {
+      updateStudioPreview(targetUser.avatar, isFriend ? `${targetUser.name} Photo 📸` : 'Personal Photo 📸', 'Current Image');
     } else {
       studioPreviewUrl = buildStudioAvatarUrl(studioCurrentStyle, studioCurrentSeed, studioCurrentBg);
       updateStudioPreview(studioPreviewUrl);
@@ -5441,7 +5543,59 @@
         const origContent = saveBtn.innerHTML;
         saveBtn.innerHTML = '<span>Saving avatar...</span>';
 
-        // Update local user state
+        // Check if updating a friend
+        if (activeStudioTarget && activeStudioTarget.type === 'friend' && activeStudioTarget.person) {
+          const friend = activeStudioTarget.person;
+          friend.avatar = studioPreviewUrl;
+
+          // Update friend in PEOPLE array
+          const matched = PEOPLE.find(p => (p.handle && friend.handle && p.handle.toLowerCase() === friend.handle.toLowerCase()) || p.id === friend.id);
+          if (matched) matched.avatar = studioPreviewUrl;
+
+          // Update modal avatar if open
+          const modalAvatar = document.getElementById('modal-profile-avatar');
+          if (modalAvatar) modalAvatar.src = studioPreviewUrl;
+
+          // Update posts & reels by this friend
+          if (Array.isArray(posts)) {
+            posts.forEach(p => {
+              if (p.author === friend.name || (p.handle && friend.handle && p.handle.toLowerCase() === friend.handle.toLowerCase())) {
+                p.avatar = studioPreviewUrl;
+              }
+            });
+          }
+          if (Array.isArray(REELS)) {
+            REELS.forEach(r => {
+              if (r.author === friend.name || (r.handle && friend.handle && r.handle.toLowerCase() === friend.handle.toLowerCase())) {
+                r.avatar = studioPreviewUrl;
+              }
+            });
+          }
+
+          // Persist custom friend
+          saveCustomFriend(friend);
+
+          // Sync to Supabase
+          try {
+            await SupabaseService.syncProfile(friend);
+          } catch(err) {
+            console.warn("Supabase friend profile sync error:", err);
+          }
+
+          if (typeof renderFriends === 'function') renderFriends(currentFriendFilter);
+          if (typeof renderFeed === 'function') renderFeed();
+          if (typeof renderReels === 'function') renderReels();
+          if (typeof renderChat === 'function') renderChat();
+          if (typeof renderChatFriendsTray === 'function') renderChatFriendsTray();
+
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = origContent;
+          closeAvatarStudio();
+          showToast(`Updated ${friend.name}'s profile picture successfully! ✨`, "🎉");
+          return;
+        }
+
+        // Updating CURRENT_USER
         CURRENT_USER.avatar = studioPreviewUrl;
         selectedAvatarUrl = studioPreviewUrl;
 
@@ -5498,6 +5652,341 @@
 
         closeAvatarStudio();
         showToast("Profile avatar updated successfully everywhere! ✨", "🎉");
+      });
+    }
+  }
+
+  // ==========================================
+  // COVER BANNER STUDIO & UPLOADER
+  // ==========================================
+  let coverStudioCurrentCover = CURRENT_USER.cover || 'linear-gradient(135deg, #0d9488 0%, #6366f1 50%, #059669 100%)';
+  let activeCoverTarget = null; // null for CURRENT_USER, or { type: 'friend', person: person }
+
+  const COVER_GRADIENTS = [
+    { name: "Teal Aurora", value: "linear-gradient(135deg, #0d9488 0%, #6366f1 50%, #059669 100%)" },
+    { name: "Sunset Dream", value: "linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #f59e0b 100%)" },
+    { name: "Obsidian Midnight", value: "linear-gradient(135deg, #090d16 0%, #1e293b 50%, #334155 100%)" },
+    { name: "Cedar Forest", value: "linear-gradient(135deg, #047857 0%, #10b981 50%, #06b6d4 100%)" },
+    { name: "Cyberpunk Neon", value: "linear-gradient(135deg, #7928ca 0%, #ff0080 50%, #0070f3 100%)" },
+    { name: "Cotton Candy", value: "linear-gradient(135deg, #f472b6 0%, #c084fc 50%, #60a5fa 100%)" },
+    { name: "Golden Horizon", value: "linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #fbbf24 100%)" },
+    { name: "Deep Ocean", value: "linear-gradient(135deg, #0284c7 0%, #0f172a 70%, #1e1b4b 100%)" },
+    { name: "Mystic Dusk", value: "linear-gradient(135deg, #4c1d95 0%, #831843 60%, #1e1b4b 100%)" },
+    { name: "Velvet Crimson", value: "linear-gradient(135deg, #991b1b 0%, #e11d48 50%, #7c2d12 100%)" },
+    { name: "Emerald Isle", value: "linear-gradient(135deg, #065f46 0%, #059669 50%, #34d399 100%)" },
+    { name: "Royal Amethyst", value: "linear-gradient(135deg, #581c87 0%, #3b82f6 50%, #9333ea 100%)" }
+  ];
+
+  const COVER_SCENIC = [
+    { name: "Mountain Sunrise", url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80" },
+    { name: "Neon Cyber City", url: "https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1200&q=80" },
+    { name: "Calm Ocean Waves", url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80" },
+    { name: "Cosmic Galaxy Stars", url: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=1200&q=80" },
+    { name: "Desert Golden Dunes", url: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80" },
+    { name: "Tokyo Rainy Night", url: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80" },
+    { name: "Cozy Autumn Forest", url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80" },
+    { name: "Tropical Palm Sunset", url: "https://images.unsplash.com/photo-1512100356356-de1b84283e18?auto=format&fit=crop&w=1200&q=80" }
+  ];
+
+  function updateCoverStudioPreview(coverValue, tagName) {
+    coverStudioCurrentCover = coverValue;
+    const banner = document.getElementById('cover-studio-live-banner');
+    const tag = document.getElementById('cover-preview-tag');
+    if (banner) {
+      if (coverValue.startsWith('http://') || coverValue.startsWith('https://') || coverValue.startsWith('data:image/')) {
+        banner.style.background = `linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.5)), url('${coverValue}') center/cover`;
+      } else {
+        banner.style.background = coverValue;
+      }
+    }
+    if (tag) tag.textContent = tagName || "Selected Theme";
+  }
+
+  function openCoverStudio(target = null) {
+    activeCoverTarget = target;
+    const modal = document.getElementById('cover-studio-modal');
+    if (!modal) return;
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+
+    const targetUser = (target && target.person) ? target.person : CURRENT_USER;
+    const isFriend = Boolean(target && target.type === 'friend' && target.person);
+
+    const titleEl = document.getElementById('cover-studio-title');
+    const subEl = document.getElementById('cover-studio-subtitle');
+    const mockAvatar = document.getElementById('cover-studio-mock-avatar');
+    const mockName = document.getElementById('cover-studio-mock-name');
+    const mockHandle = document.getElementById('cover-studio-mock-handle');
+    const saveBtn = document.getElementById('btn-save-cover-studio');
+
+    if (titleEl) {
+      titleEl.textContent = isFriend ? `Customize ${targetUser.name}'s Cover Banner` : "Customize Profile Cover Banner";
+    }
+    if (subEl) {
+      subEl.textContent = isFriend ? `Personalize ${targetUser.name}'s banner with gradient themes, scenic photography, or a custom image.` : "Choose vibrant gradient themes, aesthetic scenic photography, upload a custom banner, or paste an image link.";
+    }
+    if (mockAvatar) mockAvatar.src = targetUser.avatar || CURRENT_USER.avatar;
+    if (mockName) mockName.textContent = targetUser.name || CURRENT_USER.name;
+    if (mockHandle) mockHandle.textContent = targetUser.handle || CURRENT_USER.handle;
+    if (saveBtn) {
+      saveBtn.innerHTML = `<span>✓ Save & Apply ${isFriend ? targetUser.name.split(' ')[0] + "'s" : ''} Cover Banner</span>`;
+    }
+
+    coverStudioCurrentCover = targetUser.cover || 'linear-gradient(135deg, #0d9488 0%, #6366f1 50%, #059669 100%)';
+    updateCoverStudioPreview(coverStudioCurrentCover, "Current Banner");
+
+    renderCoverGradients();
+    renderCoverScenic();
+    switchCoverStudioTab('gradients');
+  }
+
+  function closeCoverStudio() {
+    const modal = document.getElementById('cover-studio-modal');
+    if (modal) modal.hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  function switchCoverStudioTab(tabName) {
+    document.querySelectorAll('[data-cover-tab]').forEach(t => {
+      t.classList.toggle('is-active', t.dataset.coverTab === tabName);
+    });
+
+    const panes = {
+      gradients: document.getElementById('pane-cover-gradients'),
+      scenic: document.getElementById('pane-cover-scenic'),
+      upload: document.getElementById('pane-cover-upload'),
+      url: document.getElementById('pane-cover-url')
+    };
+
+    Object.keys(panes).forEach(k => {
+      if (panes[k]) panes[k].hidden = (k !== tabName);
+    });
+  }
+
+  function renderCoverGradients() {
+    const grid = document.getElementById('cover-gradients-grid');
+    if (!grid || grid.children.length > 0) return;
+
+    grid.innerHTML = COVER_GRADIENTS.map((g, idx) => `
+      <div class="cover-gradient-card ${idx === 0 ? 'is-active' : ''}" data-gradient-idx="${idx}" style="background:${g.value};" role="button" tabindex="0" title="${g.name}">
+        <span>${g.name}</span>
+      </div>
+    `).join('');
+
+    grid.querySelectorAll('.cover-gradient-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const idx = parseInt(card.dataset.gradientIdx, 10);
+        const item = COVER_GRADIENTS[idx];
+        if (!item) return;
+        grid.querySelectorAll('.cover-gradient-card').forEach(c => c.classList.remove('is-active'));
+        document.querySelectorAll('.cover-scenic-card').forEach(c => c.classList.remove('is-active'));
+        card.classList.add('is-active');
+        updateCoverStudioPreview(item.value, item.name);
+      });
+    });
+  }
+
+  function renderCoverScenic() {
+    const grid = document.getElementById('cover-scenic-grid');
+    if (!grid || grid.children.length > 0) return;
+
+    grid.innerHTML = COVER_SCENIC.map((s, idx) => `
+      <div class="cover-scenic-card" data-scenic-idx="${idx}" style="background-image:url('${s.url}');" role="button" tabindex="0" title="${s.name}">
+        <span>${s.name}</span>
+      </div>
+    `).join('');
+
+    grid.querySelectorAll('.cover-scenic-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const idx = parseInt(card.dataset.scenicIdx, 10);
+        const item = COVER_SCENIC[idx];
+        if (!item) return;
+        grid.querySelectorAll('.cover-scenic-card').forEach(c => c.classList.remove('is-active'));
+        document.querySelectorAll('.cover-gradient-card').forEach(c => c.classList.remove('is-active'));
+        card.classList.add('is-active');
+        const bgVal = `linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.5)), url('${item.url}') center/cover`;
+        updateCoverStudioPreview(bgVal, item.name);
+      });
+    });
+  }
+
+  function initCoverStudio() {
+    // 1. Open Triggers
+    document.getElementById('open-cover-picker')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      openCoverStudio();
+    });
+    document.getElementById('open-cover-studio-from-edit')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      openCoverStudio();
+    });
+
+    // 2. Close Triggers
+    document.getElementById('close-cover-studio')?.addEventListener('click', closeCoverStudio);
+    document.getElementById('btn-cancel-cover-studio')?.addEventListener('click', closeCoverStudio);
+    document.getElementById('cover-studio-modal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'cover-studio-modal') closeCoverStudio();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('cover-studio-modal');
+        if (modal && !modal.hidden) closeCoverStudio();
+      }
+    });
+
+    // 3. Tab switching
+    document.querySelectorAll('[data-cover-tab]').forEach(tab => {
+      tab.addEventListener('click', () => {
+        switchCoverStudioTab(tab.dataset.coverTab);
+      });
+    });
+
+    // 4. File Upload (Banner photo)
+    const fileInput = document.getElementById('cover-device-file-input');
+    const browseBtn = document.getElementById('btn-browse-cover-file');
+    const dropzone = document.getElementById('cover-dropzone');
+
+    if (browseBtn && fileInput) {
+      browseBtn.addEventListener('click', () => fileInput.click());
+    }
+
+    const processCoverFile = (file) => {
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast("Please choose a valid image file", "⚠️");
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        showToast("File is too large! Please choose an image under 10MB", "⚠️");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        const bgVal = `linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.5)), url('${dataUrl}') center/cover`;
+        updateCoverStudioPreview(bgVal, "Uploaded Photo 📸");
+        showToast("Banner photo loaded into preview! Tap 'Save & Apply Cover Banner'.", "📸");
+      };
+      reader.readAsDataURL(file);
+    };
+
+    if (fileInput) {
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) processCoverFile(e.target.files[0]);
+      });
+    }
+
+    if (dropzone) {
+      dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('is-dragover');
+      });
+      dropzone.addEventListener('dragleave', () => dropzone.classList.remove('is-dragover'));
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('is-dragover');
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+          processCoverFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    // 5. Image URL Preview
+    const urlInput = document.getElementById('cover-web-url-input');
+    const applyUrlBtn = document.getElementById('btn-apply-cover-url-preview');
+
+    const applyWebCoverUrl = () => {
+      if (!urlInput) return;
+      const url = urlInput.value.trim();
+      if (!url) {
+        showToast("Please enter an image link URL", "⚠️");
+        return;
+      }
+      if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('data:image/')) {
+        showToast("Please enter a valid web image URL (starting with https://)", "⚠️");
+        return;
+      }
+      const bgVal = `linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.5)), url('${url}') center/cover`;
+      updateCoverStudioPreview(bgVal, "Web Link 🌐");
+      showToast("Banner image loaded into preview!", "🌐");
+    };
+
+    applyUrlBtn?.addEventListener('click', applyWebCoverUrl);
+    urlInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        applyWebCoverUrl();
+      }
+    });
+
+    // 6. Save & Apply Cover Banner
+    const saveBtn = document.getElementById('btn-save-cover-studio');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', async () => {
+        if (!coverStudioCurrentCover) return;
+
+        saveBtn.disabled = true;
+        const origContent = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<span>Saving cover...</span>';
+
+        // Check if updating a friend
+        if (activeCoverTarget && activeCoverTarget.type === 'friend' && activeCoverTarget.person) {
+          const friend = activeCoverTarget.person;
+          friend.cover = coverStudioCurrentCover;
+
+          const matched = PEOPLE.find(p => (p.handle && friend.handle && p.handle.toLowerCase() === friend.handle.toLowerCase()) || p.id === friend.id);
+          if (matched) matched.cover = coverStudioCurrentCover;
+
+          const modalCover = document.getElementById('modal-profile-cover');
+          if (modalCover) modalCover.style.background = coverStudioCurrentCover;
+
+          saveCustomFriend(friend);
+
+          try {
+            await SupabaseService.syncProfile(friend);
+          } catch(err) {
+            console.warn("Supabase friend cover sync error:", err);
+          }
+
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = origContent;
+          closeCoverStudio();
+          showToast(`Updated ${friend.name}'s cover banner successfully! ✨`, "🎨");
+          return;
+        }
+
+        // Updating CURRENT_USER
+        CURRENT_USER.cover = coverStudioCurrentCover;
+        selectedCoverGradient = coverStudioCurrentCover;
+
+        const mainCover = document.getElementById('profile-cover-banner');
+        if (mainCover) mainCover.style.background = coverStudioCurrentCover;
+
+        try {
+          localStorage.setItem('my_teta_current_user', JSON.stringify(CURRENT_USER));
+        } catch (e) {}
+
+        if (typeof renderProfile === 'function') renderProfile();
+
+        try {
+          await SupabaseService.syncProfile({
+            name: CURRENT_USER.name,
+            handle: CURRENT_USER.handle,
+            email: CURRENT_USER.email,
+            avatar: CURRENT_USER.avatar,
+            role: CURRENT_USER.role,
+            bio: CURRENT_USER.bio,
+            location: CURRENT_USER.location,
+            cover: CURRENT_USER.cover
+          });
+        } catch (err) {
+          console.warn("Supabase cover sync error:", err);
+        }
+
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = origContent;
+        closeCoverStudio();
+        showToast("Profile cover banner updated successfully! ✨", "🎉");
       });
     }
   }
@@ -5675,9 +6164,13 @@
       e.preventDefault();
       openAvatarStudio();
     });
-    document.getElementById('open-cover-picker')?.addEventListener('click', () => {
-      switchProfileTab('edit');
-      document.querySelector('.cover-theme-picker')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('open-cover-picker')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      openCoverStudio();
+    });
+    document.getElementById('open-cover-studio-from-edit')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      openCoverStudio();
     });
     document.getElementById('cancel-edit-profile')?.addEventListener('click', () => {
       switchProfileTab('moments');
@@ -5918,8 +6411,9 @@
       });
     }
 
-    // Initialize Avatar Creator Studio & Uploader
+    // Initialize Avatar Creator Studio & Cover Studio
     initAvatarStudio();
+    initCoverStudio();
   }
 
   // ==========================================
