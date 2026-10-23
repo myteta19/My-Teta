@@ -718,7 +718,12 @@
 					<form id="edit-profile-form" class="settings-form">
 						<!-- Choose Preset Avatar -->
 						<div class="form-group">
-							<label>Profile Avatar</label>
+							<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+								<label style="margin:0;">Profile Avatar</label>
+								<button type="button" class="button button-primary button-small" id="open-avatar-studio-from-edit" style="font-size:0.75rem; padding:4px 10px;">
+									🎨 Open Avatar Creator Studio
+								</button>
+							</div>
 							<div class="avatar-picker-grid">
 								<button type="button" class="avatar-option is-active" data-avatar-url="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90">
 									<img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90" alt="Option 1">
@@ -2295,6 +2300,158 @@
 			</div>
 		</section>
 	</div>
+
+	<!-- Avatar Studio & Creator Modal -->
+	<div class="modal-backdrop" id="avatar-studio-modal" hidden>
+		<section class="modal avatar-studio-modal" role="dialog" aria-modal="true" aria-labelledby="avatar-studio-title">
+			<button class="modal-close" id="close-avatar-studio" type="button" aria-label="Close modal">×</button>
+			<div class="avatar-studio-header">
+				<span class="avatar-studio-badge">🎨 Avatar Studio</span>
+				<h2 id="avatar-studio-title">Customize Your Profile Photo</h2>
+				<p class="modal-subtitle">Design your own illustrated avatar, upload a personal photo, or pick a curated style.</p>
+			</div>
+
+			<div class="avatar-studio-body">
+				<!-- Live Preview Column -->
+				<div class="avatar-studio-preview-col">
+					<div class="avatar-preview-halo">
+						<img id="avatar-studio-preview-img" src="https://api.dicebear.com/7.x/bottts/svg?seed=tayyab" alt="Avatar preview" class="avatar-studio-preview-avatar">
+					</div>
+					<div class="avatar-preview-info">
+						<span class="avatar-preview-style-tag" id="avatar-preview-style-name">Cyber Bots</span>
+						<p class="avatar-preview-seed" id="avatar-preview-seed-name">Seed: tayyab</p>
+					</div>
+					<button type="button" class="button button-outline button-small" id="btn-randomize-avatar">
+						<span>🎲 Roll Random Avatar</span>
+					</button>
+				</div>
+
+				<!-- Tabs & Controls Column -->
+				<div class="avatar-studio-controls-col">
+					<!-- Creation Mode Tabs -->
+					<div class="avatar-studio-tabs" role="tablist">
+						<button type="button" class="avatar-studio-tab is-active" data-avatar-tab="creator" role="tab">
+							🎨 Build Avatar
+						</button>
+						<button type="button" class="avatar-studio-tab" data-avatar-tab="upload" role="tab">
+							📸 Upload Photo
+						</button>
+						<button type="button" class="avatar-studio-tab" data-avatar-tab="presets" role="tab">
+							✨ Presets
+						</button>
+						<button type="button" class="avatar-studio-tab" data-avatar-tab="url" role="tab">
+							🌐 Image URL
+						</button>
+					</div>
+
+					<!-- TAB 1: BUILD AVATAR -->
+					<div class="avatar-studio-pane" id="pane-avatar-creator">
+						<!-- 1. Style Selection -->
+						<div class="avatar-control-group">
+							<label class="avatar-control-label">Avatar Art Style</label>
+							<div class="avatar-styles-grid">
+								<button type="button" class="avatar-style-chip is-active" data-avatar-style="bottts">
+									<span class="avatar-style-icon">🤖</span>
+									<strong>Bots</strong>
+								</button>
+								<button type="button" class="avatar-style-chip" data-avatar-style="avataaars">
+									<span class="avatar-style-icon">🧑‍🎨</span>
+									<strong>Persona</strong>
+								</button>
+								<button type="button" class="avatar-style-chip" data-avatar-style="lorelei">
+									<span class="avatar-style-icon">🌿</span>
+									<strong>Anime</strong>
+								</button>
+								<button type="button" class="avatar-style-chip" data-avatar-style="fun-emoji">
+									<span class="avatar-style-icon">🎭</span>
+									<strong>Emoji</strong>
+								</button>
+								<button type="button" class="avatar-style-chip" data-avatar-style="adventurer">
+									<span class="avatar-style-icon">🦁</span>
+									<strong>Hero</strong>
+								</button>
+								<button type="button" class="avatar-style-chip" data-avatar-style="notionists">
+									<span class="avatar-style-icon">👓</span>
+									<strong>Sketch</strong>
+								</button>
+							</div>
+						</div>
+
+						<!-- 2. Custom Seed Word / Expression -->
+						<div class="avatar-control-group">
+							<div class="avatar-label-row">
+								<label class="avatar-control-label" for="avatar-seed-input">Custom Identity Seed</label>
+								<small class="avatar-label-hint">Type any name, mood, or word</small>
+							</div>
+							<div class="avatar-seed-input-wrap">
+								<input type="text" id="avatar-seed-input" placeholder="e.g. tayyab, warrior, sunshine..." maxlength="30" autocomplete="off">
+								<button type="button" id="btn-shuffle-seed" title="Shuffle seed" aria-label="Shuffle seed">🔀</button>
+							</div>
+						</div>
+
+						<!-- 3. Background Color Tint -->
+						<div class="avatar-control-group">
+							<label class="avatar-control-label">Background Tint</label>
+							<div class="avatar-color-swatches">
+								<button type="button" class="avatar-color-swatch is-active" data-color="0d9488" style="background:#0d9488;" title="Teal Lagoon"></button>
+								<button type="button" class="avatar-color-swatch" data-color="6366f1" style="background:#6366f1;" title="Indigo Dream"></button>
+								<button type="button" class="avatar-color-swatch" data-color="ec4899" style="background:#ec4899;" title="Rose Blossom"></button>
+								<button type="button" class="avatar-color-swatch" data-color="f59e0b" style="background:#f59e0b;" title="Amber Glow"></button>
+								<button type="button" class="avatar-color-swatch" data-color="10b981" style="background:#10b981;" title="Emerald"></button>
+								<button type="button" class="avatar-color-swatch" data-color="1e293b" style="background:#1e293b;" title="Dark Slate"></button>
+								<button type="button" class="avatar-color-swatch" data-color="b6e3f4" style="background:#b6e3f4;" title="Soft Sky"></button>
+								<button type="button" class="avatar-color-swatch" data-color="ffd5dc" style="background:#ffd5dc;" title="Pastel Pink"></button>
+								<button type="button" class="avatar-color-swatch" data-color="transparent" style="background: repeating-conic-gradient(#ddd 0% 25%, #fff 0% 50%) 50% / 8px 8px;" title="Transparent"></button>
+							</div>
+						</div>
+					</div>
+
+					<!-- TAB 2: UPLOAD PHOTO -->
+					<div class="avatar-studio-pane" id="pane-avatar-upload" hidden>
+						<div class="avatar-upload-dropzone" id="avatar-dropzone">
+							<input type="file" id="avatar-device-file-input" accept="image/*" class="avatar-file-hidden">
+							<div class="avatar-upload-prompt">
+								<span class="avatar-upload-icon">📁</span>
+								<h4>Choose a photo from your computer or phone</h4>
+								<p>Supports JPG, PNG, GIF, and WebP images</p>
+								<button type="button" class="button button-primary button-small" id="btn-browse-avatar-file">
+									Browse Photo Files
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- TAB 3: CURATED PRESETS -->
+					<div class="avatar-studio-pane" id="pane-avatar-presets" hidden>
+						<div class="avatar-curated-grid" id="avatar-curated-grid">
+							<!-- Populated dynamically with curated presets -->
+						</div>
+					</div>
+
+					<!-- TAB 4: WEB URL -->
+					<div class="avatar-studio-pane" id="pane-avatar-url" hidden>
+						<div class="avatar-control-group">
+							<label class="avatar-control-label" for="avatar-web-url-input">Direct Image Link</label>
+							<div class="avatar-url-input-wrap">
+								<input type="url" id="avatar-web-url-input" placeholder="https://images.unsplash.com/photo-..." autocomplete="off">
+								<button type="button" class="button button-outline button-small" id="btn-apply-url-preview">Preview</button>
+							</div>
+							<small style="color:var(--ink-muted); font-size:0.75rem; margin-top:6px; display:block;">Paste any public image address from Unsplash, Imgur, or cloud storage.</small>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Studio Footer -->
+			<div class="avatar-studio-footer">
+				<button type="button" class="button button-outline" id="btn-cancel-avatar-studio">Cancel</button>
+				<button type="button" class="button button-primary" id="btn-save-avatar-studio">
+					<span>✓ Save & Apply Avatar</span>
+				</button>
+			</div>
+		</section>
+	</div>
+
 	<!-- Logout Confirmation Modal -->
 	<div class="modal-backdrop" id="logout-modal" hidden>
 		<section class="modal logout-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="logout-modal-title">

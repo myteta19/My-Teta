@@ -937,6 +937,9 @@
     if (summaryName && CURRENT_USER.name) summaryName.textContent = CURRENT_USER.name;
     if (summaryHandle && CURRENT_USER.handle) summaryHandle.textContent = CURRENT_USER.handle;
 
+    const profileMainAvatar = document.getElementById('profile-main-avatar');
+    if (profileMainAvatar && CURRENT_USER.avatar) profileMainAvatar.src = CURRENT_USER.avatar;
+
     // Control visibility of Auth vs Logout buttons:
     // When LOGGED IN -> Hide Log in & Sign up on the page; Show Log out.
     // When LOGGED OUT -> Show Log in & Sign up; Hide Log out.
@@ -5074,6 +5077,431 @@
   let selectedAvatarUrl = CURRENT_USER.avatar;
   let selectedCoverGradient = CURRENT_USER.cover;
 
+  // ==========================================
+  // AVATAR CREATOR STUDIO & UPLOADER
+  // ==========================================
+  let studioCurrentStyle = 'bottts';
+  let studioCurrentSeed = (CURRENT_USER.name || 'tayyab').toLowerCase();
+  let studioCurrentBg = '0d9488';
+  let studioPreviewUrl = CURRENT_USER.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=tayyab';
+
+  const STUDIO_PRESETS = [
+    { name: "Cyber Spark", style: "bottts", seed: "CyberSpark", bg: "0d9488", url: "https://api.dicebear.com/7.x/bottts/svg?seed=CyberSpark&backgroundColor=0d9488" },
+    { name: "Neon Horizon", style: "bottts", seed: "NeonHorizon", bg: "6366f1", url: "https://api.dicebear.com/7.x/bottts/svg?seed=NeonHorizon&backgroundColor=6366f1" },
+    { name: "Anime Aura", style: "lorelei", seed: "AnimeAura", bg: "ffd5dc", url: "https://api.dicebear.com/7.x/lorelei/svg?seed=AnimeAura&backgroundColor=ffd5dc" },
+    { name: "Zen Wanderer", style: "lorelei", seed: "ZenWanderer", bg: "b6e3f4", url: "https://api.dicebear.com/7.x/lorelei/svg?seed=ZenWanderer&backgroundColor=b6e3f4" },
+    { name: "Urban Persona", style: "avataaars", seed: "UrbanPersona", bg: "1e293b", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=UrbanPersona&backgroundColor=1e293b" },
+    { name: "Golden Glow", style: "avataaars", seed: "GoldenGlow", bg: "f59e0b", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=GoldenGlow&backgroundColor=f59e0b" },
+    { name: "Playful Emoji", style: "fun-emoji", seed: "HappySoul", bg: "ec4899", url: "https://api.dicebear.com/7.x/fun-emoji/svg?seed=HappySoul&backgroundColor=ec4899" },
+    { name: "Mystic Hero", style: "adventurer", seed: "MysticHero", bg: "10b981", url: "https://api.dicebear.com/7.x/adventurer/svg?seed=MysticHero&backgroundColor=10b981" },
+    { name: "Monochrome Sketch", style: "notionists", seed: "SketchArtist", bg: "b6e3f4", url: "https://api.dicebear.com/7.x/notionists/svg?seed=SketchArtist&backgroundColor=b6e3f4" }
+  ];
+
+  const STYLE_NAMES = {
+    'bottts': 'Cyber Bots 🤖',
+    'avataaars': 'Illustrated Persona 🧑‍🎨',
+    'lorelei': 'Anime Aesthetics 🌿',
+    'fun-emoji': 'Playful Emoji 🎭',
+    'adventurer': 'Adventurer Hero 🦁',
+    'notionists': 'Minimalist Sketch 👓'
+  };
+
+  const RANDOM_SEEDS = [
+    'tayyab', 'cyber-spark', 'nova', 'cosmic', 'phoenix', 'pixel', 'zephyr',
+    'aurora', 'blaze', 'echo', 'shadow', 'mystic', 'galaxy', 'quantum',
+    'titan', 'stellar', 'vortex', 'prism', 'zenith', 'pulse', 'glitch', 'solaris'
+  ];
+
+  function buildStudioAvatarUrl(style, seed, bgColor) {
+    const safeSeed = encodeURIComponent((seed || 'creator').trim());
+    const bg = bgColor && bgColor !== 'transparent' ? `&backgroundColor=${bgColor}` : '';
+    return `https://api.dicebear.com/7.x/${style}/svg?seed=${safeSeed}${bg}`;
+  }
+
+  function updateStudioPreview(url, styleLabel, seedLabel) {
+    studioPreviewUrl = url;
+    const previewImg = document.getElementById('avatar-studio-preview-img');
+    const styleTag = document.getElementById('avatar-preview-style-name');
+    const seedTag = document.getElementById('avatar-preview-seed-name');
+    if (previewImg) {
+      previewImg.src = url;
+      previewImg.classList.remove('avatar-bounce');
+      void previewImg.offsetWidth;
+      previewImg.classList.add('avatar-bounce');
+    }
+    if (styleTag) styleTag.textContent = styleLabel || (STYLE_NAMES[studioCurrentStyle] || 'Custom Avatar');
+    if (seedTag) seedTag.textContent = seedLabel || ('Seed: ' + (studioCurrentSeed || 'custom'));
+  }
+
+  function openAvatarStudio() {
+    const modal = document.getElementById('avatar-studio-modal');
+    if (!modal) return;
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+
+    // Populate state from current user avatar if possible
+    if (CURRENT_USER.avatar && CURRENT_USER.avatar.includes('dicebear.com/7.x/')) {
+      try {
+        const urlObj = new URL(CURRENT_USER.avatar);
+        const parts = urlObj.pathname.split('/');
+        const styleIdx = parts.indexOf('7.x');
+        if (styleIdx !== -1 && parts[styleIdx + 1]) {
+          studioCurrentStyle = parts[styleIdx + 1];
+        }
+        const seedParam = urlObj.searchParams.get('seed');
+        if (seedParam) studioCurrentSeed = decodeURIComponent(seedParam);
+        const bgParam = urlObj.searchParams.get('backgroundColor');
+        if (bgParam) studioCurrentBg = bgParam;
+      } catch (err) {}
+    } else if (CURRENT_USER.avatar) {
+      studioPreviewUrl = CURRENT_USER.avatar;
+    }
+
+    const seedInput = document.getElementById('avatar-seed-input');
+    if (seedInput) seedInput.value = studioCurrentSeed;
+
+    // Highlight active style chip
+    document.querySelectorAll('.avatar-style-chip').forEach(chip => {
+      chip.classList.toggle('is-active', chip.dataset.avatarStyle === studioCurrentStyle);
+    });
+
+    // Highlight active color swatch
+    document.querySelectorAll('.avatar-color-swatch').forEach(swatch => {
+      swatch.classList.toggle('is-active', swatch.dataset.color === studioCurrentBg);
+    });
+
+    // Render presets if not rendered
+    renderStudioPresets();
+
+    // Reset tabs to Creator
+    switchStudioTab('creator');
+
+    // Update preview display
+    if (CURRENT_USER.avatar && !CURRENT_USER.avatar.includes('dicebear.com/7.x/')) {
+      updateStudioPreview(CURRENT_USER.avatar, 'Personal Photo 📸', 'Current Image');
+    } else {
+      studioPreviewUrl = buildStudioAvatarUrl(studioCurrentStyle, studioCurrentSeed, studioCurrentBg);
+      updateStudioPreview(studioPreviewUrl);
+    }
+  }
+
+  function closeAvatarStudio() {
+    const modal = document.getElementById('avatar-studio-modal');
+    if (modal) modal.hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  function switchStudioTab(tabName) {
+    document.querySelectorAll('.avatar-studio-tab').forEach(t => {
+      t.classList.toggle('is-active', t.dataset.avatarTab === tabName);
+    });
+
+    const panes = {
+      creator: document.getElementById('pane-avatar-creator'),
+      upload: document.getElementById('pane-avatar-upload'),
+      presets: document.getElementById('pane-avatar-presets'),
+      url: document.getElementById('pane-avatar-url')
+    };
+
+    Object.keys(panes).forEach(k => {
+      if (panes[k]) panes[k].hidden = (k !== tabName);
+    });
+  }
+
+  function renderStudioPresets() {
+    const grid = document.getElementById('avatar-curated-grid');
+    if (!grid || grid.children.length > 0) return;
+
+    grid.innerHTML = STUDIO_PRESETS.map((p, idx) => `
+      <div class="avatar-preset-card" data-preset-idx="${idx}" role="button" tabindex="0" title="Choose ${p.name}">
+        <div class="avatar-preset-thumb-wrap">
+          <img src="${p.url}" alt="${p.name}" class="avatar-preset-thumb" loading="lazy">
+        </div>
+        <div class="avatar-preset-info">
+          <span class="avatar-preset-name">${p.name}</span>
+          <span class="avatar-preset-style">${p.style}</span>
+        </div>
+      </div>
+    `).join('');
+
+    grid.querySelectorAll('.avatar-preset-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const idx = parseInt(card.dataset.presetIdx, 10);
+        const preset = STUDIO_PRESETS[idx];
+        if (!preset) return;
+
+        grid.querySelectorAll('.avatar-preset-card').forEach(c => c.classList.remove('is-selected'));
+        card.classList.add('is-selected');
+
+        studioCurrentStyle = preset.style;
+        studioCurrentSeed = preset.seed;
+        studioCurrentBg = preset.bg;
+        studioPreviewUrl = preset.url;
+
+        const seedInput = document.getElementById('avatar-seed-input');
+        if (seedInput) seedInput.value = preset.seed;
+
+        document.querySelectorAll('.avatar-style-chip').forEach(chip => {
+          chip.classList.toggle('is-active', chip.dataset.avatarStyle === studioCurrentStyle);
+        });
+        document.querySelectorAll('.avatar-color-swatch').forEach(swatch => {
+          swatch.classList.toggle('is-active', swatch.dataset.color === studioCurrentBg);
+        });
+
+        updateStudioPreview(preset.url, preset.name + ' ✨', 'Preset: ' + preset.seed);
+        showToast(`Selected ${preset.name}! Tap "Save & Apply Avatar" to use it.`, "✨");
+      });
+    });
+  }
+
+  function initAvatarStudio() {
+    // 1. Open Triggers
+    document.getElementById('open-avatar-picker')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      openAvatarStudio();
+    });
+    document.getElementById('open-avatar-studio-from-edit')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      openAvatarStudio();
+    });
+    document.getElementById('profile-main-avatar')?.addEventListener('click', () => {
+      openAvatarStudio();
+    });
+
+    // 2. Close Triggers
+    document.getElementById('close-avatar-studio')?.addEventListener('click', closeAvatarStudio);
+    document.getElementById('btn-cancel-avatar-studio')?.addEventListener('click', closeAvatarStudio);
+    document.getElementById('avatar-studio-modal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'avatar-studio-modal') closeAvatarStudio();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('avatar-studio-modal');
+        if (modal && !modal.hidden) closeAvatarStudio();
+      }
+    });
+
+    // 3. Tab Navigation
+    document.querySelectorAll('.avatar-studio-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        switchStudioTab(tab.dataset.avatarTab);
+      });
+    });
+
+    // 4. Style Selection Chips
+    document.querySelectorAll('.avatar-style-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.avatar-style-chip').forEach(c => c.classList.remove('is-active'));
+        chip.classList.add('is-active');
+        studioCurrentStyle = chip.dataset.avatarStyle;
+        const newUrl = buildStudioAvatarUrl(studioCurrentStyle, studioCurrentSeed, studioCurrentBg);
+        updateStudioPreview(newUrl);
+      });
+    });
+
+    // 5. Seed Word Input
+    const seedInput = document.getElementById('avatar-seed-input');
+    if (seedInput) {
+      seedInput.addEventListener('input', (e) => {
+        studioCurrentSeed = e.target.value.trim() || 'avatar';
+        const newUrl = buildStudioAvatarUrl(studioCurrentStyle, studioCurrentSeed, studioCurrentBg);
+        updateStudioPreview(newUrl);
+      });
+    }
+
+    // 6. Background Color Swatches
+    document.querySelectorAll('.avatar-color-swatch').forEach(swatch => {
+      swatch.addEventListener('click', () => {
+        document.querySelectorAll('.avatar-color-swatch').forEach(s => s.classList.remove('is-active'));
+        swatch.classList.add('is-active');
+        studioCurrentBg = swatch.dataset.color;
+        const newUrl = buildStudioAvatarUrl(studioCurrentStyle, studioCurrentSeed, studioCurrentBg);
+        updateStudioPreview(newUrl);
+      });
+    });
+
+    // 7. Shuffle & Randomize
+    const performRandomize = () => {
+      const styles = Object.keys(STYLE_NAMES);
+      studioCurrentStyle = styles[Math.floor(Math.random() * styles.length)];
+      studioCurrentSeed = RANDOM_SEEDS[Math.floor(Math.random() * RANDOM_SEEDS.length)] + '-' + Math.floor(Math.random() * 999);
+      
+      const swatches = Array.from(document.querySelectorAll('.avatar-color-swatch'));
+      if (swatches.length > 0) {
+        const randomSwatch = swatches[Math.floor(Math.random() * swatches.length)];
+        studioCurrentBg = randomSwatch.dataset.color;
+        swatches.forEach(s => s.classList.remove('is-active'));
+        randomSwatch.classList.add('is-active');
+      }
+
+      if (seedInput) seedInput.value = studioCurrentSeed;
+      document.querySelectorAll('.avatar-style-chip').forEach(chip => {
+        chip.classList.toggle('is-active', chip.dataset.avatarStyle === studioCurrentStyle);
+      });
+
+      const newUrl = buildStudioAvatarUrl(studioCurrentStyle, studioCurrentSeed, studioCurrentBg);
+      updateStudioPreview(newUrl);
+      showToast("Generated new avatar! 🎲", "🎲");
+    };
+
+    document.getElementById('btn-randomize-avatar')?.addEventListener('click', performRandomize);
+    document.getElementById('btn-shuffle-seed')?.addEventListener('click', performRandomize);
+
+    // 8. Device File Upload
+    const fileInput = document.getElementById('avatar-device-file-input');
+    const browseBtn = document.getElementById('btn-browse-avatar-file');
+    const dropzone = document.getElementById('avatar-dropzone');
+
+    if (browseBtn && fileInput) {
+      browseBtn.addEventListener('click', () => fileInput.click());
+    }
+
+    const processFile = (file) => {
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast("Please select a valid image file (PNG, JPG, WebP)", "⚠️");
+        return;
+      }
+      if (file.size > 8 * 1024 * 1024) {
+        showToast("File is too large! Please choose an image under 8MB", "⚠️");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        updateStudioPreview(dataUrl, 'Uploaded Photo 📸', file.name);
+        showToast("Photo loaded! Tap 'Save & Apply Avatar' to use it.", "📸");
+      };
+      reader.onerror = () => {
+        showToast("Could not read image file. Please try again.", "⚠️");
+      };
+      reader.readAsDataURL(file);
+    };
+
+    if (fileInput) {
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          processFile(e.target.files[0]);
+        }
+      });
+    }
+
+    if (dropzone) {
+      dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('is-dragover');
+      });
+      dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('is-dragover');
+      });
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('is-dragover');
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+          processFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    // 9. Web URL Image Link Preview
+    const urlInput = document.getElementById('avatar-web-url-input');
+    const applyUrlBtn = document.getElementById('btn-apply-url-preview');
+
+    const applyWebUrl = () => {
+      if (!urlInput) return;
+      const url = urlInput.value.trim();
+      if (!url) {
+        showToast("Please enter an image link URL", "⚠️");
+        return;
+      }
+      if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('data:image/')) {
+        showToast("Please enter a valid web image URL (starting with https://)", "⚠️");
+        return;
+      }
+      updateStudioPreview(url, 'Web Link 🌐', 'Direct URL');
+      showToast("Web image preview loaded!", "🌐");
+    };
+
+    applyUrlBtn?.addEventListener('click', applyWebUrl);
+    urlInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        applyWebUrl();
+      }
+    });
+
+    // 10. Save & Apply Avatar
+    const saveBtn = document.getElementById('btn-save-avatar-studio');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', async () => {
+        if (!studioPreviewUrl) return;
+
+        saveBtn.disabled = true;
+        const origContent = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<span>Saving avatar...</span>';
+
+        // Update local user state
+        CURRENT_USER.avatar = studioPreviewUrl;
+        selectedAvatarUrl = studioPreviewUrl;
+
+        // Update profile picture element directly
+        const mainAvatar = document.getElementById('profile-main-avatar');
+        if (mainAvatar) mainAvatar.src = studioPreviewUrl;
+
+        // Update all posts and reels authored by CURRENT_USER
+        if (Array.isArray(posts)) {
+          posts.forEach(p => {
+            if (p.author === CURRENT_USER.name || p.handle === CURRENT_USER.handle) {
+              p.avatar = studioPreviewUrl;
+            }
+          });
+        }
+        if (Array.isArray(REELS)) {
+          REELS.forEach(r => {
+            if (r.author === CURRENT_USER.name || r.handle === CURRENT_USER.handle) {
+              r.avatar = studioPreviewUrl;
+            }
+          });
+        }
+
+        // Persist to localStorage
+        try {
+          localStorage.setItem('my_teta_current_user', JSON.stringify(CURRENT_USER));
+        } catch (e) {}
+
+        // Global UI updates
+        updateCurrentUserUI();
+        if (typeof renderProfile === 'function') renderProfile();
+        if (typeof renderFeed === 'function') renderFeed();
+        if (typeof renderReels === 'function') renderReels();
+        if (typeof renderHomeReels === 'function') renderHomeReels();
+
+        // Sync to Supabase in background
+        try {
+          await SupabaseService.syncProfile({
+            name: CURRENT_USER.name,
+            handle: CURRENT_USER.handle,
+            email: CURRENT_USER.email,
+            avatar: CURRENT_USER.avatar,
+            role: CURRENT_USER.role,
+            bio: CURRENT_USER.bio,
+            location: CURRENT_USER.location,
+            cover: CURRENT_USER.cover
+          });
+        } catch (err) {
+          console.warn("Supabase profile sync:", err);
+        }
+
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = origContent;
+
+        closeAvatarStudio();
+        showToast("Profile avatar updated successfully everywhere! ✨", "🎉");
+      });
+    }
+  }
+
   function renderProfile() {
     // 1. Header Card Identity
     const coverBanner = document.getElementById('profile-cover-banner');
@@ -5243,9 +5671,9 @@
     document.getElementById('jump-password-btn')?.addEventListener('click', () => {
       switchProfileTab('password');
     });
-    document.getElementById('open-avatar-picker')?.addEventListener('click', () => {
-      switchProfileTab('edit');
-      document.querySelector('.avatar-picker-grid')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('open-avatar-picker')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      openAvatarStudio();
     });
     document.getElementById('open-cover-picker')?.addEventListener('click', () => {
       switchProfileTab('edit');
@@ -5489,6 +5917,9 @@
         showToast(CURRENT_USER.isPrivate ? "Profile is now Circles Only (Private)" : "Profile is now Public", "👁");
       });
     }
+
+    // Initialize Avatar Creator Studio & Uploader
+    initAvatarStudio();
   }
 
   // ==========================================
