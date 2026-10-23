@@ -1496,21 +1496,25 @@
   // 6. RENDER POSTS & FEED
   // ==========================================
   function createPostCardHTML(post) {
+    const commentsList = Array.isArray(post.commentsList) ? post.commentsList : [];
+    const commentCount = commentsList.length || post.comments || 0;
+    const isCommentsOpen = Boolean(post._commentsOpen);
+
     return `
       <article class="post-card" id="${post.id}">
         <header class="post-header">
           <div class="post-author">
-            <img src="${post.avatar}" alt="${post.author}">
+            <img src="${post.avatar}" alt="${escapeHTML(post.author)}">
             <div class="post-author-info">
-              <strong>${post.author}</strong>
-              <small>${post.time} · <span style="color:var(--lagoon); font-weight:600;">${post.circle}</span></small>
+              <strong>${escapeHTML(post.author)}</strong>
+              <small>${escapeHTML(post.time)} · <span style="color:var(--lagoon); font-weight:600;">${escapeHTML(post.circle || 'Circle')}</span></small>
             </div>
           </div>
-          <button class="icon-button" style="width:32px; height:32px;" title="Options">···</button>
+          <button class="icon-button" style="width:32px; height:32px;" title="Options" aria-label="Post options">···</button>
         </header>
 
         <div class="post-body">
-          <p>${post.content}</p>
+          <p>${escapeHTML(post.content)}</p>
         </div>
 
         ${post.image ? `
@@ -1520,18 +1524,50 @@
         ` : ''}
 
         <footer class="post-actions">
-          <button class="action-btn ${post.isLiked ? 'is-liked' : ''}" data-like-btn="${post.id}">
+          <button class="action-btn ${post.isLiked ? 'is-liked' : ''}" data-like-btn="${post.id}" type="button" aria-label="Like post">
             <span>${post.isLiked ? '♥' : '♡'}</span>
-            <span class="like-count">${post.likes}</span>
+            <span class="like-count">${post.likes || 0}</span>
           </button>
-          <button class="action-btn" data-comment-btn="${post.id}">
+          <button class="action-btn ${isCommentsOpen ? 'is-active' : ''}" data-comment-btn="${post.id}" type="button" aria-label="View and write comments">
             <span>💬</span>
-            <span>${post.comments}</span>
+            <span class="comment-count">${commentCount}</span>
           </button>
-          <button class="action-btn" data-share-btn="${post.id}" style="margin-left:auto;">
+          <button class="action-btn" data-share-btn="${post.id}" type="button" style="margin-left:auto;" aria-label="Share post">
             <span>↗</span> Share
           </button>
         </footer>
+
+        <!-- Comments Section -->
+        <div class="post-comments-section ${isCommentsOpen ? 'is-open' : ''}" id="comments-${post.id}" ${isCommentsOpen ? '' : 'hidden'}>
+          <div class="post-comments-list">
+            ${commentsList.length === 0 ? `
+              <div class="post-comments-empty">
+                <small>No comments yet. Be the first to share your thoughts!</small>
+              </div>
+            ` : commentsList.map(c => `
+              <div class="post-comment-item">
+                <img src="${c.avatar || CURRENT_USER.avatar}" alt="${escapeHTML(c.author || 'Member')}" class="post-comment-avatar">
+                <div class="post-comment-bubble">
+                  <div class="post-comment-author-row">
+                    <strong>${escapeHTML(c.author || 'Member')}</strong>
+                    <time>${escapeHTML(c.time || 'Just now')}</time>
+                  </div>
+                  <p class="post-comment-text">${escapeHTML(c.text || '')}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <form class="post-comment-form" data-comment-form="${post.id}">
+            <img src="${CURRENT_USER.avatar}" alt="${escapeHTML(CURRENT_USER.name)}" class="post-comment-self-avatar">
+            <input type="text" class="post-comment-input" placeholder="Write a comment..." maxlength="300" required autocomplete="off" />
+            <button type="submit" class="post-comment-submit-btn" aria-label="Send comment">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
+            </button>
+          </form>
+        </div>
       </article>
     `;
   }
@@ -1567,11 +1603,66 @@
         const post = posts.find(p => p.id === id);
         if (post) {
           post.isLiked = !post.isLiked;
-          post.likes += post.isLiked ? 1 : -1;
+          post.likes = Math.max(0, (post.likes || 0) + (post.isLiked ? 1 : -1));
           savePostsToStorage();
           renderFeed();
-          if (post.isLiked) showToast("Liked moment", "♥");
+          if (post.isLiked) showToast("Liked moment ♥", "♥");
+          else showToast("Unliked moment", "♡");
         }
+      });
+    });
+
+    container.querySelectorAll('[data-comment-btn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.commentBtn;
+        const post = posts.find(p => p.id === id);
+        if (post) {
+          post._commentsOpen = !post._commentsOpen;
+          const section = container.querySelector(`#comments-${id}`);
+          if (section) {
+            section.hidden = !post._commentsOpen;
+            section.classList.toggle('is-open', post._commentsOpen);
+            btn.classList.toggle('is-active', post._commentsOpen);
+            if (post._commentsOpen) {
+              const input = section.querySelector('.post-comment-input');
+              if (input) input.focus();
+            }
+          } else {
+            renderFeed();
+          }
+        }
+      });
+    });
+
+    container.querySelectorAll('[data-comment-form]').forEach(form => {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = form.dataset.commentForm;
+        const post = posts.find(p => p.id === id);
+        const input = form.querySelector('.post-comment-input');
+        if (!post || !input) return;
+
+        const text = input.value.trim();
+        if (!text) return;
+
+        if (!Array.isArray(post.commentsList)) {
+          post.commentsList = [];
+        }
+
+        post.commentsList.push({
+          id: "c_" + Date.now(),
+          author: CURRENT_USER.name,
+          handle: CURRENT_USER.handle,
+          avatar: CURRENT_USER.avatar,
+          time: "Just now",
+          text: text
+        });
+        post.comments = post.commentsList.length;
+        post._commentsOpen = true;
+
+        savePostsToStorage();
+        renderFeed();
+        showToast("Comment posted! 💬", "💬");
       });
     });
 
@@ -1579,9 +1670,9 @@
       btn.addEventListener('click', () => {
         if (navigator.clipboard) {
           navigator.clipboard.writeText(window.location.href);
-          showToast("Moment link copied to clipboard!", "↗");
+          showToast("Moment link copied to clipboard! ↗", "↗");
         } else {
-          showToast("Moment shared!", "↗");
+          showToast("Moment shared! ↗", "↗");
         }
       });
     });
@@ -1613,6 +1704,7 @@
         image: null,
         likes: 0,
         comments: 0,
+        commentsList: [],
         isLiked: false
       };
 
@@ -2072,29 +2164,32 @@
       return;
     }
     homeReelsTrack.innerHTML = REELS.map((reel, idx) => `
-      <article class="home-reel-card" data-reel-id="${reel.id}" data-reel-index="${idx}" tabindex="0" role="button" aria-label="Watch reel by ${reel.author}">
+      <article class="home-reel-card" data-reel-id="${reel.id}" data-reel-index="${idx}" tabindex="0" role="button" aria-label="Watch reel by ${escapeHTML(reel.author)}">
         <div class="home-reel-media">
-          <img src="${reel.image}" alt="${reel.caption}" loading="lazy">
-          <span class="home-reel-duration">${reel.duration}</span>
+          <img src="${reel.image}" alt="${escapeHTML(reel.caption)}" loading="lazy">
+          <span class="home-reel-duration">${reel.duration || '0:24'}</span>
           <div class="home-reel-play" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
               <path d="M8 5v14l11-7z"/>
             </svg>
           </div>
-          <div class="sound-wave-badge" title="${reel.music}">
+          <div class="sound-wave-badge" title="${escapeHTML(reel.music || '')}">
             <span></span><span></span><span></span><span></span>
           </div>
         </div>
         <div class="home-reel-info">
           <div class="home-reel-author">
-            <img src="${reel.avatar}" alt="${reel.author}">
-            <strong>${reel.author}</strong>
+            <img src="${reel.avatar}" alt="${escapeHTML(reel.author)}">
+            <strong>${escapeHTML(reel.author)}</strong>
           </div>
-          <p class="home-reel-caption">${reel.caption}</p>
+          <p class="home-reel-caption">${escapeHTML(reel.caption)}</p>
           <div class="home-reel-meta">
-            <span class="reel-views">👁 ${reel.views}</span>
+            <span class="reel-views">👁 ${reel.views || '1'}</span>
             <button class="reel-like-chip ${reel.isLiked ? 'is-liked' : ''}" data-reel-like="${reel.id}" type="button" aria-label="Like reel">
-              <span>${reel.isLiked ? '♥' : '♡'}</span> <span>${reel.likes}</span>
+              <span>${reel.isLiked ? '♥' : '♡'}</span> <span>${reel.likes || 0}</span>
+            </button>
+            <button class="reel-comment-chip" data-reel-comment="${reel.id}" type="button" aria-label="Comment on reel">
+              <span>💬</span> <span>${(reel.comments && reel.comments.length) || 0}</span>
             </button>
           </div>
         </div>
@@ -2103,7 +2198,7 @@
 
     homeReelsTrack.querySelectorAll('.home-reel-card').forEach(card => {
       card.addEventListener('click', (e) => {
-        if (e.target.closest('[data-reel-like]')) return;
+        if (e.target.closest('[data-reel-like]') || e.target.closest('[data-reel-comment]')) return;
         const reelId = card.dataset.reelId;
         const idx = REELS.findIndex(r => r.id == reelId);
         const targetIdx = idx !== -1 ? idx : 0;
@@ -2120,11 +2215,34 @@
         const reel = REELS.find(r => r.id == reelId);
         if (reel) {
           reel.isLiked = !reel.isLiked;
-          reel.likes += reel.isLiked ? 1 : -1;
+          reel.likes = Math.max(0, (reel.likes || 0) + (reel.isLiked ? 1 : -1));
+          saveReelsToStorage();
           renderHomeReels();
-          loadActiveReel(currentReelIndex, false);
+          if (typeof currentReelIndex === 'number' && REELS[currentReelIndex]) {
+            loadActiveReel(currentReelIndex, false);
+          }
           showToast(reel.isLiked ? "Saved reel to your moments ♥" : "Unliked reel", reel.isLiked ? "♥" : "♡");
         }
+      });
+    });
+
+    homeReelsTrack.querySelectorAll('[data-reel-comment]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const reelId = btn.dataset.reelComment;
+        const idx = REELS.findIndex(r => r.id == reelId);
+        const targetIdx = idx !== -1 ? idx : 0;
+        switchView('reels');
+        loadActiveReel(targetIdx, true);
+        switchStudioTab('comments');
+        const studioEl = document.getElementById('reels-sidebar-studio');
+        if (studioEl) {
+          studioEl.hidden = false;
+          studioEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        setTimeout(() => {
+          document.getElementById('reel-comment-input')?.focus();
+        }, 150);
       });
     });
   }
@@ -2133,9 +2251,9 @@
     const strip = document.getElementById('reels-strip-scroll');
     if (!strip) return;
     strip.innerHTML = REELS.map((reel, idx) => `
-      <div class="strip-thumb-card ${idx === currentReelIndex ? 'is-active' : ''}" data-strip-idx="${idx}" title="${reel.caption}" tabindex="0" role="button">
-        <img src="${reel.image}" alt="${reel.caption}" loading="lazy">
-        <span class="strip-thumb-duration">${reel.duration}</span>
+      <div class="strip-thumb-card ${idx === currentReelIndex ? 'is-active' : ''}" data-strip-idx="${idx}" title="${escapeHTML(reel.caption)}" tabindex="0" role="button">
+        <img src="${reel.image}" alt="${escapeHTML(reel.caption)}" loading="lazy">
+        <span class="strip-thumb-duration">${reel.duration || '0:24'}</span>
         ${idx === currentReelIndex ? '<span class="strip-thumb-badge">▷</span>' : ''}
       </div>
     `).join('');
@@ -2172,13 +2290,13 @@
 
     commentsList.innerHTML = comments.map(c => `
       <div class="reel-comment-item">
-        <img src="${c.avatar}" alt="${c.author}" class="comment-avatar">
+        <img src="${c.avatar || CURRENT_USER.avatar}" alt="${escapeHTML(c.author || 'Member')}" class="comment-avatar">
         <div class="comment-body">
           <div class="comment-header">
-            <strong>${c.author}</strong>
-            <time>${c.time}</time>
+            <strong>${escapeHTML(c.author || 'Member')}</strong>
+            <time>${escapeHTML(c.time || 'Just now')}</time>
           </div>
-          <p class="comment-text">${c.text}</p>
+          <p class="comment-text">${escapeHTML(c.text || '')}</p>
         </div>
       </div>
     `).join('');
@@ -2381,6 +2499,20 @@
 
     // Controls
     document.getElementById('reel-tap-surface')?.addEventListener('click', togglePlayPause);
+    document.getElementById('reel-tap-surface')?.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      const reel = REELS[currentReelIndex];
+      if (reel) {
+        if (!reel.isLiked) {
+          reel.isLiked = true;
+          reel.likes = (reel.likes || 0) + 1;
+          saveReelsToStorage();
+          loadActiveReel(currentReelIndex, false);
+          renderHomeReels();
+        }
+        showToast("Loved this reel ♥", "♥");
+      }
+    });
     document.getElementById('player-mute-btn')?.addEventListener('click', toggleMute);
     document.getElementById('player-prev-reel')?.addEventListener('click', prevReel);
     document.getElementById('player-next-reel')?.addEventListener('click', nextReel);
@@ -2390,7 +2522,8 @@
       const reel = REELS[currentReelIndex];
       if (reel) {
         reel.isLiked = !reel.isLiked;
-        reel.likes += reel.isLiked ? 1 : -1;
+        reel.likes = Math.max(0, (reel.likes || 0) + (reel.isLiked ? 1 : -1));
+        saveReelsToStorage();
         loadActiveReel(currentReelIndex, false);
         renderHomeReels();
         showToast(reel.isLiked ? "Saved to your liked moments ♥" : "Unliked reel", reel.isLiked ? "♥" : "♡");
@@ -2402,6 +2535,7 @@
       const reel = REELS[currentReelIndex];
       if (reel) {
         reel.isFollowing = !reel.isFollowing;
+        saveReelsToStorage();
         loadActiveReel(currentReelIndex, false);
         showToast(reel.isFollowing ? `Following ${reel.author} ✓` : `Unfollowed ${reel.author}`, "✨");
       }
@@ -2412,6 +2546,7 @@
       const reel = REELS[currentReelIndex];
       if (reel) {
         reel.isSaved = !reel.isSaved;
+        saveReelsToStorage();
         loadActiveReel(currentReelIndex, false);
         showToast(reel.isSaved ? "Moment bookmarked ★" : "Removed bookmark", "★");
       }
@@ -2420,7 +2555,14 @@
     // Comments button opens comments tab
     document.getElementById('player-comment-btn')?.addEventListener('click', () => {
       switchStudioTab('comments');
-      document.getElementById('reel-comment-input')?.focus();
+      const studioEl = document.getElementById('reels-sidebar-studio');
+      if (studioEl) {
+        studioEl.hidden = false;
+        studioEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      setTimeout(() => {
+        document.getElementById('reel-comment-input')?.focus();
+      }, 150);
     });
 
     // Share button
@@ -2591,8 +2733,10 @@
             time: "Just now",
             text: text
           });
+          saveReelsToStorage();
           reelCommentInput.value = "";
           renderReelComments();
+          renderHomeReels();
           showToast("Reflection posted! 💬", "💬");
         }
       });
