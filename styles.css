@@ -2205,7 +2205,7 @@ body.is-logged-out #btn-settings-logout {
   transform: scale(1.1);
 }
 
-/* Maya's Self Story Footer */
+/* User's Self Story Footer */
 .story-self-footer {
   position: absolute;
   bottom: 14px;

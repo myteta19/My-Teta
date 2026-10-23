@@ -28,22 +28,22 @@
   })();
 
   const CURRENT_USER = {
-    id: isLoggedOutState ? null : ((SAVED_USER && SAVED_USER.id) || "user_maya_chen"),
-    name: isLoggedOutState ? "Guest Explorer" : ((SAVED_USER && SAVED_USER.name) || "Maya Chen"),
-    handle: isLoggedOutState ? "@guest" : ((SAVED_USER && SAVED_USER.handle) || "@mayainmotion"),
-    email: isLoggedOutState ? "" : ((SAVED_USER && SAVED_USER.email) || "maya@myteta.social"),
-    avatar: isLoggedOutState ? "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=220&h=220&q=90" : ((SAVED_USER && SAVED_USER.avatar) || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90"),
+    id: isLoggedOutState ? null : ((SAVED_USER && SAVED_USER.id) || "user_tayyab"),
+    name: isLoggedOutState ? "Guest Explorer" : ((SAVED_USER && SAVED_USER.name) || "Tayyab"),
+    handle: isLoggedOutState ? "@guest" : ((SAVED_USER && SAVED_USER.handle) || "@tayyab"),
+    email: isLoggedOutState ? "" : ((SAVED_USER && SAVED_USER.email) || "ta12gang23@gmail.com"),
+    avatar: isLoggedOutState ? "https://api.dicebear.com/7.x/bottts/svg?seed=guest" : ((SAVED_USER && SAVED_USER.avatar) || "https://api.dicebear.com/7.x/bottts/svg?seed=tayyab"),
     cover: (SAVED_USER && SAVED_USER.cover) || "linear-gradient(135deg, #0d9488, #6366f1, #059669)",
-    location: isLoggedOutState ? "New York, NY" : ((SAVED_USER && SAVED_USER.location) || "Brooklyn, NY"),
-    bio: isLoggedOutState ? "Exploring moments on My Teta." : ((SAVED_USER && SAVED_USER.bio) || "Collecting little things: good light, long walks, and meals that turn into stories."),
-    password: (SAVED_USER && SAVED_USER.password) || "password123",
-    role: isLoggedOutState ? "Visitor" : ((SAVED_USER && SAVED_USER.role) || "Ceramicist & Visual Poet"),
+    location: isLoggedOutState ? "" : ((SAVED_USER && SAVED_USER.location) || "Brooklyn, NY"),
+    bio: isLoggedOutState ? "Exploring moments on My Teta." : ((SAVED_USER && SAVED_USER.bio) || "Sharing moments & stories on My Teta."),
+    password: (SAVED_USER && SAVED_USER.password) || "",
+    role: isLoggedOutState ? "Visitor" : ((SAVED_USER && SAVED_USER.role) || "Community Member & Creator"),
     is2FA: Boolean(SAVED_USER && SAVED_USER.is2FA),
     isPrivate: Boolean(SAVED_USER && SAVED_USER.isPrivate),
-    friendsCount: isLoggedOutState ? 0 : ((SAVED_USER && SAVED_USER.friendsCount) || 248),
-    momentsCount: 3,
-    reelsCount: 2,
-    circlesCount: 12
+    friendsCount: 0,
+    momentsCount: 0,
+    reelsCount: 0,
+    circlesCount: 0
   };
 
   // ==========================================
@@ -676,410 +676,55 @@
     if (typeof renderProfile === 'function') renderProfile();
   }
 
-  const STORIES = [
-    {
-      id: 1,
-      name: "Your story",
-      author: "Maya Chen",
-      handle: "@mayainmotion",
-      avatar: CURRENT_USER.avatar,
-      isSelf: true,
-      hasUnseen: true,
-      slides: [
-        {
-          id: "maya_s1",
-          url: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1080&q=85",
-          caption: "Morning light in the studio corner ☕ ceramics drying peacefully.",
-          circle: "Studio people",
-          time: "42m ago",
-          music: "Quiet Studio · Acoustic Calm",
-          duration: 5
-        },
-        {
-          id: "maya_s2",
-          url: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=1080&q=85",
-          caption: "Rain tapping on the skylight 🌧️ taking 5 deep breaths.",
-          circle: "Little escapes",
-          time: "15m ago",
-          music: "Rain on Glass · Ambient Tape",
-          duration: 5
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: "Soren K.",
-      author: "Soren Kierkegaard",
-      handle: "@soren_k",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-      isSelf: false,
-      hasUnseen: true,
-      slides: [
-        {
-          id: "soren_s1",
-          url: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1080&q=85",
-          caption: "First bake of the week: rosemary sourdough boule with crunchy crust 🥖✨",
-          circle: "Sunday table",
-          time: "1h ago",
-          music: "Warm Oven · Morning Acoustic",
-          duration: 5
-        },
-        {
-          id: "soren_s2",
-          url: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=1080&q=85",
-          caption: "Hand-ground pour-over Ethiopian beans. Slow mornings are the best mornings.",
-          circle: "Sunday table",
-          time: "35m ago",
-          music: "Coffeehouse Lo-Fi",
-          duration: 5
-        }
-      ]
-    },
-    {
-      id: 3,
-      name: "Amara V.",
-      author: "Amara Vance",
-      handle: "@amarav",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
-      isSelf: false,
-      hasUnseen: true,
-      slides: [
-        {
-          id: "amara_s1",
-          url: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=1080&q=85",
-          caption: "Centering raw terracotta on the kick wheel. Clay teaches pure patience 🏺",
-          circle: "Studio people",
-          time: "2h ago",
-          music: "Wheel & Water · Ambient Chimes",
-          duration: 5
-        },
-        {
-          id: "amara_s2",
-          url: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=1080&q=85",
-          caption: "Celadon glaze test tiles straight out of kiln cooling! That soft seafoam hue 🌊",
-          circle: "Studio people",
-          time: "1h ago",
-          music: "Kiln Glow · Gentle Synths",
-          duration: 5
-        }
-      ]
-    },
-    {
-      id: 4,
-      name: "Lucas D.",
-      author: "Lucas Dubois",
-      handle: "@lucas_d",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
-      isSelf: false,
-      hasUnseen: true,
-      slides: [
-        {
-          id: "lucas_s1",
-          url: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1080&q=85",
-          caption: "Deep in the Hudson Valley pines. Zero notifications, just hemlock scent 🌲",
-          circle: "Little escapes",
-          time: "3h ago",
-          music: "Mountain Stream Sounds",
-          duration: 5
-        },
-        {
-          id: "lucas_s2",
-          url: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1080&q=85",
-          caption: "Morning fog clearing above the ridge. Felt good to unplug.",
-          circle: "Little escapes",
-          time: "2h ago",
-          music: "Misty Sunrise · Acoustic",
-          duration: 5
-        }
-      ]
-    },
-    {
-      id: 5,
-      name: "Priya P.",
-      author: "Priya Patel",
-      handle: "@priyap",
-      avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80",
-      isSelf: false,
-      hasUnseen: true,
-      slides: [
-        {
-          id: "priya_s1",
-          url: "https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=1080&q=85",
-          caption: "Golden hour sun hitting the botanical greenhouse leaves 🌿 sunshine therapy.",
-          circle: "Little escapes",
-          time: "4h ago",
-          music: "Sunlight Reflections",
-          duration: 5
-        }
-      ]
-    },
-    {
-      id: 6,
-      name: "Mateo R.",
-      author: "Mateo Rossi",
-      handle: "@mateorossi",
-      avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80",
-      isSelf: false,
-      hasUnseen: true,
-      slides: [
-        {
-          id: "mateo_s1",
-          url: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1080&q=85",
-          caption: "Evening negroni & pasta under the grapevine arbor with good friends 🍷",
-          circle: "Sunday table",
-          time: "5h ago",
-          music: "Italian Summer Evening",
-          duration: 5
-        }
-      ]
-    }
-  ];
+  // ==========================================
+  // STORAGE & DYNAMIC DATA HELPERS
+  // ==========================================
+  function saveStoriesToStorage() {
+    try {
+      localStorage.setItem('my_teta_stories', JSON.stringify(STORIES));
+    } catch (e) {}
+  }
 
-  let posts = [
-    {
-      id: "post_maya_1",
-      author: "Maya Chen",
-      handle: "@mayainmotion",
-      avatar: CURRENT_USER.avatar,
-      time: "3h ago",
-      circle: "Studio people",
-      content: "The afternoon sunlight hitting the drying terracotta vases. Every imperfection feels intentional when the shadows stretch like this ✨",
-      image: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=1000&q=80",
-      likes: 47,
-      comments: 8,
-      isLiked: true
-    },
-    {
-      id: "post_1",
-      author: "Soren Kierkegaard",
-      handle: "@soren_k",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-      time: "24m ago",
-      circle: "Sunday table",
-      content: "Fresh sourdough out of the oven. There is something grounding about waiting three days for yeast and water to turn into a warm breakfast.",
-      image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1000&q=80",
-      likes: 18,
-      comments: 4,
-      isLiked: false
-    },
-    {
-      id: "post_maya_2",
-      author: "Maya Chen",
-      handle: "@mayainmotion",
-      avatar: CURRENT_USER.avatar,
-      time: "Yesterday",
-      circle: "Sunday table",
-      content: "Pour-over coffee on the fire escape with a fresh notebook. Starting the morning slow is the quietest rebellion against the rush.",
-      image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1000&q=80",
-      likes: 62,
-      comments: 11,
-      isLiked: false
-    },
-    {
-      id: "post_2",
-      author: "Amara Vance",
-      handle: "@amarav",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
-      time: "2h ago",
-      circle: "Studio people",
-      content: "Morning light in the ceramic studio. The first batch of celadon glazed cups survived the bisque firing intact. Celebrating the tiny wins.",
-      image: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=1000&q=80",
-      likes: 34,
-      comments: 7,
-      isLiked: true
-    },
-    {
-      id: "post_maya_3",
-      author: "Maya Chen",
-      handle: "@mayainmotion",
-      avatar: CURRENT_USER.avatar,
-      time: "3d ago",
-      circle: "Little escapes",
-      content: "Fort Greene park right as the morning rain stopped. Crisp air and quiet benches under the willow branches.",
-      image: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=1000&q=80",
-      likes: 89,
-      comments: 14,
-      isLiked: true
-    },
-    {
-      id: "post_3",
-      author: "Lucas Dubois",
-      handle: "@lucas_d",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
-      time: "5h ago",
-      circle: "Little escapes",
-      content: "Found this pocket forest in upstate Hudson Valley. No cell reception, just moss and rain on cedar. Highly recommended cure for screen fatigue.",
-      image: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=80",
-      likes: 52,
-      comments: 11,
-      isLiked: false
-    }
-  ];
+  let STORIES = (() => {
+    try {
+      const saved = localStorage.getItem('my_teta_stories');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return [
+      {
+        id: "self_story",
+        name: "Your story",
+        author: CURRENT_USER.name,
+        handle: CURRENT_USER.handle,
+        avatar: CURRENT_USER.avatar,
+        isSelf: true,
+        hasUnseen: false,
+        slides: []
+      }
+    ];
+  })();
+
+  function savePostsToStorage() {
+    try {
+      localStorage.setItem('my_teta_posts', JSON.stringify(posts));
+    } catch (e) {}
+  }
+
+  let posts = (() => {
+    try {
+      const saved = localStorage.getItem('my_teta_posts');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {}
+    return [];
+  })();
 
   let PEOPLE = [];
-
-  const REELS = [
-    {
-      id: 1,
-      author: "Maya Chen",
-      handle: "@mayainmotion",
-      avatar: CURRENT_USER.avatar,
-      caption: "Rainy afternoon in Fort Greene 🌧️ finding calm in the rhythm of the drops.",
-      image: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=600&q=80",
-      videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
-      category: "atmosphere",
-      likes: 142,
-      views: "18.4k",
-      duration: "0:24",
-      music: "Lo-Fi Rain · Brooklyn Chill",
-      isLiked: false,
-      isSaved: false,
-      isFollowing: false,
-      comments: [
-        { id: 1, author: "Amara Vance", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80", time: "15m ago", text: "The acoustic warmth in this capture is everything. Listened twice!" },
-        { id: 2, author: "Lucas Dubois", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80", time: "42m ago", text: "Fort Greene cobblestones look magical in the rain." },
-        { id: 3, author: "Soren Kierkegaard", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80", time: "2h ago", text: "Slowing down and letting the weather happen ☕" }
-      ]
-    },
-    {
-      id: 2,
-      author: "Amara Vance",
-      handle: "@amarav",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
-      caption: "Centering clay on the kick wheel ✨ pure theta state meditation.",
-      image: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=600&q=80",
-      videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-      category: "craft",
-      likes: 219,
-      views: "29.1k",
-      duration: "0:36",
-      music: "Ceramics Ambient · Studio Vol. 2",
-      isLiked: true,
-      isSaved: true,
-      isFollowing: true,
-      comments: [
-        { id: 1, author: "Maya Chen", avatar: CURRENT_USER.avatar, time: "1h ago", text: "Watching hands center clay is the most peaceful thing on this earth." },
-        { id: 2, author: "Julian Lee", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80", time: "3h ago", text: "The spiral texture on the rim is gorgeous Amara." }
-      ]
-    },
-    {
-      id: 3,
-      author: "Julian Lee",
-      handle: "@julianlee",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
-      caption: "Sunset shadow play over Brutalist facades 🌇 evening geometry.",
-      image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80",
-      videoUrl: "https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_1MB.mp4",
-      category: "city",
-      likes: 88,
-      views: "12.7k",
-      duration: "0:19",
-      music: "Golden Hour Glow · City Synth",
-      isLiked: false,
-      isSaved: false,
-      isFollowing: true,
-      comments: [
-        { id: 1, author: "Elena Rostova", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80", time: "30m ago", text: "Those angles with the golden backlight are stunning Julian!" }
-      ]
-    },
-    {
-      id: 4,
-      author: "Lucas Dubois",
-      handle: "@lucas_d",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
-      caption: "Hidden waterfall trail in Hudson Valley 🌿 breath of fresh mountain air.",
-      image: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80",
-      videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
-      category: "escapes",
-      likes: 312,
-      views: "42.5k",
-      duration: "0:45",
-      music: "Forest Stream & Birds · Nature Sound",
-      isLiked: false,
-      isSaved: false,
-      isFollowing: false,
-      comments: [
-        { id: 1, author: "Maya Chen", avatar: CURRENT_USER.avatar, time: "4h ago", text: "Take me with you next time! Need to touch some moss." },
-        { id: 2, author: "Nadia Osei", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80", time: "5h ago", text: "The misty air through the trees is perfection." }
-      ]
-    },
-    {
-      id: 5,
-      author: "Maya Chen",
-      handle: "@mayainmotion",
-      avatar: CURRENT_USER.avatar,
-      caption: "Morning espresso & slow light streaming through the studio windows ☕✨ finding stillness in daily rituals.",
-      image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80",
-      videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
-      category: "atmosphere",
-      likes: 198,
-      views: "24.6k",
-      duration: "0:30",
-      music: "Studio Morning · Warm Acoustic",
-      isLiked: true,
-      isSaved: false,
-      isFollowing: false,
-      comments: [
-        { id: 1, author: "Amara Vance", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80", time: "25m ago", text: "That golden morning light is unmatched Maya!" }
-      ]
-    },
-    {
-      id: 6901,
-      author: "test69",
-      handle: "@test69",
-      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=test69",
-      caption: "Night coding & lo-fi chill 🌙 crafting smooth web spaces and clean layouts on My Teta.",
-      image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80",
-      videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
-      category: "craft",
-      likes: 89,
-      views: "14.2k",
-      duration: "0:22",
-      music: "Lo-Fi Synth · Night Codes",
-      isLiked: false,
-      isSaved: false,
-      isFollowing: true,
-      comments: [
-        { id: 1, author: "Maya Chen", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=mayachen", time: "2h ago", text: "Vibe is incredible! Love the ambient audio." }
-      ]
-    },
-    {
-      id: 6902,
-      author: "test69",
-      handle: "@test69",
-      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=test69",
-      caption: "Sunset golden hour from the rooftop workspace 🌆 finding calm focus in the evening rhythm.",
-      image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80",
-      videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-      category: "atmosphere",
-      likes: 134,
-      views: "21.5k",
-      duration: "0:31",
-      music: "Golden Sunset · Horizon Wave",
-      isLiked: true,
-      isSaved: false,
-      isFollowing: true,
-      comments: []
-    },
-    {
-      id: 7001,
-      author: "tayyab",
-      handle: "@tayyab",
-      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=tayyab",
-      caption: "Morning espresso & creative design thoughts ☕✨ every detail matters in the craft.",
-      image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80",
-      videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
-      category: "escapes",
-      likes: 76,
-      views: "9.8k",
-      duration: "0:25",
-      music: "Morning Brew · Acoustic Flow",
-      isLiked: false,
-      isSaved: false,
-      isFollowing: true,
-      comments: []
-    }
-  ];
 
   function saveReelsToStorage() {
     try {
@@ -1087,19 +732,16 @@
     } catch (e) {}
   }
 
-  try {
-    const savedCustomReels = localStorage.getItem('my_teta_reels');
-    if (savedCustomReels) {
-      const parsed = JSON.parse(savedCustomReels);
-      if (Array.isArray(parsed)) {
-        parsed.forEach(r => {
-          if (!REELS.some(existing => existing.id == r.id)) {
-            REELS.unshift(r);
-          }
-        });
+  const REELS = (() => {
+    try {
+      const saved = localStorage.getItem('my_teta_reels');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
       }
-    }
-  } catch (e) {}
+    } catch (e) {}
+    return [];
+  })();
 
   function getPersonReels(person) {
     if (!person) return [];
@@ -1120,36 +762,7 @@
     });
   }
 
-  const DEMO_PRESETS = {
-    rain: {
-      videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
-      image: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=600&q=80",
-      caption: "Rain on Brooklyn windows 🌧️ calm evening theta rhythm.",
-      category: "atmosphere",
-      music: "Lo-Fi Rain · Brooklyn Chill"
-    },
-    ocean: {
-      videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
-      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80",
-      caption: "Evening tide roll 🌊 sync your breath with the waves.",
-      category: "escapes",
-      music: "Ocean Mist & Waves · Ambient"
-    },
-    flower: {
-      videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-      image: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=600&q=80",
-      caption: "Morning bloom opening quietly 🌸 patience in blossom.",
-      category: "atmosphere",
-      music: "Morning Birds · Forest Flow"
-    },
-    clay: {
-      videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
-      image: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=600&q=80",
-      caption: "Clay spinning smooth on the kick wheel 🏺 grounding flow state.",
-      category: "craft",
-      music: "Ceramics Ambient · Studio Vol. 2"
-    }
-  };
+  const DEMO_PRESETS = {};
 
   let CHATS = [];
   let activeChatId = null;
@@ -1159,43 +772,7 @@
   // NOTIFICATIONS & FRIEND REQUESTS DATA
   // ==========================================
   let friendRequests = [];
-
-  let notifications = [
-    {
-      id: "notif_1",
-      type: "like",
-      icon: "♥",
-      iconClass: "icon-like",
-      actor: "Amara Vance",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
-      text: "loved your moment from Fort Greene rain",
-      time: "8m ago",
-      read: false
-    },
-    {
-      id: "notif_2",
-      type: "comment",
-      icon: "💬",
-      iconClass: "icon-comment",
-      actor: "Lucas Dubois",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
-      text: "commented: \"The lighting in this ceramic studio capture is magic ✨\"",
-      time: "45m ago",
-      read: false
-    },
-    {
-      id: "notif_3",
-      type: "circle",
-      icon: "✳",
-      iconClass: "icon-circle",
-      actor: "Soren Kierkegaard",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-      text: "invited you to join the Sunday table circle",
-      time: "3h ago",
-      read: true
-    }
-  ];
-
+  let notifications = [];
   let activeNotifFilter = 'all';
 
   // ==========================================
@@ -1440,6 +1017,10 @@
         const idx = parseInt(card.dataset.storyIndex, 10);
         if (e.target.closest('.story-self-add-badge')) {
           e.stopPropagation();
+          openAddStoryModal();
+          return;
+        }
+        if (STORIES[idx] && STORIES[idx].isSelf && (!STORIES[idx].slides || STORIES[idx].slides.length === 0)) {
           openAddStoryModal();
           return;
         }
@@ -1876,6 +1457,7 @@
 
         STORIES[0].slides.push(newSlide);
         STORIES[0].hasUnseen = true;
+        saveStoriesToStorage();
         renderStories();
 
         closeAddStoryModal();
@@ -1956,8 +1538,18 @@
 
   function renderFeed() {
     if (feedList) {
-      feedList.innerHTML = posts.map(createPostCardHTML).join('');
-      attachPostActionListeners(feedList);
+      if (!posts || posts.length === 0) {
+        feedList.innerHTML = `
+          <div class="empty-feed-card" style="padding:48px 24px; text-align:center; background:var(--surface); border:1px solid var(--border); border-radius:20px; margin:16px 0;">
+            <div style="font-size:2.4rem; margin-bottom:12px;">✍️</div>
+            <h3 style="font-size:1.15rem; font-weight:800; color:var(--ink); margin:0 0 6px;">No moments shared yet</h3>
+            <p style="font-size:0.88rem; color:var(--ink-soft); max-width:380px; margin:0 auto; line-height:1.5;">Share your first thought, photo, or reflection above to begin your circle's timeline.</p>
+          </div>
+        `;
+      } else {
+        feedList.innerHTML = posts.map(createPostCardHTML).join('');
+        attachPostActionListeners(feedList);
+      }
     }
     if (profileFeedList) {
       const myPosts = posts.filter(p => p.author === CURRENT_USER.name);
@@ -1976,6 +1568,7 @@
         if (post) {
           post.isLiked = !post.isLiked;
           post.likes += post.isLiked ? 1 : -1;
+          savePostsToStorage();
           renderFeed();
           if (post.isLiked) showToast("Liked moment", "♥");
         }
@@ -2024,8 +1617,10 @@
       };
 
       posts.unshift(newPost);
+      savePostsToStorage();
       postInput.value = "";
       renderFeed();
+      if (typeof renderProfileMoments === 'function') renderProfileMoments();
       showToast("Moment shared with your circles!", "✳");
     });
   }
@@ -2453,6 +2048,29 @@
 
   function renderHomeReels() {
     if (!homeReelsTrack) return;
+    if (!REELS || REELS.length === 0) {
+      homeReelsTrack.innerHTML = `
+        <div class="home-reels-empty" style="grid-column: 1 / -1; padding:32px 20px; text-align:center; background:var(--surface); border:1px solid var(--border); border-radius:18px; width:100%;">
+          <span style="font-size:2rem; display:block; margin-bottom:8px;">🎬</span>
+          <h4 style="font-size:1rem; font-weight:700; color:var(--ink); margin:0 0 4px;">No video reels published yet</h4>
+          <p style="font-size:0.82rem; color:var(--ink-muted); margin:0 0 14px;">Share your original short video with the community using the Reel Studio.</p>
+          <button class="button button-primary button-small" id="home-create-reel-btn-action" type="button">＋ Upload First Reel</button>
+        </div>
+      `;
+      const btn = document.getElementById('home-create-reel-btn-action');
+      if (btn) {
+        btn.onclick = () => {
+          switchView('reels');
+          const toggleStudioBtn = document.getElementById('reels-toggle-studio');
+          const studioEl = document.getElementById('reels-sidebar-studio');
+          if (studioEl && studioEl.hidden) {
+            studioEl.hidden = false;
+            if (toggleStudioBtn) toggleStudioBtn.classList.add('is-active');
+          }
+        };
+      }
+      return;
+    }
     homeReelsTrack.innerHTML = REELS.map((reel, idx) => `
       <article class="home-reel-card" data-reel-id="${reel.id}" data-reel-index="${idx}" tabindex="0" role="button" aria-label="Watch reel by ${reel.author}">
         <div class="home-reel-media">
@@ -2568,38 +2186,59 @@
   }
 
   function loadActiveReel(index, autoPlay = true) {
-    if (!REELS || REELS.length === 0) return;
+    const activeVideo = document.getElementById('active-reel-video');
+    const videoWrapper = document.getElementById('reel-video-wrapper');
+    const authorName = document.getElementById('player-author-name');
+    const authorHandle = document.getElementById('player-author-handle');
+    const authorAvatar = document.getElementById('player-author-avatar');
+    const captionEl = document.getElementById('player-caption');
+    const musicTitle = document.getElementById('player-music-title');
+    const counterEl = document.getElementById('player-counter');
+    const totalCountEl = document.getElementById('reels-total-count');
+    const strip = document.getElementById('reels-strip-scroll');
+    const durationEl = document.getElementById('player-time-duration');
+    const currentEl = document.getElementById('player-time-current');
+    const progressBar = document.getElementById('reel-progress-bar');
+    const soundwave = document.getElementById('player-soundwave');
+    const infoViews = document.getElementById('info-views');
+    const infoLikes = document.getElementById('info-likes');
+
+    if (!REELS || REELS.length === 0) {
+      if (activeVideo) {
+        activeVideo.pause();
+        activeVideo.removeAttribute('src');
+        activeVideo.poster = '';
+        activeVideo.load();
+      }
+      if (videoWrapper) videoWrapper.classList.add('is-paused');
+      if (soundwave) soundwave.classList.remove('is-playing');
+      if (authorName) authorName.textContent = CURRENT_USER.name || 'Creator';
+      if (authorHandle) authorHandle.textContent = CURRENT_USER.handle || '@member';
+      if (authorAvatar) authorAvatar.src = CURRENT_USER.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=creator';
+      if (captionEl) captionEl.textContent = 'No reels published yet. Upload your original short video in the Reel Studio!';
+      if (musicTitle) musicTitle.textContent = 'No soundtrack';
+      if (counterEl) counterEl.textContent = '00 / 00';
+      if (totalCountEl) totalCountEl.textContent = '0 Moments';
+      if (durationEl) durationEl.textContent = '0:00';
+      if (currentEl) currentEl.textContent = '0:00';
+      if (progressBar) progressBar.style.width = '0%';
+      if (strip) strip.innerHTML = '<p style="padding:16px; font-size:0.8rem; color:var(--ink-muted); text-align:center;">No reels yet</p>';
+      if (infoViews) infoViews.textContent = '0';
+      if (infoLikes) infoLikes.textContent = '0';
+      renderReelComments();
+      return;
+    }
     currentReelIndex = ((index % REELS.length) + REELS.length) % REELS.length;
     const reel = REELS[currentReelIndex];
 
-    const activeVideo = document.getElementById('active-reel-video');
-    const videoWrapper = document.getElementById('reel-video-wrapper');
     const posterBackdrop = document.getElementById('reel-poster-backdrop');
     const categoryPill = document.getElementById('player-category-pill');
-    const authorAvatar = document.getElementById('player-author-avatar');
-    const authorName = document.getElementById('player-author-name');
-    const authorHandle = document.getElementById('player-author-handle');
     const followBtn = document.getElementById('player-follow-btn');
-    const captionEl = document.getElementById('player-caption');
-    const musicTitle = document.getElementById('player-music-title');
     const likeBtn = document.getElementById('player-like-btn');
     const likeIcon = document.getElementById('player-like-icon');
     const likeCount = document.getElementById('player-like-count');
     const saveBtn = document.getElementById('player-save-btn');
     const saveLabel = document.getElementById('player-save-label');
-    const counterEl = document.getElementById('player-counter');
-    const totalCountEl = document.getElementById('reels-total-count');
-    const durationEl = document.getElementById('player-time-duration');
-    const currentEl = document.getElementById('player-time-current');
-    const progressBar = document.getElementById('reel-progress-bar');
-    const soundwave = document.getElementById('player-soundwave');
-
-    // Details tab elements
-    const infoAvatar = document.getElementById('info-avatar');
-    const infoName = document.getElementById('info-name');
-    const infoHandle = document.getElementById('info-handle');
-    const infoViews = document.getElementById('info-views');
-    const infoLikes = document.getElementById('info-likes');
 
     if (activeVideo) {
       activeVideo.pause();
@@ -2918,6 +2557,7 @@
         };
 
         REELS.unshift(newReel);
+        saveReelsToStorage();
         renderHomeReels();
         loadActiveReel(0, true);
 
@@ -4325,6 +3965,7 @@
       };
 
       REELS.unshift(newReel);
+      saveReelsToStorage();
       renderHomeReels();
       if (reelModal) reelModal.hidden = true;
       reelForm.reset();
@@ -4839,8 +4480,9 @@
     const friendsCountEl = document.getElementById('stat-friends-count');
     const circlesCountEl = document.getElementById('stat-circles-count');
 
-    if (friendsCountEl) friendsCountEl.textContent = CURRENT_USER.friendsCount;
-    if (circlesCountEl) circlesCountEl.textContent = CURRENT_USER.circlesCount;
+    const acceptedFriendsCount = (typeof PEOPLE !== 'undefined' && Array.isArray(PEOPLE)) ? PEOPLE.filter(p => p.following).length : 0;
+    if (friendsCountEl) friendsCountEl.textContent = acceptedFriendsCount;
+    if (circlesCountEl) circlesCountEl.textContent = acceptedFriendsCount > 0 ? 1 : 0;
 
     // 4. Populate Edit Profile Form
     const nameInput = document.getElementById('edit-name-input');
@@ -5260,14 +4902,11 @@
     storySpeed: 5000,
 
     // Blocked accounts
-    blockedAccounts: [
-      { id: 'b_1', name: "Spam Bot 3000", handle: "@cryptospam99", date: "Oct 10, 2026" }
-    ],
+    blockedAccounts: [],
 
     // Active sessions
     activeSessions: [
-      { id: 's_1', device: "MacBook Pro 16”", client: "Chrome 130 · macOS Sonoma", location: "Brooklyn, NY", current: true },
-      { id: 's_2', device: "iPhone 15 Pro", client: "My Teta iOS App v2.4", location: "New York, NY", current: false }
+      { id: 's_1', device: "Current Device", client: "Web Browser", location: "Active Session", current: true }
     ]
   };
 
@@ -5757,11 +5396,10 @@
     const emailInput = document.getElementById('contact-email');
 
     if (nameInput && !nameInput.value) {
-      nameInput.value = CURRENT_USER.name || "Maya Chen";
+      nameInput.value = CURRENT_USER.name || "";
     }
     if (emailInput && !emailInput.value) {
-      const cleanHandle = (CURRENT_USER.handle || '@mayainmotion').replace(/^@/, '');
-      emailInput.value = `${cleanHandle}@teta.mindful`;
+      emailInput.value = CURRENT_USER.email || "";
     }
   }
 

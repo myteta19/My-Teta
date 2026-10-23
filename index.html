@@ -57,20 +57,20 @@
 			</div>
 			<button class="button button-primary button-small topbar-share-btn" data-action="write-post" type="button"><b>＋</b> Share</button>
 			<button class="icon-button" id="notifications" type="button" aria-label="Notifications" title="Notifications" aria-expanded="false" aria-controls="notifications-popup"><svg class="notif-bell-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><i class="notification-dot" id="notif-dot"></i></button>
-			<button class="profile-trigger" data-view="profile" type="button" aria-label="Open profile"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&h=96&q=85" alt="Maya Chen"><i class="status-online"></i></button>
+			<button class="profile-trigger" data-view="profile" type="button" aria-label="Open profile"><img src="https://api.dicebear.com/7.x/bottts/svg?seed=tayyab" alt="Your profile"><i class="status-online"></i></button>
 
 			<!-- NOTIFICATIONS & FRIEND REQUESTS POPUP -->
 			<div class="notifications-popup" id="notifications-popup" hidden role="dialog" aria-label="Notifications and Friend Requests">
 				<div class="notif-pop-header">
 					<div class="notif-pop-title">
 						<h3>Notifications</h3>
-						<span class="notif-unread-badge" id="notif-unread-badge">3 new</span>
+						<span class="notif-unread-badge" id="notif-unread-badge">0 new</span>
 					</div>
 					<button class="notif-read-btn" id="mark-all-read" type="button">Mark all read</button>
 				</div>
 				<div class="notif-pop-nav">
-					<button class="notif-nav-btn is-active" data-notif-filter="all" type="button">All <span class="notif-tab-pill" id="badge-all-count">5</span></button>
-					<button class="notif-nav-btn" data-notif-filter="requests" type="button">Friend Requests <span class="notif-tab-pill request-pill" id="badge-req-count">2</span></button>
+					<button class="notif-nav-btn is-active" data-notif-filter="all" type="button">All <span class="notif-tab-pill" id="badge-all-count">0</span></button>
+					<button class="notif-nav-btn" data-notif-filter="requests" type="button">Friend Requests <span class="notif-tab-pill request-pill" id="badge-req-count">0</span></button>
 				</div>
 				<div class="notif-pop-body" id="notif-pop-body">
 					<!-- Notifications & Friend Requests rendered dynamically -->
@@ -84,12 +84,12 @@
 
 	<main class="app-shell" id="main-content">
 		<aside class="left-rail">
-			<button class="rail-profile" data-view="profile" type="button"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&h=96&q=85" alt=""><span><strong>Maya Chen</strong><small>@mayainmotion</small></span><b>···</b></button>
+			<button class="rail-profile" data-view="profile" type="button"><img src="https://api.dicebear.com/7.x/bottts/svg?seed=tayyab" alt=""><span><strong id="rail-profile-name">Tayyab</strong><small id="rail-profile-handle">@tayyab</small></span><b>···</b></button>
 			<p class="rail-label">YOUR SPACE</p>
-			<button class="rail-link is-active" data-view="home" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>Feed <small>12</small></button>
+			<button class="rail-link is-active" data-view="home" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>Feed</button>
 			<button class="rail-link" data-view="friends" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>People</button>
 			<button class="rail-link" data-view="reels" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"></rect><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon></svg>Reels <em class="pulse-em">LIVE</em></button>
-			<button class="rail-link" data-view="chat" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>Messages <small>2</small></button>
+			<button class="rail-link" data-view="chat" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>Messages</button>
 			<button class="rail-link" data-view="profile" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Your profile</button>
 			<button class="rail-link" data-view="settings" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>Settings</button>
 			<button class="rail-link" data-view="contact" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Contact Us</button>
@@ -102,7 +102,7 @@
 			<div class="greeting-row">
 				<div>
 					<p class="eyebrow"><i class="pulse-dot"></i>TUESDAY, OCTOBER 17 · BROOKLYN, NY</p>
-					<h1>A little closer, <span>Maya.</span></h1>
+					<h1>A little closer, <span id="greeting-name">Tayyab.</span></h1>
 					<p class="muted">The good stuff is happening around you. Watch new reels and share moments.</p>
 				</div>
 				<button class="button button-outline" data-action="write-post" type="button"><b>＋</b> Share a moment</button>
@@ -195,7 +195,7 @@
 
 			<section class="composer" id="composer">
 				<div class="composer-main">
-					<img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&h=96&q=85" alt="Maya Chen">
+					<img src="https://api.dicebear.com/7.x/bottts/svg?seed=tayyab" alt="Your avatar">
 					<button id="composer-prompt" type="button">What felt like you today?</button>
 					<textarea id="post-input" rows="2" maxlength="500" placeholder="What felt like you today? Share a thought or moment..." aria-label="Write a post"></textarea>
 				</div>
@@ -314,22 +314,22 @@
 							<!-- Video HUD Bottom -->
 							<div class="reel-hud-bottom">
 								<div class="reel-author-row">
-									<img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90" alt="Maya Chen" id="player-author-avatar" class="reel-avatar">
+									<img src="https://api.dicebear.com/7.x/bottts/svg?seed=creator" alt="Creator" id="player-author-avatar" class="reel-avatar">
 									<div class="reel-author-text">
 										<div class="reel-author-name-line">
-											<strong id="player-author-name">Maya Chen</strong>
+											<strong id="player-author-name">Creator</strong>
 											<button class="reel-follow-btn" id="player-follow-btn" type="button">＋ Follow</button>
 										</div>
-										<span id="player-author-handle">@mayainmotion</span>
+										<span id="player-author-handle">@member</span>
 									</div>
 								</div>
 
-								<p class="reel-caption-text" id="player-caption">Rainy afternoon in Fort Greene 🌧️ finding calm in the rhythm of the drops.</p>
+								<p class="reel-caption-text" id="player-caption">Select or publish a short reel to watch.</p>
 
 								<div class="reel-soundtrack-pill" id="player-soundtrack">
 									<span class="music-note-icon">♫</span>
 									<span class="music-marquee-wrap">
-										<span class="music-title" id="player-music-title">Lo-Fi Rain · Brooklyn Chill</span>
+										<span class="music-title" id="player-music-title">Soundtrack</span>
 									</span>
 								</div>
 
@@ -421,25 +421,6 @@
 									</div>
 								</label>
 
-								<!-- 1-Click Demo Presets -->
-								<div class="demo-moments-box">
-									<span class="demo-label">⚡ OR TRY A 1-CLICK DEMO MOMENT:</span>
-									<div class="demo-moments-grid">
-										<button type="button" class="demo-moment-chip" data-demo-id="rain">
-											🌧️ Rain on Glass
-										</button>
-										<button type="button" class="demo-moment-chip" data-demo-id="ocean">
-											🌊 Ocean Waves
-										</button>
-										<button type="button" class="demo-moment-chip" data-demo-id="flower">
-											🌸 Garden Bloom
-										</button>
-										<button type="button" class="demo-moment-chip" data-demo-id="clay">
-											🏺 Pottery Spin
-										</button>
-									</div>
-								</div>
-
 								<!-- Caption -->
 								<div class="form-group">
 									<label for="studio-caption-input">Caption & Reflections</label>
@@ -505,21 +486,21 @@
 
 							<div class="info-content-card">
 								<div class="info-creator-profile">
-									<img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90" id="info-avatar" alt="Creator">
+									<img src="https://api.dicebear.com/7.x/bottts/svg?seed=creator" id="info-avatar" alt="Creator">
 									<div>
-										<strong id="info-name">Maya Chen</strong>
-										<p id="info-handle">@mayainmotion</p>
+										<strong id="info-name">Creator</strong>
+										<p id="info-handle">@member</p>
 									</div>
 								</div>
 								
 								<div class="info-stats-grid">
 									<div class="stat-pill">
 										<small>Total Views</small>
-										<strong id="info-views">18.4k</strong>
+										<strong id="info-views">0</strong>
 									</div>
 									<div class="stat-pill">
 										<small>Appreciations</small>
-										<strong id="info-likes">142</strong>
+										<strong id="info-likes">0</strong>
 									</div>
 									<div class="stat-pill">
 										<small>Audio Uses</small>
@@ -592,13 +573,13 @@
 							<span class="dot"></span>
 							<span class="dot"></span>
 						</div>
-						<span id="typing-label">Amara is typing...</span>
+						<span id="typing-label">Typing...</span>
 					</div>
 
 					<!-- Clean Focused Message Composer (Strictly Pure Chat) -->
 					<form class="message-composer" id="message-form">
 						<button class="chat-composer-btn" id="attach-message" type="button" title="Send photo moment" aria-label="Attach photo"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
-						<input id="message-input" type="text" placeholder="Write a message to Amara..." maxlength="500" autocomplete="off" aria-label="Write a message" required>
+						<input id="message-input" type="text" placeholder="Select a conversation to start chatting..." maxlength="500" autocomplete="off" aria-label="Write a message" disabled required>
 						<button class="send-button" type="submit" aria-label="Send message" title="Send message"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
 					</form>
 				</section>
@@ -617,7 +598,7 @@
 
 				<div class="profile-identity-bar">
 					<div class="profile-avatar-wrap">
-						<img class="profile-avatar" id="profile-main-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=220&h=220&q=90" alt="Maya Chen">
+						<img class="profile-avatar" id="profile-main-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=tayyab" alt="Tayyab">
 						<button class="avatar-edit-badge" id="open-avatar-picker" type="button" title="Update avatar photo">📷</button>
 					</div>
 
@@ -639,42 +620,40 @@
 
 				<div class="profile-meta-info">
 					<div class="profile-title-row">
-						<h1 id="profile-display-name">Maya Chen</h1>
+						<h1 id="profile-display-name">Tayyab</h1>
 						<span class="profile-verified-badge" title="Verified creator">✓</span>
 					</div>
 					<p class="profile-handle-row">
-						<span id="profile-handle">@mayainmotion</span> · 
+						<span id="profile-handle">@tayyab</span> · 
 						<span id="profile-location">Brooklyn, NY</span>
 					</p>
 					
 					<p class="profile-bio" id="profile-bio-text">
-						Collecting little things: good light, long walks, and meals that turn into stories. <span>✳</span>
+						Sharing moments &amp; stories on My Teta. <span>✳</span>
 					</p>
 
 					<div class="profile-circles-row">
 						<span class="circle-label">Circles:</span>
-						<span class="profile-circle-tag">☀️ Sunday table</span>
-						<span class="profile-circle-tag">🎨 Studio people</span>
-						<span class="profile-circle-tag">🌲 Little escapes</span>
+						<span class="profile-circle-tag">☀️ Community circle</span>
 					</div>
 				</div>
 
 				<!-- Stats Row -->
 				<div class="profile-stats">
 					<div class="stat-box" data-view="friends" role="button" tabindex="0" title="View friends & connections">
-						<strong id="stat-friends-count">248</strong>
+						<strong id="stat-friends-count">0</strong>
 						<small id="stat-friends-label">friends</small>
 					</div>
 					<div class="stat-box" data-profile-tab="moments" role="button" tabindex="0" title="View moments archive">
-						<strong id="stat-moments-count">3</strong>
+						<strong id="stat-moments-count">0</strong>
 						<small id="stat-moments-label">moments</small>
 					</div>
 					<div class="stat-box" data-profile-tab="reels" role="button" tabindex="0" title="View reels">
-						<strong id="stat-reels-count">2</strong>
+						<strong id="stat-reels-count">0</strong>
 						<small id="stat-reels-label">reels</small>
 					</div>
-					<div class="stat-box" title="12 active circles">
-						<strong id="stat-circles-count">12</strong>
+					<div class="stat-box" title="Circles in network">
+						<strong id="stat-circles-count">0</strong>
 						<small id="stat-circles-label">circles</small>
 					</div>
 				</div>
@@ -780,13 +759,13 @@
 						<div class="form-grid-2">
 							<div class="form-group">
 								<label for="edit-name-input">Full Name</label>
-								<input type="text" id="edit-name-input" value="Maya Chen" required maxlength="50">
+								<input type="text" id="edit-name-input" value="Tayyab" required maxlength="50">
 							</div>
 							<div class="form-group">
 								<label for="edit-handle-input">Username / Handle</label>
 								<div class="input-prefix-wrap">
 									<span>@</span>
-									<input type="text" id="edit-handle-input" value="mayainmotion" required maxlength="30">
+									<input type="text" id="edit-handle-input" value="tayyab" required maxlength="30">
 								</div>
 							</div>
 						</div>
@@ -913,10 +892,10 @@
 				<!-- Settings Nav Sidebar -->
 				<aside class="settings-nav-sidebar">
 					<div class="settings-user-summary">
-						<img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=85" alt="Maya Chen" id="settings-summary-avatar">
+						<img src="https://api.dicebear.com/7.x/bottts/svg?seed=tayyab" alt="Tayyab" id="settings-summary-avatar">
 						<div class="settings-user-info">
-							<strong id="settings-summary-name">Maya Chen</strong>
-							<span id="settings-summary-handle">@mayainmotion</span>
+							<strong id="settings-summary-name">Tayyab</strong>
+							<span id="settings-summary-handle">@tayyab</span>
 							<small class="settings-status-indicator">● Active in Circles</small>
 						</div>
 					</div>
@@ -1117,13 +1096,13 @@
 								<div class="form-grid-2">
 									<div class="form-group">
 										<label for="setting-name-input">Display Name</label>
-										<input type="text" id="setting-name-input" value="Maya Chen" required maxlength="50">
+										<input type="text" id="setting-name-input" value="Tayyab" required maxlength="50">
 									</div>
 									<div class="form-group">
 										<label for="setting-handle-input">Username / Handle</label>
 										<div class="handle-input-wrap">
 											<span class="handle-prefix">@</span>
-											<input type="text" id="setting-handle-input" value="mayainmotion" required maxlength="30">
+											<input type="text" id="setting-handle-input" value="tayyab" required maxlength="30">
 										</div>
 									</div>
 								</div>
@@ -1131,11 +1110,11 @@
 								<div class="form-grid-2">
 									<div class="form-group">
 										<label for="setting-email-input">Email Address</label>
-										<input type="email" id="setting-email-input" value="maya.chen@myteta.io" required>
+										<input type="email" id="setting-email-input" value="ta12gang23@gmail.com" required>
 									</div>
 									<div class="form-group">
 										<label for="setting-phone-input">Phone Number</label>
-										<input type="tel" id="setting-phone-input" value="+1 (917) 555-0192" placeholder="+1 (xxx) xxx-xxxx">
+										<input type="tel" id="setting-phone-input" value="" placeholder="+1 (xxx) xxx-xxxx">
 									</div>
 								</div>
 
@@ -1723,11 +1702,11 @@
 							<div class="form-grid-2">
 								<div class="form-group">
 									<label for="contact-name">Your Full Name <span class="required-star">*</span></label>
-									<input type="text" id="contact-name" class="contact-input" placeholder="e.g. Maya Chen" required>
+									<input type="text" id="contact-name" class="contact-input" placeholder="Your name" required>
 								</div>
 								<div class="form-group">
 									<label for="contact-email">Email to Receive Reply <span class="required-star">*</span></label>
-									<input type="email" id="contact-email" class="contact-input" placeholder="maya@teta.mindful" required>
+									<input type="email" id="contact-email" class="contact-input" placeholder="you@example.com" required>
 								</div>
 							</div>
 
@@ -1770,9 +1749,6 @@
 										<span class="dropzone-icon">📷</span>
 										<p><strong>Click to attach a screenshot</strong> or drag and drop image here</p>
 										<small class="muted">PNG, JPG, MP4 or Log files up to 25MB</small>
-										<button type="button" class="button button-outline button-small" id="btn-add-mock-file" style="margin-top:10px;">
-											＋ Attach Sample Screenshot
-										</button>
 									</div>
 									<div class="dropzone-preview" id="dropzone-preview" hidden>
 										<div class="preview-file-item">
@@ -1834,7 +1810,7 @@
 									</div>
 									<div class="receipt-row">
 										<span class="r-label">Reply Destination:</span>
-										<span class="r-val" id="receipt-reply-email">maya@teta.mindful</span>
+										<span class="r-val" id="receipt-reply-email">ta12gang23@gmail.com</span>
 									</div>
 								</div>
 							</div>
@@ -2180,9 +2156,9 @@
 					</form>
 				</div>
 
-				<!-- Footer for Maya's Own Story -->
+				<!-- Footer for User's Own Story -->
 				<div class="story-self-footer" id="story-self-footer" hidden>
-					<span class="story-views-pill">👁 <span id="story-views-count">38</span> friends viewed</span>
+					<span class="story-views-pill">👁 <span id="story-views-count">0</span> views</span>
 					<button type="button" class="button button-primary button-small" id="story-open-add-btn">＋ Add moment</button>
 				</div>
 			</div>
