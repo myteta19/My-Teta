@@ -5701,6 +5701,34 @@
     'titan', 'stellar', 'vortex', 'prism', 'zenith', 'pulse', 'glitch', 'solaris'
   ];
 
+  function compressImageToDataUrl(file, maxWidth, maxHeight, quality = 0.85) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          let w = img.width;
+          let h = img.height;
+          if (w > maxWidth || h > maxHeight) {
+            const ratio = Math.min(maxWidth / w, maxHeight / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
   function buildStudioAvatarUrl(style, seed, bgColor) {
     const safeSeed = encodeURIComponent((seed || 'creator').trim());
     const cleanBg = (bgColor || '').replace('#', '');
@@ -5980,27 +6008,19 @@
       browseBtn.addEventListener('click', () => fileInput.click());
     }
 
-    const processFile = (file) => {
+    const processFile = async (file) => {
       if (!file) return;
       if (!file.type.startsWith('image/')) {
         showToast("Please select a valid image file (PNG, JPG, WebP)", "⚠️");
         return;
       }
-      if (file.size > 8 * 1024 * 1024) {
-        showToast("File is too large! Please choose an image under 8MB", "⚠️");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target.result;
+      try {
+        const dataUrl = await compressImageToDataUrl(file, 400, 400, 0.88);
         updateStudioPreview(dataUrl, 'Uploaded Photo 📸', file.name);
         showToast("Photo loaded! Tap 'Save & Apply Avatar' to use it.", "📸");
-      };
-      reader.onerror = () => {
-        showToast("Could not read image file. Please try again.", "⚠️");
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        showToast("Could not process image file. Please try again.", "⚠️");
+      }
     };
 
     if (fileInput) {
@@ -6214,11 +6234,12 @@
     coverStudioCurrentCover = coverValue;
     const banner = document.getElementById('cover-studio-live-banner');
     const tag = document.getElementById('cover-preview-tag');
+    const val = String(coverValue || '');
     if (banner) {
-      if (coverValue.startsWith('http://') || coverValue.startsWith('https://') || coverValue.startsWith('data:image/')) {
-        banner.style.background = `linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.5)), url('${coverValue}') center/cover`;
+      if (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:image/')) {
+        banner.style.background = `linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.55)), url('${val}') center/cover`;
       } else {
-        banner.style.background = coverValue;
+        banner.style.background = val;
       }
     }
     if (tag) tag.textContent = tagName || "Selected Theme";
@@ -6251,7 +6272,8 @@
     if (mockName) mockName.textContent = targetUser.name || CURRENT_USER.name;
     if (mockHandle) mockHandle.textContent = targetUser.handle || CURRENT_USER.handle;
     if (saveBtn) {
-      saveBtn.innerHTML = `<span>✓ Save & Apply ${isFriend ? targetUser.name.split(' ')[0] + "'s" : ''} Cover Banner</span>`;
+      const firstName = (targetUser.name || 'Member').split(' ')[0];
+      saveBtn.innerHTML = `<span>✓ Save & Apply ${isFriend ? firstName + "'s" : ''} Cover Banner</span>`;
     }
 
     coverStudioCurrentCover = targetUser.cover || 'linear-gradient(135deg, #0d9488 0%, #6366f1 50%, #059669 100%)';
@@ -6259,7 +6281,7 @@
 
     renderCoverGradients();
     renderCoverScenic();
-    switchCoverStudioTab('gradients');
+    switchCoverStudioTab('upload');
   }
 
   function closeCoverStudio() {
@@ -6334,14 +6356,65 @@
 
   function initCoverStudio() {
     // 1. Open Triggers
-    document.getElementById('open-cover-picker')?.addEventListener('click', (e) => {
-      e.preventDefault();
+    const triggerOpenCover = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       openCoverStudio();
+    };
+
+    document.getElementById('open-cover-picker')?.addEventListener('click', triggerOpenCover);
+    document.getElementById('open-cover-btn-actions')?.addEventListener('click', triggerOpenCover);
+    document.getElementById('open-cover-studio-from-edit')?.addEventListener('click', triggerOpenCover);
+
+    // Clicking anywhere on the banner background also opens cover studio
+    document.getElementById('profile-cover-banner')?.addEventListener('click', (e) => {
+      if (e.target.id === 'profile-cover-banner' || (e.target.classList && e.target.classList.contains('cover-gradient-overlay'))) {
+        triggerOpenCover(e);
+      }
     });
-    document.getElementById('open-cover-studio-from-edit')?.addEventListener('click', (e) => {
+
+    // Quick direct browse button inside cover studio live preview
+    document.getElementById('btn-quick-browse-cover')?.addEventListener('click', (e) => {
       e.preventDefault();
-      openCoverStudio();
+      document.getElementById('cover-device-file-input')?.click();
     });
+
+    // Direct cover file input on the profile page
+    const directFileInput = document.getElementById('direct-cover-file-input');
+    if (directFileInput) {
+      directFileInput.addEventListener('change', async (e) => {
+        if (!e.target.files || !e.target.files[0]) return;
+        const file = e.target.files[0];
+        try {
+          showToast("Optimizing cover photo...", "⏳");
+          const dataUrl = await compressImageToDataUrl(file, 1600, 600, 0.85);
+          const bgVal = `linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.55)), url('${dataUrl}') center/cover`;
+          CURRENT_USER.cover = bgVal;
+          selectedCoverGradient = bgVal;
+          const mainCover = document.getElementById('profile-cover-banner');
+          if (mainCover) mainCover.style.background = bgVal;
+          try {
+            localStorage.setItem('my_teta_current_user', JSON.stringify(CURRENT_USER));
+          } catch (err) {}
+          renderProfile();
+          SupabaseService.syncProfile({
+            name: CURRENT_USER.name,
+            handle: CURRENT_USER.handle,
+            email: CURRENT_USER.email,
+            avatar: CURRENT_USER.avatar,
+            role: CURRENT_USER.role,
+            bio: CURRENT_USER.bio,
+            location: CURRENT_USER.location,
+            cover: CURRENT_USER.cover
+          });
+          showToast("Profile cover updated successfully from device! ✨", "🎉");
+        } catch (err) {
+          showToast("Could not process image file. Please try again.", "⚠️");
+        }
+      });
+    }
 
     // 2. Close Triggers
     document.getElementById('close-cover-studio')?.addEventListener('click', closeCoverStudio);
@@ -6394,24 +6467,21 @@
       browseBtn.addEventListener('click', () => fileInput.click());
     }
 
-    const processCoverFile = (file) => {
+    const processCoverFile = async (file) => {
       if (!file) return;
       if (!file.type.startsWith('image/')) {
         showToast("Please choose a valid image file", "⚠️");
         return;
       }
-      if (file.size > 10 * 1024 * 1024) {
-        showToast("File is too large! Please choose an image under 10MB", "⚠️");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target.result;
-        const bgVal = `linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.5)), url('${dataUrl}') center/cover`;
+      try {
+        showToast("Optimizing banner photo...", "⏳");
+        const dataUrl = await compressImageToDataUrl(file, 1600, 600, 0.85);
+        const bgVal = `linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.55)), url('${dataUrl}') center/cover`;
         updateCoverStudioPreview(bgVal, "Uploaded Photo 📸");
         showToast("Banner photo loaded into preview! Tap 'Save & Apply Cover Banner'.", "📸");
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        showToast("Could not process image file. Please try again.", "⚠️");
+      }
     };
 
     if (fileInput) {
@@ -6733,6 +6803,10 @@
       openAvatarStudio();
     });
     document.getElementById('open-cover-picker')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      openCoverStudio();
+    });
+    document.getElementById('open-cover-btn-actions')?.addEventListener('click', (e) => {
       e.preventDefault();
       openCoverStudio();
     });

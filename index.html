@@ -610,8 +610,9 @@
 		<section class="view-panel profile-view" id="profile-view" hidden>
 			<!-- Profile Header Card -->
 			<div class="profile-header-card">
-				<div class="profile-cover" id="profile-cover-banner">
+				<div class="profile-cover" id="profile-cover-banner" title="Click to customize profile cover banner">
 					<div class="cover-gradient-overlay"></div>
+					<input type="file" id="direct-cover-file-input" accept="image/*" style="display:none;" aria-hidden="true">
 					<button class="cover-change-btn" id="open-cover-picker" type="button" title="Change cover background">
 						📷 Change Cover
 					</button>
@@ -624,6 +625,9 @@
 					</div>
 
 					<div class="profile-header-actions">
+						<button class="button button-outline button-small" id="open-cover-btn-actions" type="button" title="Change cover background">
+							📷 Change Cover
+						</button>
 						<button class="button button-outline button-small" id="edit-profile-btn" type="button">
 							✏️ Edit Profile
 						</button>
@@ -2518,6 +2522,7 @@
 			<div class="cover-studio-preview-wrap">
 				<div class="cover-studio-live-banner" id="cover-studio-live-banner" style="background: linear-gradient(135deg, #0d9488 0%, #6366f1 50%, #059669 100%);">
 					<div class="cover-gradient-overlay"></div>
+					<button type="button" class="button button-primary button-small" id="btn-quick-browse-cover" style="position:absolute; top:12px; left:14px; z-index:3; font-size:0.75rem; padding:4px 12px; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,0.3);">📸 Upload Photo</button>
 					<div class="cover-studio-banner-overlay">
 						<img id="cover-studio-mock-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=tayyab" alt="Mock avatar">
 						<div>
@@ -2532,14 +2537,14 @@
 			<div class="cover-studio-body">
 				<!-- Tabs -->
 				<div class="avatar-studio-tabs cover-studio-tabs" role="tablist">
-					<button type="button" class="cover-studio-tab is-active" data-cover-tab="gradients" role="tab">
+					<button type="button" class="cover-studio-tab is-active" data-cover-tab="upload" role="tab">
+						📸 Upload Banner
+					</button>
+					<button type="button" class="cover-studio-tab" data-cover-tab="gradients" role="tab">
 						🌈 Gradients
 					</button>
 					<button type="button" class="cover-studio-tab" data-cover-tab="scenic" role="tab">
 						🏞 Landscapes & Scenery
-					</button>
-					<button type="button" class="cover-studio-tab" data-cover-tab="upload" role="tab">
-						📸 Upload Banner
 					</button>
 					<button type="button" class="cover-studio-tab" data-cover-tab="url" role="tab">
 						🌐 Image URL
