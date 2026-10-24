@@ -769,16 +769,35 @@
         const rId = String(reelId);
         let currentReel = null;
         if (supabaseClient) {
-          const { data } = await supabaseClient
+          const { data, error } = await supabaseClient
             .from('reels')
-            .select('comments')
+            .select('id, comments')
             .eq('id', rId)
             .limit(1);
-          currentReel = data && data[0];
+          if (!error && data && data.length > 0) {
+            currentReel = data[0];
+          }
         }
         if (!currentReel) {
-          const res = await this.request(`reels?id=eq.${encodeURIComponent(rId)}&limit=1`);
-          currentReel = res && res[0];
+          try {
+            const res = await this.request(`reels?id=eq.${encodeURIComponent(rId)}&limit=1`);
+            currentReel = res && res[0];
+          } catch (e) {}
+        }
+
+        // If reel does not exist on remote Supabase yet, create it with this initial comment
+        if (!currentReel) {
+          const localReel = (typeof REELS !== 'undefined' && Array.isArray(REELS))
+            ? REELS.find(r => String(r.id) === rId)
+            : null;
+          if (localReel) {
+            const fullPayload = {
+              ...localReel,
+              comments: localReel.comments && localReel.comments.length ? localReel.comments : [comment]
+            };
+            await this.createReel(fullPayload);
+            return fullPayload.comments;
+          }
         }
 
         let comments = (currentReel && Array.isArray(currentReel.comments)) ? currentReel.comments : [];
@@ -794,16 +813,23 @@
           updated_at: new Date().toISOString()
         };
 
+        let updated = false;
         if (supabaseClient) {
-          await supabaseClient
+          const { error } = await supabaseClient
             .from('reels')
             .update(patch)
             .eq('id', rId);
+          if (!error) updated = true;
+          else console.warn("Supabase addReelComment update notice:", error);
         }
-        await this.request(`reels?id=eq.${encodeURIComponent(rId)}`, {
-          method: 'PATCH',
-          body: JSON.stringify(patch)
-        });
+        if (!updated) {
+          try {
+            await this.request(`reels?id=eq.${encodeURIComponent(rId)}`, {
+              method: 'PATCH',
+              body: JSON.stringify(patch)
+            });
+          } catch (err) {}
+        }
         return comments;
       } catch (err) {
         console.warn("SupabaseService.addReelComment error:", err);
@@ -816,16 +842,20 @@
         const rId = String(reelId);
         let currentReel = null;
         if (supabaseClient) {
-          const { data } = await supabaseClient
+          const { data, error } = await supabaseClient
             .from('reels')
-            .select('comments')
+            .select('id, comments')
             .eq('id', rId)
             .limit(1);
-          currentReel = data && data[0];
+          if (!error && data && data.length > 0) {
+            currentReel = data[0];
+          }
         }
         if (!currentReel) {
-          const res = await this.request(`reels?id=eq.${encodeURIComponent(rId)}&limit=1`);
-          currentReel = res && res[0];
+          try {
+            const res = await this.request(`reels?id=eq.${encodeURIComponent(rId)}&limit=1`);
+            currentReel = res && res[0];
+          } catch (e) {}
         }
 
         let comments = (currentReel && Array.isArray(currentReel.comments)) ? currentReel.comments : [];
@@ -836,16 +866,22 @@
           updated_at: new Date().toISOString()
         };
 
+        let updated = false;
         if (supabaseClient) {
-          await supabaseClient
+          const { error } = await supabaseClient
             .from('reels')
             .update(patch)
             .eq('id', rId);
+          if (!error) updated = true;
         }
-        await this.request(`reels?id=eq.${encodeURIComponent(rId)}`, {
-          method: 'PATCH',
-          body: JSON.stringify(patch)
-        });
+        if (!updated) {
+          try {
+            await this.request(`reels?id=eq.${encodeURIComponent(rId)}`, {
+              method: 'PATCH',
+              body: JSON.stringify(patch)
+            });
+          } catch (err) {}
+        }
         return comments;
       } catch (err) {
         console.warn("SupabaseService.deleteReelComment error:", err);
@@ -3244,8 +3280,17 @@
 
     if (activeVideo) {
       activeVideo.pause();
-      activeVideo.src = reel.videoUrl;
-      activeVideo.poster = reel.image;
+      activeVideo.onerror = () => {
+        console.warn("Reel video stream unavailable, switching to fallback media:", reel.videoUrl);
+        if (activeVideo.src !== 'https://vjs.zencdn.net/v/oceans.mp4') {
+          activeVideo.src = 'https://vjs.zencdn.net/v/oceans.mp4';
+          activeVideo.poster = reel.image || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80';
+          activeVideo.load();
+          if (autoPlay) activeVideo.play().catch(() => {});
+        }
+      };
+      activeVideo.src = reel.videoUrl || 'https://vjs.zencdn.net/v/oceans.mp4';
+      activeVideo.poster = reel.image || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80';
       activeVideo.load();
     }
     if (posterBackdrop) {
@@ -3335,7 +3380,7 @@
     loadActiveReel(currentReelIndex - 1, true);
   }
 
-  function switchStudioTab(tabName) {
+  function switchReelStudioTab(tabName) {
     document.querySelectorAll('[data-studio-tab]').forEach(btn => {
       btn.classList.toggle('is-active', btn.dataset.studioTab === tabName);
     });
@@ -3345,9 +3390,17 @@
       info: document.getElementById('pane-info')
     };
     Object.keys(panes).forEach(k => {
-      if (panes[k]) panes[k].hidden = (k !== tabName);
+      if (panes[k]) {
+        const isActive = (k === tabName);
+        panes[k].hidden = !isActive;
+        panes[k].classList.toggle('is-active', isActive);
+      }
     });
+    if (tabName === 'comments') {
+      renderReelComments();
+    }
   }
+  const switchStudioTab = switchReelStudioTab;
 
   // Set up Reels Theater event handlers once
   function initReelsTheaterEvents() {
@@ -3607,24 +3660,42 @@
       });
     }
 
+    // Quick reaction buttons for instant reflections
+    document.querySelectorAll('.reel-reaction-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const emoji = btn.dataset.reaction || btn.textContent.trim();
+        const input = document.getElementById('reel-comment-input');
+        if (input) {
+          input.value = (input.value ? input.value + ' ' : '') + emoji;
+          input.focus();
+        }
+      });
+    });
+
     // Comment Form Submit
     const reelCommentForm = document.getElementById('reel-comment-form');
     const reelCommentInput = document.getElementById('reel-comment-input');
     if (reelCommentForm && reelCommentInput) {
-      reelCommentForm.addEventListener('submit', (e) => {
+      reelCommentForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const text = reelCommentInput.value.trim();
         if (!text) return;
 
         const reel = REELS[currentReelIndex];
         if (reel) {
-          reel.comments = reel.comments || [];
+          reel.comments = Array.isArray(reel.comments) ? reel.comments : [];
+          const userName = CURRENT_USER.name || "Community Member";
+          const userHandle = CURRENT_USER.handle || "@member";
+          const userAvatar = CURRENT_USER.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(userName)}`;
+
           const newComment = {
             id: Date.now(),
-            author: CURRENT_USER.name,
-            handle: CURRENT_USER.handle,
-            avatar: CURRENT_USER.avatar,
+            author: userName,
+            handle: userHandle,
+            avatar: userAvatar,
             time: "Just now",
+            created_at: new Date().toISOString(),
             text: text
           };
           reel.comments.push(newComment);
@@ -3633,7 +3704,8 @@
           renderReelComments();
           renderHomeReels();
           showToast("Reflection posted! 💬", "💬");
-          SupabaseService.addReelComment(reel.id, newComment);
+          
+          await SupabaseService.addReelComment(reel.id, newComment);
         }
       });
     }
@@ -5675,7 +5747,7 @@
     });
 
     renderStudioPresets();
-    switchStudioTab('creator');
+    switchAvatarStudioTab('creator');
 
     if (targetUser.avatar && !targetUser.avatar.includes('dicebear.com/7.x/')) {
       updateStudioPreview(targetUser.avatar, isFriend ? `${targetUser.name} Photo 📸` : 'Personal Photo 📸', 'Current Image');
@@ -5691,7 +5763,7 @@
     document.body.style.overflow = '';
   }
 
-  function switchStudioTab(tabName) {
+  function switchAvatarStudioTab(tabName) {
     document.querySelectorAll('.avatar-studio-tab').forEach(t => {
       t.classList.toggle('is-active', t.dataset.avatarTab === tabName);
     });
@@ -5784,7 +5856,7 @@
     // 3. Tab Navigation
     document.querySelectorAll('.avatar-studio-tab').forEach(tab => {
       tab.addEventListener('click', () => {
-        switchStudioTab(tab.dataset.avatarTab);
+        switchAvatarStudioTab(tab.dataset.avatarTab);
       });
     });
 

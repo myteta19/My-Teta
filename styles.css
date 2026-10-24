@@ -3563,8 +3563,37 @@ body.is-logged-out #btn-settings-logout {
 }
 
 .studio-pane {
+  display: block;
   padding: 22px;
 }
+.studio-pane[hidden] {
+  display: none !important;
+}
+
+.reel-comment-reactions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 0 4px;
+  overflow-x: auto;
+}
+.reel-reaction-btn {
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.95rem;
+  padding: 3px 9px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+.reel-reaction-btn:hover {
+  transform: scale(1.2);
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
 .pane-header {
   margin-bottom: 18px;
 }
