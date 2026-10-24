@@ -9,13 +9,19 @@
   // ==========================================
   // 1. DATA STATE & PRESETS
   // ==========================================
-  const isLoggedOutState = (() => {
+  const checkIsAuthenticated = () => {
     try {
-      return localStorage.getItem('my_teta_logged_out') === 'true' && !localStorage.getItem('my_teta_current_user');
+      if (localStorage.getItem('my_teta_logged_out') === 'true') return false;
+      const data = localStorage.getItem('my_teta_current_user');
+      if (!data) return false;
+      const parsed = JSON.parse(data);
+      return Boolean(parsed && parsed.id && parsed.handle && parsed.handle !== '@guest');
     } catch (e) {
       return false;
     }
-  })();
+  };
+
+  const isLoggedOutState = !checkIsAuthenticated();
 
   const SAVED_USER = (() => {
     try {
@@ -28,10 +34,10 @@
   })();
 
   const CURRENT_USER = {
-    id: isLoggedOutState ? null : ((SAVED_USER && SAVED_USER.id) || "user_tayyab"),
+    id: isLoggedOutState ? null : ((SAVED_USER && SAVED_USER.id) || null),
     name: isLoggedOutState ? "Guest Explorer" : ((SAVED_USER && SAVED_USER.name) || "Tayyab"),
     handle: isLoggedOutState ? "@guest" : ((SAVED_USER && SAVED_USER.handle) || "@tayyab"),
-    email: isLoggedOutState ? "" : ((SAVED_USER && SAVED_USER.email) || "ta12gang23@gmail.com"),
+    email: isLoggedOutState ? "" : ((SAVED_USER && SAVED_USER.email) || ""),
     avatar: isLoggedOutState ? "https://api.dicebear.com/7.x/bottts/svg?seed=guest" : ((SAVED_USER && SAVED_USER.avatar) || "https://api.dicebear.com/7.x/bottts/svg?seed=tayyab"),
     cover: (SAVED_USER && SAVED_USER.cover) || "linear-gradient(135deg, #0d9488, #6366f1, #059669)",
     location: isLoggedOutState ? "" : ((SAVED_USER && SAVED_USER.location) || "Brooklyn, NY"),
@@ -1213,10 +1219,18 @@
   function updateCurrentUserUI() {
     const isLoggedOut = !CURRENT_USER.id || CURRENT_USER.handle === '@guest' || localStorage.getItem('my_teta_logged_out') === 'true';
 
-    // Synchronize body class for declarative styling
+    // Synchronize documentElement & body classes
+    if (document.documentElement) {
+      document.documentElement.classList.toggle('auth-required', isLoggedOut);
+    }
     if (document.body) {
       document.body.classList.toggle('is-logged-in', !isLoggedOut);
       document.body.classList.toggle('is-logged-out', isLoggedOut);
+    }
+
+    const authBackBtn = document.querySelector('.auth-back-btn');
+    if (authBackBtn) {
+      authBackBtn.style.display = isLoggedOut ? 'none' : 'inline-flex';
     }
 
     const topbarAvatar = document.querySelector('.profile-trigger img');
@@ -1730,6 +1744,14 @@
   // ==========================================
   function switchView(viewName) {
     if (!viewPanels[viewName]) return;
+
+    // Gatekeeper: Unauthenticated users must first log in or create an account before accessing the feed/landing page
+    const isAuthed = checkIsAuthenticated();
+    if (!isAuthed && viewName !== 'auth' && viewName !== 'contact') {
+      viewName = 'auth';
+      if (typeof setAuthPageTab === 'function') setAuthPageTab('login');
+      showToast("Please log in or create an account first to enter My Teta! ✨", "🔐");
+    }
 
     const appShell = document.querySelector('.app-shell');
     const rightRail = document.querySelector('.right-rail');
@@ -8102,6 +8124,16 @@
   // Supabase sync and background polling
   updateCurrentUserUI();
   syncCommunityFromSupabase();
+
+  // Initial View Gatekeeper: Unauthenticated users land on Auth page (Sign in / Sign up) first
+  const isAuthedInitial = CURRENT_USER && CURRENT_USER.id && CURRENT_USER.handle !== '@guest' && localStorage.getItem('my_teta_logged_out') !== 'true';
+  if (!isAuthedInitial) {
+    switchView('auth');
+    if (typeof setAuthPageTab === 'function') setAuthPageTab('login');
+  } else {
+    switchView('home');
+  }
+
   if (CURRENT_USER.handle && CURRENT_USER.handle !== '@guest') {
     SupabaseService.updateHeartbeat(CURRENT_USER.handle);
   }

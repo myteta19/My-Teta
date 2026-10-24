@@ -8708,6 +8708,20 @@ input:checked + .slider:before {
 /* ==========================================================================
    DEDICATED AUTHENTICATION VIEW (LOG IN & SIGN UP PAGE)
    ========================================================================== */
+/* Zero-flash Auth Gatekeeper State */
+html.auth-required #home-view {
+  display: none !important;
+}
+html.auth-required #auth-view {
+  display: block !important;
+}
+html.auth-required .right-rail {
+  display: none !important;
+}
+html.auth-required .auth-back-btn {
+  display: none !important;
+}
+
 .auth-page-view {
   width: 100%;
   animation: authFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
