@@ -591,6 +591,72 @@
       }
     },
 
+    async deletePost(postId) {
+      try {
+        const pId = String(postId);
+        if (supabaseClient) {
+          const { error } = await supabaseClient
+            .from('posts')
+            .delete()
+            .eq('id', pId);
+          if (error) console.warn("Supabase deletePost error:", error);
+        }
+        try {
+          await this.request(`posts?id=eq.${encodeURIComponent(pId)}`, {
+            method: 'DELETE'
+          });
+        } catch (e) {}
+        return true;
+      } catch (err) {
+        console.warn("SupabaseService.deletePost error:", err);
+        return false;
+      }
+    },
+
+    async deletePostComment(postId, commentId) {
+      try {
+        const pId = String(postId);
+        let currentPost = null;
+        if (supabaseClient) {
+          const { data } = await supabaseClient
+            .from('posts')
+            .select('comments_list, comments_count')
+            .eq('id', pId)
+            .limit(1);
+          currentPost = data && data[0];
+        }
+        if (!currentPost) {
+          const res = await this.request(`posts?id=eq.${encodeURIComponent(pId)}&limit=1`);
+          currentPost = res && res[0];
+        }
+
+        let commentsList = (currentPost && Array.isArray(currentPost.comments_list)) ? currentPost.comments_list : [];
+        commentsList = commentsList.filter(c => String(c.id) !== String(commentId));
+        const count = commentsList.length;
+
+        const patch = {
+          comments_count: count,
+          comments_list: commentsList,
+          updated_at: new Date().toISOString()
+        };
+
+        if (supabaseClient) {
+          await supabaseClient
+            .from('posts')
+            .update(patch)
+            .eq('id', pId);
+        }
+        await this.request(`posts?id=eq.${encodeURIComponent(pId)}`, {
+          method: 'PATCH',
+          body: JSON.stringify(patch)
+        });
+        return commentsList;
+      } catch (err) {
+        console.warn("SupabaseService.deletePostComment error:", err);
+        return null;
+      }
+    },
+
     async fetchReels() {
       try {
         if (supabaseClient) {
@@ -709,13 +775,19 @@
             .eq('id', rId)
             .limit(1);
           currentReel = data && data[0];
-        } else {
+        }
+        if (!currentReel) {
           const res = await this.request(`reels?id=eq.${encodeURIComponent(rId)}&limit=1`);
           currentReel = res && res[0];
         }
 
         let comments = (currentReel && Array.isArray(currentReel.comments)) ? currentReel.comments : [];
-        comments.push(comment);
+        const existingIdx = comments.findIndex(c => String(c.id) === String(comment.id));
+        if (existingIdx !== -1) {
+          comments[existingIdx] = comment;
+        } else {
+          comments.push(comment);
+        }
 
         const patch = {
           comments: comments,
@@ -727,16 +799,79 @@
             .from('reels')
             .update(patch)
             .eq('id', rId);
-        } else {
-          await this.request(`reels?id=eq.${encodeURIComponent(rId)}`, {
-            method: 'PATCH',
-            body: JSON.stringify(patch)
-          });
         }
+        await this.request(`reels?id=eq.${encodeURIComponent(rId)}`, {
+          method: 'PATCH',
+          body: JSON.stringify(patch)
+        });
         return comments;
       } catch (err) {
         console.warn("SupabaseService.addReelComment error:", err);
         return null;
+      }
+    },
+
+    async deleteReelComment(reelId, commentId) {
+      try {
+        const rId = String(reelId);
+        let currentReel = null;
+        if (supabaseClient) {
+          const { data } = await supabaseClient
+            .from('reels')
+            .select('comments')
+            .eq('id', rId)
+            .limit(1);
+          currentReel = data && data[0];
+        }
+        if (!currentReel) {
+          const res = await this.request(`reels?id=eq.${encodeURIComponent(rId)}&limit=1`);
+          currentReel = res && res[0];
+        }
+
+        let comments = (currentReel && Array.isArray(currentReel.comments)) ? currentReel.comments : [];
+        comments = comments.filter(c => String(c.id) !== String(commentId));
+
+        const patch = {
+          comments: comments,
+          updated_at: new Date().toISOString()
+        };
+
+        if (supabaseClient) {
+          await supabaseClient
+            .from('reels')
+            .update(patch)
+            .eq('id', rId);
+        }
+        await this.request(`reels?id=eq.${encodeURIComponent(rId)}`, {
+          method: 'PATCH',
+          body: JSON.stringify(patch)
+        });
+        return comments;
+      } catch (err) {
+        console.warn("SupabaseService.deleteReelComment error:", err);
+        return null;
+      }
+    },
+
+    async deleteReel(reelId) {
+      try {
+        const rId = String(reelId);
+        if (supabaseClient) {
+          const { error } = await supabaseClient
+            .from('reels')
+            .delete()
+            .eq('id', rId);
+          if (error) console.warn("Supabase deleteReel error:", error);
+        }
+        try {
+          await this.request(`reels?id=eq.${encodeURIComponent(rId)}`, {
+            method: 'DELETE'
+          });
+        } catch (e) {}
+        return true;
+      } catch (err) {
+        console.warn("SupabaseService.deleteReel error:", err);
+        return false;
       }
     }
   };
@@ -1016,6 +1151,112 @@
     ];
   })();
 
+  const deletedReelIds = (() => {
+    try {
+      const saved = localStorage.getItem('my_teta_deleted_reels');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch (e) {
+      return new Set();
+    }
+  })();
+
+  function trackDeletedReel(id) {
+    try {
+      deletedReelIds.add(String(id));
+      localStorage.setItem('my_teta_deleted_reels', JSON.stringify([...deletedReelIds]));
+    } catch (e) {}
+  }
+
+  const deletedPostIds = (() => {
+    try {
+      const saved = localStorage.getItem('my_teta_deleted_posts');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch (e) {
+      return new Set();
+    }
+  })();
+
+  function trackDeletedPost(id) {
+    try {
+      deletedPostIds.add(String(id));
+      localStorage.setItem('my_teta_deleted_posts', JSON.stringify([...deletedPostIds]));
+    } catch (e) {}
+  }
+
+  async function deleteReel(reelId) {
+    const rId = String(reelId);
+    const targetIdx = REELS.findIndex(r => String(r.id) === rId);
+    if (targetIdx === -1) return;
+
+    trackDeletedReel(rId);
+    REELS.splice(targetIdx, 1);
+    saveReelsToStorage();
+
+    if (REELS.length === 0) {
+      currentReelIndex = 0;
+      currentReelId = null;
+    } else {
+      currentReelIndex = Math.min(targetIdx, REELS.length - 1);
+      currentReelId = REELS[currentReelIndex].id;
+    }
+
+    if (typeof renderHomeReels === 'function') renderHomeReels();
+    if (typeof renderProfileReels === 'function') renderProfileReels();
+    if (typeof renderReelThumbnails === 'function') renderReelThumbnails();
+    if (typeof loadActiveReel === 'function') loadActiveReel(currentReelIndex, true);
+
+    showToast("Reel deleted permanently 🗑", "🗑");
+    await SupabaseService.deleteReel(rId);
+  }
+
+  async function deleteReelComment(reelId, commentId) {
+    const rId = String(reelId);
+    const reel = REELS.find(r => String(r.id) === rId);
+    if (!reel || !Array.isArray(reel.comments)) return;
+
+    const cIdStr = String(commentId);
+    reel.comments = reel.comments.filter(c => String(c.id) !== cIdStr);
+    saveReelsToStorage();
+
+    if (typeof renderReelComments === 'function') renderReelComments();
+    if (typeof renderHomeReels === 'function') renderHomeReels();
+    showToast("Comment deleted 🗑", "🗑");
+
+    await SupabaseService.deleteReelComment(rId, cIdStr);
+  }
+
+  async function deletePost(postId) {
+    const pId = String(postId);
+    const targetIdx = posts.findIndex(p => String(p.id) === pId);
+    if (targetIdx === -1) return;
+
+    trackDeletedPost(pId);
+    posts.splice(targetIdx, 1);
+    savePostsToStorage();
+
+    if (typeof renderFeed === 'function') renderFeed();
+    if (typeof renderProfileMoments === 'function') renderProfileMoments();
+    showToast("Moment deleted 🗑", "🗑");
+
+    await SupabaseService.deletePost(pId);
+  }
+
+  async function deletePostComment(postId, commentId) {
+    const pId = String(postId);
+    const post = posts.find(p => String(p.id) === pId);
+    if (!post || !Array.isArray(post.commentsList)) return;
+
+    const cIdStr = String(commentId);
+    post.commentsList = post.commentsList.filter(c => String(c.id) !== cIdStr);
+    post.comments = post.commentsList.length;
+    savePostsToStorage();
+
+    if (typeof renderFeed === 'function') renderFeed();
+    showToast("Comment deleted 🗑", "🗑");
+
+    await SupabaseService.deletePostComment(pId, cIdStr);
+  }
+
   function savePostsToStorage() {
     try {
       localStorage.setItem('my_teta_posts', JSON.stringify(posts));
@@ -1027,7 +1268,7 @@
       const saved = localStorage.getItem('my_teta_posts');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) return parsed.filter(p => !deletedPostIds.has(String(p.id)));
       }
     } catch (e) {}
     return [];
@@ -1046,7 +1287,7 @@
       const saved = localStorage.getItem('my_teta_reels');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) return parsed.filter(r => !deletedReelIds.has(String(r.id)));
       }
     } catch (e) {}
     return [];
@@ -1075,47 +1316,50 @@
       const remote = await SupabaseService.fetchPosts();
       if (Array.isArray(remote)) {
         const myHandle = (CURRENT_USER.handle || '').toLowerCase();
-        const mapped = remote.map(r => {
-          const likedBy = Array.isArray(r.liked_by) ? r.liked_by : [];
-          const isLiked = likedBy.some(h => (h || '').toLowerCase() === myHandle);
-          const commentsList = Array.isArray(r.comments_list) ? r.comments_list : [];
-          
-          const existing = posts.find(p => p.id === r.id);
-          const wasOpen = existing ? existing._commentsOpen : false;
+        const mapped = remote
+          .filter(r => !deletedPostIds.has(String(r.id)))
+          .map(r => {
+            const likedBy = Array.isArray(r.liked_by) ? r.liked_by : [];
+            const isLiked = likedBy.some(h => (h || '').toLowerCase() === myHandle);
+            const commentsList = Array.isArray(r.comments_list) ? r.comments_list : [];
+            
+            const existing = posts.find(p => p.id === r.id);
+            const wasOpen = existing ? existing._commentsOpen : false;
 
-          // Notify author if another user commented
-          if (isBackground && (r.handle || '').toLowerCase() === myHandle && existing) {
-            const oldCommentsCount = (existing.commentsList && existing.commentsList.length) || 0;
-            if (commentsList.length > oldCommentsCount) {
-              const latestComment = commentsList[commentsList.length - 1];
-              if (latestComment && (latestComment.handle || '').toLowerCase() !== myHandle) {
-                showToast(`${latestComment.author} commented: "${(latestComment.text || '').substring(0, 28)}"`, "💬");
+            // Notify author if another user commented
+            if (isBackground && (r.handle || '').toLowerCase() === myHandle && existing) {
+              const oldCommentsCount = (existing.commentsList && existing.commentsList.length) || 0;
+              if (commentsList.length > oldCommentsCount) {
+                const latestComment = commentsList[commentsList.length - 1];
+                if (latestComment && (latestComment.handle || '').toLowerCase() !== myHandle) {
+                  showToast(`${latestComment.author} commented: "${(latestComment.text || '').substring(0, 28)}"`, "💬");
+                }
               }
             }
-          }
 
-          return {
-            id: r.id,
-            author: r.author,
-            handle: r.handle,
-            avatar: r.avatar || CURRENT_USER.avatar,
-            time: formatRelativeTime(r.created_at),
-            circle: r.circle || 'Sunday table',
-            content: r.content,
-            image: r.image,
-            likes: r.likes || likedBy.length || 0,
-            liked_by: likedBy,
-            comments: r.comments_count || commentsList.length || 0,
-            commentsList: commentsList,
-            isLiked: isLiked,
-            _commentsOpen: wasOpen
-          };
-        });
+            return {
+              id: r.id,
+              author: r.author,
+              handle: r.handle,
+              avatar: r.avatar || CURRENT_USER.avatar,
+              time: formatRelativeTime(r.created_at),
+              circle: r.circle || 'Sunday table',
+              content: r.content,
+              image: r.image,
+              likes: r.likes || likedBy.length || 0,
+              liked_by: likedBy,
+              comments: r.comments_count || commentsList.length || 0,
+              commentsList: commentsList,
+              isLiked: isLiked,
+              _commentsOpen: wasOpen
+            };
+          });
 
-        // Merge any local unsynced posts
-        const remoteIds = new Set(mapped.map(m => m.id));
+        // Merge any local unsynced posts, ignoring deleted ones
+        const remoteIds = new Set(mapped.map(m => String(m.id)));
         posts.forEach(p => {
-          if (!remoteIds.has(p.id)) {
+          const pIdStr = String(p.id);
+          if (!remoteIds.has(pIdStr) && !deletedPostIds.has(pIdStr)) {
             mapped.push(p);
             SupabaseService.createPost(p).catch(() => {});
           }
@@ -1134,6 +1378,7 @@
   }
 
   let isSyncingReels = false;
+  let currentReelId = null;
   async function syncReelsFromSupabase(isBackground = false) {
     if (isSyncingReels) return;
     isSyncingReels = true;
@@ -1141,55 +1386,75 @@
       const remote = await SupabaseService.fetchReels();
       if (Array.isArray(remote)) {
         const myHandle = (CURRENT_USER.handle || '').toLowerCase();
-        const mapped = remote.map(r => {
-          const likedBy = Array.isArray(r.liked_by) ? r.liked_by : [];
-          const isLiked = likedBy.some(h => (h || '').toLowerCase() === myHandle);
-          const comments = Array.isArray(r.comments) ? r.comments : [];
+        const mapped = remote
+          .filter(r => !deletedReelIds.has(String(r.id)))
+          .map(r => {
+            const likedBy = Array.isArray(r.liked_by) ? r.liked_by : [];
+            const isLiked = likedBy.some(h => (h || '').toLowerCase() === myHandle);
+            const comments = Array.isArray(r.comments) ? r.comments : [];
 
-          // Notify author if another user commented
-          const existing = REELS.find(item => item.id == r.id);
-          if (isBackground && (r.handle || '').toLowerCase() === myHandle && existing) {
-            const oldCommentsCount = (existing.comments && existing.comments.length) || 0;
-            if (comments.length > oldCommentsCount) {
-              const latestComment = comments[comments.length - 1];
-              if (latestComment && (latestComment.handle || '').toLowerCase() !== myHandle) {
-                showToast(`${latestComment.author} commented on your reel: "${(latestComment.text || '').substring(0, 28)}"`, "💬");
+            // Notify author if another user commented
+            const existing = REELS.find(item => String(item.id) === String(r.id));
+            if (isBackground && (r.handle || '').toLowerCase() === myHandle && existing) {
+              const oldCommentsCount = (existing.comments && existing.comments.length) || 0;
+              if (comments.length > oldCommentsCount) {
+                const latestComment = comments[comments.length - 1];
+                if (latestComment && (latestComment.handle || '').toLowerCase() !== myHandle) {
+                  showToast(`${latestComment.author} commented on your reel: "${(latestComment.text || '').substring(0, 28)}"`, "💬");
+                }
               }
             }
-          }
 
-          return {
-            id: r.id,
-            author: r.author,
-            handle: r.handle || `@${r.author.toLowerCase().replace(/\s+/g, '')}`,
-            avatar: r.avatar || CURRENT_USER.avatar,
-            caption: r.caption || '',
-            image: r.image || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80',
-            videoUrl: r.video_url || 'https://vjs.zencdn.net/v/oceans.mp4',
-            category: r.category || 'atmosphere',
-            music: r.music || 'Lo-Fi Rain · Brooklyn Chill',
-            duration: r.duration || '0:24',
-            views: r.views || '1',
-            likes: r.likes || likedBy.length || 0,
-            liked_by: likedBy,
-            isLiked: isLiked,
-            isSaved: false,
-            isFollowing: false,
-            comments: comments
-          };
-        });
+            return {
+              id: String(r.id),
+              author: r.author,
+              handle: r.handle || `@${r.author.toLowerCase().replace(/\s+/g, '')}`,
+              avatar: r.avatar || CURRENT_USER.avatar,
+              caption: r.caption || '',
+              image: r.image || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80',
+              videoUrl: r.video_url || 'https://vjs.zencdn.net/v/oceans.mp4',
+              category: r.category || 'atmosphere',
+              music: r.music || 'Lo-Fi Rain · Brooklyn Chill',
+              duration: r.duration || '0:24',
+              views: r.views || '1',
+              likes: r.likes || likedBy.length || 0,
+              liked_by: likedBy,
+              isLiked: isLiked,
+              isSaved: false,
+              isFollowing: false,
+              comments: comments
+            };
+          });
 
-        // Merge any local unsynced reels
+        // Merge any local unsynced reels, ignoring deleted ones
         const remoteIds = new Set(mapped.map(m => String(m.id)));
         REELS.forEach(r => {
-          if (!remoteIds.has(String(r.id))) {
-            mapped.push(r);
-            SupabaseService.createReel(r).catch(() => {});
+          const rIdStr = String(r.id);
+          if (!remoteIds.has(rIdStr) && !deletedReelIds.has(rIdStr)) {
+            const createdMs = Number(r.id);
+            if (!isNaN(createdMs) && (Date.now() - createdMs < 15 * 60 * 1000)) {
+              mapped.push(r);
+              SupabaseService.createReel(r).catch(() => {});
+            }
           }
         });
 
         REELS = mapped;
         saveReelsToStorage();
+
+        // Maintain active reel tracking by ID
+        if (currentReelId) {
+          const foundIdx = REELS.findIndex(r => String(r.id) === String(currentReelId));
+          if (foundIdx !== -1) {
+            currentReelIndex = foundIdx;
+          } else if (REELS.length > 0) {
+            currentReelIndex = 0;
+            currentReelId = REELS[0].id;
+          }
+        } else if (REELS.length > 0 && typeof currentReelIndex === 'number' && REELS[currentReelIndex]) {
+          currentReelId = REELS[currentReelIndex].id;
+        }
+
         if (typeof renderHomeReels === 'function') renderHomeReels();
         if (typeof renderProfileReels === 'function') renderProfileReels();
         if (typeof renderReelThumbnails === 'function') renderReelThumbnails();
@@ -1960,6 +2225,12 @@
     const commentsList = Array.isArray(post.commentsList) ? post.commentsList : [];
     const commentCount = commentsList.length || post.comments || 0;
     const isCommentsOpen = Boolean(post._commentsOpen);
+    const myHandle = (CURRENT_USER.handle || '').toLowerCase();
+    const myName = (CURRENT_USER.name || '').toLowerCase();
+    const isPostOwner = (
+      ((post.handle || '').toLowerCase() === myHandle) ||
+      ((post.author || '').toLowerCase() === myName)
+    );
 
     return `
       <article class="post-card" id="${post.id}">
@@ -1971,7 +2242,11 @@
               <small>${escapeHTML(post.time)} · <span style="color:var(--lagoon); font-weight:600;">${escapeHTML(post.circle || 'Circle')}</span></small>
             </div>
           </div>
-          <button class="icon-button" style="width:32px; height:32px;" title="Options" aria-label="Post options">···</button>
+          ${isPostOwner ? `
+            <button class="icon-button post-delete-btn" data-delete-post="${post.id}" style="width:32px; height:32px;" title="Delete moment" aria-label="Delete moment">🗑</button>
+          ` : `
+            <button class="icon-button" style="width:32px; height:32px;" title="Options" aria-label="Post options">···</button>
+          `}
         </header>
 
         <div class="post-body">
@@ -2005,18 +2280,30 @@
               <div class="post-comments-empty">
                 <small>No comments yet. Be the first to share your thoughts!</small>
               </div>
-            ` : commentsList.map(c => `
-              <div class="post-comment-item">
-                <img src="${c.avatar || CURRENT_USER.avatar}" alt="${escapeHTML(c.author || 'Member')}" class="post-comment-avatar">
-                <div class="post-comment-bubble">
-                  <div class="post-comment-author-row">
-                    <strong>${escapeHTML(c.author || 'Member')}</strong>
-                    <time>${escapeHTML(c.time || 'Just now')}</time>
+            ` : commentsList.map(c => {
+              const isCommentMine = (
+                ((c.handle || '').toLowerCase() === myHandle) ||
+                ((c.author || '').toLowerCase() === myName)
+              );
+              const canDeleteComment = isCommentMine || isPostOwner;
+              return `
+                <div class="post-comment-item">
+                  <img src="${c.avatar || CURRENT_USER.avatar}" alt="${escapeHTML(c.author || 'Member')}" class="post-comment-avatar">
+                  <div class="post-comment-bubble">
+                    <div class="post-comment-author-row" style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+                      <div>
+                        <strong>${escapeHTML(c.author || 'Member')}</strong>
+                        <time>${escapeHTML(c.time || 'Just now')}</time>
+                      </div>
+                      ${canDeleteComment ? `
+                        <button type="button" class="post-comment-delete-btn" data-delete-post-comment="${post.id}" data-comment-id="${c.id}" title="Delete comment" aria-label="Delete comment">🗑</button>
+                      ` : ''}
+                    </div>
+                    <p class="post-comment-text">${escapeHTML(c.text || '')}</p>
                   </div>
-                  <p class="post-comment-text">${escapeHTML(c.text || '')}</p>
                 </div>
-              </div>
-            `).join('')}
+              `;
+            }).join('')}
           </div>
 
           <form class="post-comment-form" data-comment-form="${post.id}">
@@ -2058,6 +2345,27 @@
   }
 
   function attachPostActionListeners(container) {
+    container.querySelectorAll('[data-delete-post]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.deletePost;
+        if (confirm("Are you sure you want to permanently delete this moment?")) {
+          deletePost(id);
+        }
+      });
+    });
+
+    container.querySelectorAll('[data-delete-post-comment]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const postId = btn.dataset.deletePostComment;
+        const commentId = btn.dataset.commentId;
+        if (confirm("Delete this comment?")) {
+          deletePostComment(postId, commentId);
+        }
+      });
+    });
+
     container.querySelectorAll('[data-like-btn]').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.dataset.likeBtn;
@@ -2639,48 +2947,71 @@
       }
       return;
     }
-    homeReelsTrack.innerHTML = REELS.map((reel, idx) => `
-      <article class="home-reel-card" data-reel-id="${reel.id}" data-reel-index="${idx}" tabindex="0" role="button" aria-label="Watch reel by ${escapeHTML(reel.author)}">
-        <div class="home-reel-media">
-          <img src="${reel.image}" alt="${escapeHTML(reel.caption)}" loading="lazy">
-          <span class="home-reel-duration">${reel.duration || '0:24'}</span>
-          <div class="home-reel-play" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
+    const myHomeHandle = (CURRENT_USER.handle || '').toLowerCase();
+    const myHomeName = (CURRENT_USER.name || '').toLowerCase();
+
+    homeReelsTrack.innerHTML = REELS.map((reel, idx) => {
+      const isOwner = (
+        ((reel.handle || '').toLowerCase() === myHomeHandle) ||
+        ((reel.author || '').toLowerCase() === myHomeName)
+      );
+
+      return `
+        <article class="home-reel-card" data-reel-id="${reel.id}" data-reel-index="${idx}" tabindex="0" role="button" aria-label="Watch reel by ${escapeHTML(reel.author)}">
+          <div class="home-reel-media">
+            <img src="${reel.image}" alt="${escapeHTML(reel.caption)}" loading="lazy">
+            <span class="home-reel-duration">${reel.duration || '0:24'}</span>
+            ${isOwner ? `
+              <button class="home-reel-delete-btn" data-reel-delete="${reel.id}" type="button" aria-label="Delete reel" title="Delete this reel">🗑</button>
+            ` : ''}
+            <div class="home-reel-play" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </div>
+            <div class="sound-wave-badge" title="${escapeHTML(reel.music || '')}">
+              <span></span><span></span><span></span><span></span>
+            </div>
           </div>
-          <div class="sound-wave-badge" title="${escapeHTML(reel.music || '')}">
-            <span></span><span></span><span></span><span></span>
+          <div class="home-reel-info">
+            <div class="home-reel-author">
+              <img src="${reel.avatar}" alt="${escapeHTML(reel.author)}">
+              <strong>${escapeHTML(reel.author)}</strong>
+            </div>
+            <p class="home-reel-caption">${escapeHTML(reel.caption)}</p>
+            <div class="home-reel-meta">
+              <span class="reel-views">👁 ${reel.views || '1'}</span>
+              <button class="reel-like-chip ${reel.isLiked ? 'is-liked' : ''}" data-reel-like="${reel.id}" type="button" aria-label="Like reel">
+                <span>${reel.isLiked ? '♥' : '♡'}</span> <span>${reel.likes || 0}</span>
+              </button>
+              <button class="reel-comment-chip" data-reel-comment="${reel.id}" type="button" aria-label="Comment on reel">
+                <span>💬</span> <span>${(reel.comments && reel.comments.length) || 0}</span>
+              </button>
+            </div>
           </div>
-        </div>
-        <div class="home-reel-info">
-          <div class="home-reel-author">
-            <img src="${reel.avatar}" alt="${escapeHTML(reel.author)}">
-            <strong>${escapeHTML(reel.author)}</strong>
-          </div>
-          <p class="home-reel-caption">${escapeHTML(reel.caption)}</p>
-          <div class="home-reel-meta">
-            <span class="reel-views">👁 ${reel.views || '1'}</span>
-            <button class="reel-like-chip ${reel.isLiked ? 'is-liked' : ''}" data-reel-like="${reel.id}" type="button" aria-label="Like reel">
-              <span>${reel.isLiked ? '♥' : '♡'}</span> <span>${reel.likes || 0}</span>
-            </button>
-            <button class="reel-comment-chip" data-reel-comment="${reel.id}" type="button" aria-label="Comment on reel">
-              <span>💬</span> <span>${(reel.comments && reel.comments.length) || 0}</span>
-            </button>
-          </div>
-        </div>
-      </article>
-    `).join('');
+        </article>
+      `;
+    }).join('');
 
     homeReelsTrack.querySelectorAll('.home-reel-card').forEach(card => {
       card.addEventListener('click', (e) => {
-        if (e.target.closest('[data-reel-like]') || e.target.closest('[data-reel-comment]')) return;
+        if (e.target.closest('[data-reel-like]') || e.target.closest('[data-reel-comment]') || e.target.closest('[data-reel-delete]')) return;
         const reelId = card.dataset.reelId;
         const idx = REELS.findIndex(r => r.id == reelId);
         const targetIdx = idx !== -1 ? idx : 0;
         switchView('reels');
         loadActiveReel(targetIdx, true);
         showToast(`Playing ${REELS[targetIdx].author}'s reel in theater ▷`, '▷');
+      });
+    });
+
+    homeReelsTrack.querySelectorAll('[data-reel-delete]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const reelId = btn.dataset.reelDelete;
+        if (confirm("Are you sure you want to permanently delete this reel?")) {
+          deleteReel(reelId);
+        }
       });
     });
 
@@ -2756,12 +3087,22 @@
     const commentsList = document.getElementById('reel-comments-list');
     const commentCountEl = document.getElementById('player-comment-count');
     const studioBadge = document.getElementById('studio-comment-badge');
+    const commentsSubtitle = document.getElementById('comments-pane-subtitle');
     const currentReel = REELS[currentReelIndex];
-    if (!currentReel) return;
+    if (!currentReel) {
+      if (commentsList) commentsList.innerHTML = `<div style="text-align:center; padding:28px 12px; color:var(--ink-faint);"><p style="margin:0 0 4px; font-weight:700;">No reel active</p></div>`;
+      if (commentCountEl) commentCountEl.textContent = '0';
+      if (studioBadge) studioBadge.textContent = '0';
+      return;
+    }
 
-    const comments = currentReel.comments || [];
+    const comments = Array.isArray(currentReel.comments) ? currentReel.comments : [];
     if (commentCountEl) commentCountEl.textContent = comments.length;
     if (studioBadge) studioBadge.textContent = comments.length;
+    if (commentsSubtitle) commentsSubtitle.textContent = `Reflections on ${currentReel.author}'s moment (${comments.length})`;
+
+    const selfAvatar = document.getElementById('reel-comment-self-avatar');
+    if (selfAvatar) selfAvatar.src = CURRENT_USER.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=user';
 
     if (!commentsList) return;
     if (comments.length === 0) {
@@ -2774,19 +3115,55 @@
       return;
     }
 
-    commentsList.innerHTML = comments.map(c => `
-      <div class="reel-comment-item">
-        <img src="${c.avatar || CURRENT_USER.avatar}" alt="${escapeHTML(c.author || 'Member')}" class="comment-avatar">
-        <div class="comment-body">
-          <div class="comment-header">
-            <strong>${escapeHTML(c.author || 'Member')}</strong>
-            <time>${escapeHTML(c.time || 'Just now')}</time>
+    const myHandle = (CURRENT_USER.handle || '').toLowerCase();
+    const myName = (CURRENT_USER.name || '').toLowerCase();
+    const isReelOwner = (
+      ((currentReel.handle || '').toLowerCase() === myHandle) ||
+      ((currentReel.author || '').toLowerCase() === myName)
+    );
+
+    commentsList.innerHTML = comments.map(c => {
+      const isCommentMine = (
+        ((c.handle || '').toLowerCase() === myHandle) ||
+        ((c.author || '').toLowerCase() === myName)
+      );
+      const canDelete = isCommentMine || isReelOwner;
+      const avatarSrc = c.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(c.author || 'member')}`;
+      const timeStr = formatRelativeTime(c.created_at || c.time);
+
+      return `
+        <div class="reel-comment-item" data-comment-id="${escapeHTML(String(c.id))}">
+          <img src="${avatarSrc}" alt="${escapeHTML(c.author || 'Member')}" class="comment-avatar" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=member'">
+          <div class="comment-body">
+            <div class="comment-header">
+              <div class="comment-author-meta">
+                <strong>${escapeHTML(c.author || 'Member')}</strong>
+                ${c.handle ? `<span class="comment-handle">${escapeHTML(c.handle)}</span>` : ''}
+              </div>
+              <div class="comment-header-right">
+                <time title="${escapeHTML(c.time || '')}">${escapeHTML(timeStr)}</time>
+                ${canDelete ? `
+                  <button type="button" class="reel-comment-delete-btn" data-delete-reel-comment="${escapeHTML(String(c.id))}" title="Delete reflection" aria-label="Delete reflection">
+                    🗑
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+            <p class="comment-text">${escapeHTML(c.text || '')}</p>
           </div>
-          <p class="comment-text">${escapeHTML(c.text || '')}</p>
         </div>
-      </div>
-    `).join('');
-    commentsList.scrollTop = commentsList.scrollHeight;
+      `;
+    }).join('');
+
+    commentsList.querySelectorAll('[data-delete-reel-comment]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const cId = btn.dataset.deleteReelComment;
+        if (confirm("Delete this reflection?")) {
+          deleteReelComment(currentReel.id, cId);
+        }
+      });
+    });
   }
 
   function loadActiveReel(index, autoPlay = true) {
@@ -2807,7 +3184,11 @@
     const infoViews = document.getElementById('info-views');
     const infoLikes = document.getElementById('info-likes');
 
+    const playerDeleteBtn = document.getElementById('player-delete-reel-btn');
+    const infoDeleteSection = document.getElementById('info-delete-section');
+
     if (!REELS || REELS.length === 0) {
+      currentReelId = null;
       if (activeVideo) {
         activeVideo.pause();
         activeVideo.removeAttribute('src');
@@ -2829,11 +3210,28 @@
       if (strip) strip.innerHTML = '<p style="padding:16px; font-size:0.8rem; color:var(--ink-muted); text-align:center;">No reels yet</p>';
       if (infoViews) infoViews.textContent = '0';
       if (infoLikes) infoLikes.textContent = '0';
+      if (playerDeleteBtn) playerDeleteBtn.style.display = 'none';
+      if (infoDeleteSection) infoDeleteSection.style.display = 'none';
       renderReelComments();
       return;
     }
     currentReelIndex = ((index % REELS.length) + REELS.length) % REELS.length;
     const reel = REELS[currentReelIndex];
+    currentReelId = reel.id;
+
+    const myHandle = (CURRENT_USER.handle || '').toLowerCase();
+    const myName = (CURRENT_USER.name || '').toLowerCase();
+    const isOwner = (
+      ((reel.handle || '').toLowerCase() === myHandle) ||
+      ((reel.author || '').toLowerCase() === myName)
+    );
+
+    if (playerDeleteBtn) {
+      playerDeleteBtn.style.display = isOwner ? 'flex' : 'none';
+    }
+    if (infoDeleteSection) {
+      infoDeleteSection.style.display = isOwner ? 'block' : 'none';
+    }
 
     const posterBackdrop = document.getElementById('reel-poster-backdrop');
     const categoryPill = document.getElementById('player-category-pill');
@@ -6082,7 +6480,12 @@
     const statReelsCount = document.getElementById('stat-reels-count');
     const statReelsLabel = document.getElementById('stat-reels-label');
 
-    const myReels = REELS.filter(r => r.author === CURRENT_USER.name);
+    const myHandle = (CURRENT_USER.handle || '').toLowerCase();
+    const myName = (CURRENT_USER.name || '').toLowerCase();
+    const myReels = REELS.filter(r => (
+      ((r.handle || '').toLowerCase() === myHandle) ||
+      ((r.author || '').toLowerCase() === myName)
+    ));
 
     if (reelsBadge) reelsBadge.textContent = myReels.length;
     if (statReelsCount) statReelsCount.textContent = myReels.length;
@@ -6103,6 +6506,7 @@
     reelsGrid.innerHTML = myReels.map(reel => `
       <div class="profile-reel-thumb" data-profile-reel-id="${reel.id}" tabindex="0" role="button" aria-label="Play reel: ${reel.caption}">
         <img src="${reel.image}" alt="${reel.caption}" loading="lazy">
+        <button class="profile-reel-delete-btn" data-delete-profile-reel="${reel.id}" type="button" title="Delete reel" aria-label="Delete reel">🗑</button>
         <div class="profile-reel-play-icon" aria-hidden="true">▷</div>
         <div class="profile-reel-overlay">
           <p class="profile-reel-caption">${reel.caption}</p>
@@ -6114,8 +6518,19 @@
       </div>
     `).join('');
 
+    reelsGrid.querySelectorAll('[data-delete-profile-reel]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const reelId = btn.dataset.deleteProfileReel;
+        if (confirm("Are you sure you want to permanently delete this reel?")) {
+          deleteReel(reelId);
+        }
+      });
+    });
+
     reelsGrid.querySelectorAll('[data-profile-reel-id]').forEach(card => {
-      card.addEventListener('click', () => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('[data-delete-profile-reel]')) return;
         const reelId = card.dataset.profileReelId;
         const idx = REELS.findIndex(r => r.id == reelId);
         if (idx !== -1) {

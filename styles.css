@@ -3846,6 +3846,126 @@ body.is-logged-out #btn-settings-logout {
   transform: scale(1.08);
 }
 
+/* DELETE OPTIONS & COMMENT METADATA STYLES */
+.reel-tool-btn.reel-tool-delete .reel-tool-icon {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+.reel-tool-btn.reel-tool-delete:hover .reel-tool-icon {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #fff;
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.6);
+  transform: scale(1.1);
+}
+
+.reel-comment-self-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.comment-author-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.comment-handle {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  font-weight: 500;
+}
+.comment-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.reel-comment-delete-btn,
+.post-comment-delete-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  opacity: 0.65;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+.reel-comment-delete-btn:hover,
+.post-comment-delete-btn:hover {
+  opacity: 1;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+  transform: scale(1.15);
+}
+
+.home-reel-delete-btn {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  cursor: pointer;
+  z-index: 4;
+  transition: all 0.15s ease;
+}
+.home-reel-delete-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  transform: scale(1.12);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+}
+
+.profile-reel-delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(239, 68, 68, 0.85);
+  color: #fff;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  cursor: pointer;
+  z-index: 4;
+  transition: all 0.15s ease;
+}
+.profile-reel-delete-btn:hover {
+  background: #dc2626;
+  transform: scale(1.15);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.7);
+}
+
+.post-delete-btn {
+  color: var(--ink-faint);
+  transition: all 0.15s ease;
+}
+.post-delete-btn:hover {
+  color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  transform: scale(1.1);
+}
+
 /* TAB 3: DETAILS & SHORTCUTS */
 .info-content-card {
   display: flex;

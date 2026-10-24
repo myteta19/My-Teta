@@ -347,11 +347,11 @@
 							<div class="reel-side-toolbar" aria-label="Reel Actions">
 								<button class="reel-tool-btn" id="player-like-btn" type="button" aria-label="Like reel">
 									<span class="reel-tool-icon" id="player-like-icon">♡</span>
-									<small class="reel-tool-label" id="player-like-count">142</small>
+									<small class="reel-tool-label" id="player-like-count">0</small>
 								</button>
 								<button class="reel-tool-btn" id="player-comment-btn" type="button" aria-label="Comments">
 									<span class="reel-tool-icon">💬</span>
-									<small class="reel-tool-label" id="player-comment-count">14</small>
+									<small class="reel-tool-label" id="player-comment-count">0</small>
 								</button>
 								<button class="reel-tool-btn" id="player-save-btn" type="button" aria-label="Save reel">
 									<span class="reel-tool-icon" id="player-save-icon">★</span>
@@ -360,6 +360,10 @@
 								<button class="reel-tool-btn" id="player-share-btn" type="button" aria-label="Share reel">
 									<span class="reel-tool-icon">↗</span>
 									<small class="reel-tool-label">Share</small>
+								</button>
+								<button class="reel-tool-btn reel-tool-delete" id="player-delete-reel-btn" type="button" aria-label="Delete reel" title="Delete this reel">
+									<span class="reel-tool-icon">🗑</span>
+									<small class="reel-tool-label">Delete</small>
 								</button>
 								<div class="reel-tool-divider"></div>
 								<button class="reel-nav-btn" id="player-prev-reel" type="button" aria-label="Previous reel" title="Previous reel (Up Arrow)">
@@ -391,7 +395,7 @@
 								✨ Upload Reel
 							</button>
 							<button class="studio-tab-btn" id="tab-btn-comments" data-studio-tab="comments" type="button">
-								💬 Comments (<span id="studio-comment-badge">14</span>)
+								💬 Comments (<span id="studio-comment-badge">0</span>)
 							</button>
 							<button class="studio-tab-btn" id="tab-btn-info" data-studio-tab="info" type="button">
 								ℹ️ Reel Info
@@ -472,8 +476,9 @@
 							<div class="reel-comments-list" id="reel-comments-list"></div>
 
 							<form id="reel-comment-form" class="reel-comment-form">
-								<input type="text" id="reel-comment-input" placeholder="Add a thoughtful reflection..." autocomplete="off" required>
-								<button type="submit" class="send-comment-btn" aria-label="Send comment">↗</button>
+								<img src="https://api.dicebear.com/7.x/bottts/svg?seed=creator" alt="You" id="reel-comment-self-avatar" class="reel-comment-self-avatar">
+								<input type="text" id="reel-comment-input" placeholder="Add a thoughtful reflection..." autocomplete="off" required maxlength="300">
+								<button type="submit" class="send-comment-btn" aria-label="Send comment" title="Post reflection">↗</button>
 							</form>
 						</div>
 
@@ -516,6 +521,12 @@
 										<li><kbd>M</kbd> <span>Mute / Unmute Sound</span></li>
 										<li><kbd>L</kbd> <span>Like Active Reel</span></li>
 									</ul>
+								</div>
+
+								<div class="creator-danger-action" id="info-delete-section" style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border);">
+									<button type="button" class="button button-danger button-small" id="btn-delete-active-reel" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px;">
+										<span>🗑</span> Delete This Reel
+									</button>
 								</div>
 							</div>
 						</div>
