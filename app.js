@@ -80,10 +80,15 @@
 
     async syncProfile(profile) {
       try {
+        const cleanHandle = profile.handle.startsWith('@') ? profile.handle : `@${profile.handle}`;
+        const existingPerson = (typeof PEOPLE !== 'undefined' && Array.isArray(PEOPLE))
+          ? PEOPLE.find(p => p.handle && p.handle.toLowerCase() === cleanHandle.toLowerCase())
+          : null;
+
         const payload = {
-          id: profile.id || `user_${Date.now()}`,
+          id: profile.id || (existingPerson ? existingPerson.id : (CURRENT_USER.handle && CURRENT_USER.handle.toLowerCase() === cleanHandle.toLowerCase() ? CURRENT_USER.id : `user_${Date.now()}`)),
           name: profile.name,
-          handle: profile.handle.startsWith('@') ? profile.handle : `@${profile.handle}`,
+          handle: cleanHandle,
           email: profile.email || '',
           avatar: profile.avatar || '',
           role: profile.role || 'Member',
@@ -101,7 +106,7 @@
           if (error) console.warn("Supabase SDK syncProfile:", error);
           return data;
         } else {
-          return await this.request('profiles', {
+          return await this.request('profiles?on_conflict=handle', {
             method: 'POST',
             headers: { "Prefer": "resolution=merge-duplicates" },
             body: JSON.stringify(payload)
@@ -945,7 +950,46 @@
     return { online: false, text: `Active ${days}d ago` };
   }
 
-  async function syncCommunityFromSupabase() {
+  // ==========================================
+  // REAL-TIME PROFILE RESOLVERS (POSTS, REELS, COMMENTS)
+  // ==========================================
+  function resolveProfileAvatar(handle, authorName, fallbackAvatar) {
+    const h = (handle || '').toLowerCase();
+    const myH = (CURRENT_USER.handle || '').toLowerCase();
+    const myName = (CURRENT_USER.name || '').toLowerCase();
+    
+    if ((h && myH && h === myH) || (authorName && myName && authorName.toLowerCase() === myName)) {
+      return CURRENT_USER.avatar || fallbackAvatar;
+    }
+    
+    if (typeof PEOPLE !== 'undefined' && Array.isArray(PEOPLE)) {
+      if (h) {
+        const found = PEOPLE.find(p => p.handle && p.handle.toLowerCase() === h);
+        if (found && found.avatar) return found.avatar;
+      }
+      if (authorName) {
+        const found = PEOPLE.find(p => p.name && p.name.toLowerCase() === authorName.toLowerCase());
+        if (found && found.avatar) return found.avatar;
+      }
+    }
+    
+    return fallbackAvatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(handle || authorName || 'member')}`;
+  }
+
+  function resolveProfileName(handle, fallbackName) {
+    const h = (handle || '').toLowerCase();
+    const myH = (CURRENT_USER.handle || '').toLowerCase();
+    if (h && myH && h === myH) {
+      return CURRENT_USER.name || fallbackName;
+    }
+    if (typeof PEOPLE !== 'undefined' && Array.isArray(PEOPLE) && h) {
+      const found = PEOPLE.find(p => p.handle && p.handle.toLowerCase() === h);
+      if (found && found.name) return found.name;
+    }
+    return fallbackName || 'Member';
+  }
+
+  async function syncCommunityFromSupabase(isBackground = false) {
     try {
       const cloudProfiles = await SupabaseService.fetchProfiles();
       const customFriends = (() => {
@@ -956,28 +1000,88 @@
         }
       })();
 
+      // 1. Sync CURRENT_USER if cloud profile has fresher details from another session/device
+      const myHandle = (CURRENT_USER.handle || '').toLowerCase();
+      if (cloudProfiles && cloudProfiles.length > 0 && myHandle && myHandle !== '@guest') {
+        const myCloudProfile = cloudProfiles.find(cp => cp.handle && cp.handle.toLowerCase() === myHandle);
+        if (myCloudProfile) {
+          let userChanged = false;
+          if (myCloudProfile.avatar && myCloudProfile.avatar !== CURRENT_USER.avatar) {
+            CURRENT_USER.avatar = myCloudProfile.avatar;
+            userChanged = true;
+          }
+          if (myCloudProfile.cover && myCloudProfile.cover !== CURRENT_USER.cover) {
+            CURRENT_USER.cover = myCloudProfile.cover;
+            userChanged = true;
+          }
+          if (myCloudProfile.name && myCloudProfile.name !== CURRENT_USER.name) {
+            CURRENT_USER.name = myCloudProfile.name;
+            userChanged = true;
+          }
+          if (myCloudProfile.bio && myCloudProfile.bio !== CURRENT_USER.bio) {
+            CURRENT_USER.bio = myCloudProfile.bio;
+            userChanged = true;
+          }
+          if (myCloudProfile.location && myCloudProfile.location !== CURRENT_USER.location) {
+            CURRENT_USER.location = myCloudProfile.location;
+            userChanged = true;
+          }
+          if (userChanged) {
+            try {
+              localStorage.setItem('my_teta_current_user', JSON.stringify(CURRENT_USER));
+            } catch(e) {}
+            updateCurrentUserUI();
+            if (typeof renderProfile === 'function') renderProfile();
+          }
+        }
+      }
+
+      // 2. Build authoritative community members list
       PEOPLE = [];
       if (cloudProfiles && cloudProfiles.length > 0) {
         cloudProfiles.forEach(cp => {
-          if (cp.handle && CURRENT_USER.handle && cp.handle.toLowerCase() === CURRENT_USER.handle.toLowerCase()) return;
+          if (cp.handle && myHandle && cp.handle.toLowerCase() === myHandle) return;
           const handleKey = (cp.handle || '').toLowerCase();
           const custom = customFriends[handleKey];
+
+          // Authoritative cloud fields take strict priority over stale local storage
+          const resolvedName = cp.name || (custom && custom.name) || handleKey.replace('@', '');
+          const resolvedAvatar = cp.avatar || (custom && custom.avatar) || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cp.handle || 'member')}`;
+          const resolvedCover = cp.cover || (custom && custom.cover) || 'linear-gradient(135deg, #0d9488, #6366f1, #059669)';
+          const resolvedBio = cp.bio || 'Collecting moments on My Teta.';
+          const resolvedRole = cp.role || 'Community Member & Creator';
+          const resolvedLocation = cp.location || 'Brooklyn, NY';
+
+          // Keep custom friends cache synchronized with fresh cloud data
+          if (cp.avatar || cp.cover || cp.name) {
+            customFriends[handleKey] = {
+              name: resolvedName,
+              handle: cp.handle,
+              avatar: resolvedAvatar,
+              cover: resolvedCover
+            };
+          }
+
           PEOPLE.push({
             id: cp.id || `user_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
-            name: (custom && custom.name) || cp.name,
+            name: resolvedName,
             handle: cp.handle,
             email: cp.email || '',
-            role: cp.role || 'Community Member & Creator',
-            bio: cp.bio || 'Collecting moments on My Teta.',
-            location: cp.location || 'Brooklyn, NY',
-            cover: (custom && custom.cover) || cp.cover || 'linear-gradient(135deg, #0d9488, #6366f1, #059669)',
+            role: resolvedRole,
+            bio: resolvedBio,
+            location: resolvedLocation,
+            cover: resolvedCover,
             mutual: cp.mutual || 'Community Member',
-            avatar: (custom && custom.avatar) || cp.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cp.handle || 'member')}`,
+            avatar: resolvedAvatar,
             updated_at: cp.updated_at || cp.created_at || null,
             following: false
           });
         });
       }
+
+      try {
+        localStorage.setItem('my_teta_custom_friends', JSON.stringify(customFriends));
+      } catch(e) {}
 
       sentRequestHandles.clear();
       const sent = await SupabaseService.fetchSentRequests(CURRENT_USER.handle);
@@ -1026,7 +1130,6 @@
       // Fetch accepted friendships involving CURRENT_USER from Supabase
       const acceptedFriendships = await SupabaseService.fetchAcceptedFriendships(CURRENT_USER.handle);
       if (acceptedFriendships && acceptedFriendships.length > 0) {
-        const myHandle = (CURRENT_USER.handle || '').toLowerCase();
         acceptedFriendships.forEach(af => {
           const isSender = (af.sender_handle || '').toLowerCase() === myHandle;
           const partnerHandle = isSender ? af.receiver_handle : af.sender_handle;
@@ -1070,10 +1173,36 @@
         await syncChatsFromSupabase();
       }
 
+      // Live synchronization for actively open User Profile Modal
+      const userModal = document.getElementById('user-profile-modal');
+      if (userModal && !userModal.hidden) {
+        const openModalHandle = document.getElementById('modal-profile-handle')?.textContent?.trim().toLowerCase();
+        if (openModalHandle) {
+          const activePerson = PEOPLE.find(p => p.handle && p.handle.toLowerCase() === openModalHandle);
+          if (activePerson) {
+            const elCover = document.getElementById('modal-profile-cover');
+            const elAvatar = document.getElementById('modal-profile-avatar');
+            const elName = document.getElementById('modal-profile-name');
+            const elBio = document.getElementById('modal-profile-bio');
+            const elRole = document.getElementById('modal-profile-role');
+            const elLocText = document.getElementById('modal-profile-loc-text');
+            if (elCover && activePerson.cover) elCover.style.background = activePerson.cover;
+            if (elAvatar && activePerson.avatar) elAvatar.src = activePerson.avatar;
+            if (elName && activePerson.name) elName.textContent = activePerson.name;
+            if (elBio && activePerson.bio) elBio.textContent = activePerson.bio;
+            if (elRole && activePerson.role) elRole.textContent = activePerson.role;
+            if (elLocText && activePerson.location) elLocText.textContent = activePerson.location;
+          }
+        }
+      }
+
       if (typeof updateSentBadgeCounts === 'function') updateSentBadgeCounts();
       if (typeof renderHomeSearch === 'function') renderHomeSearch();
       if (typeof renderFriends === 'function') renderFriends(currentFriendFilter);
       if (typeof renderChat === 'function') renderChat();
+      if (typeof renderChatFriendsTray === 'function') renderChatFriendsTray();
+      if (typeof renderFeed === 'function') renderFeed();
+      if (typeof renderHomeReels === 'function') renderHomeReels();
       if (typeof renderNotifications === 'function') renderNotifications(activeNotifFilter);
       if (typeof updateNotificationBadges === 'function') updateNotificationBadges();
     } catch (e) {
@@ -2271,14 +2400,16 @@
       ((post.handle || '').toLowerCase() === myHandle) ||
       ((post.author || '').toLowerCase() === myName)
     );
+    const authorAvatar = resolveProfileAvatar(post.handle, post.author, post.avatar);
+    const authorDisplayName = resolveProfileName(post.handle, post.author);
 
     return `
       <article class="post-card" id="${post.id}">
         <header class="post-header">
           <div class="post-author">
-            <img src="${post.avatar}" alt="${escapeHTML(post.author)}">
+            <img src="${authorAvatar}" alt="${escapeHTML(authorDisplayName)}">
             <div class="post-author-info">
-              <strong>${escapeHTML(post.author)}</strong>
+              <strong>${escapeHTML(authorDisplayName)}</strong>
               <small>${escapeHTML(post.time)} · <span style="color:var(--lagoon); font-weight:600;">${escapeHTML(post.circle || 'Circle')}</span></small>
             </div>
           </div>
@@ -2326,13 +2457,15 @@
                 ((c.author || '').toLowerCase() === myName)
               );
               const canDeleteComment = isCommentMine || isPostOwner;
+              const commentAvatar = resolveProfileAvatar(c.handle, c.author, c.avatar);
+              const commentAuthor = resolveProfileName(c.handle, c.author);
               return `
                 <div class="post-comment-item">
-                  <img src="${c.avatar || CURRENT_USER.avatar}" alt="${escapeHTML(c.author || 'Member')}" class="post-comment-avatar">
+                  <img src="${commentAvatar}" alt="${escapeHTML(commentAuthor)}" class="post-comment-avatar">
                   <div class="post-comment-bubble">
                     <div class="post-comment-author-row" style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
                       <div>
-                        <strong>${escapeHTML(c.author || 'Member')}</strong>
+                        <strong>${escapeHTML(commentAuthor)}</strong>
                         <time>${escapeHTML(c.time || 'Just now')}</time>
                       </div>
                       ${canDeleteComment ? `
@@ -2999,9 +3132,11 @@
         (myHomeName && (myHomeName === rA || myHomeName === rH)) ||
         (CURRENT_USER.id && !isLoggedOutState)
       );
+      const reelAvatar = resolveProfileAvatar(reel.handle, reel.author, reel.avatar);
+      const reelAuthorName = resolveProfileName(reel.handle, reel.author);
 
       return `
-        <article class="home-reel-card" data-reel-id="${reel.id}" data-reel-index="${idx}" tabindex="0" role="button" aria-label="Watch reel by ${escapeHTML(reel.author)}">
+        <article class="home-reel-card" data-reel-id="${reel.id}" data-reel-index="${idx}" tabindex="0" role="button" aria-label="Watch reel by ${escapeHTML(reelAuthorName)}">
           <div class="home-reel-media">
             <img src="${reel.image}" alt="${escapeHTML(reel.caption)}" loading="lazy">
             <span class="home-reel-duration">${reel.duration || '0:24'}</span>
@@ -3019,8 +3154,8 @@
           </div>
           <div class="home-reel-info">
             <div class="home-reel-author">
-              <img src="${reel.avatar}" alt="${escapeHTML(reel.author)}">
-              <strong>${escapeHTML(reel.author)}</strong>
+              <img src="${reelAvatar}" alt="${escapeHTML(reelAuthorName)}">
+              <strong>${escapeHTML(reelAuthorName)}</strong>
             </div>
             <p class="home-reel-caption">${escapeHTML(reel.caption)}</p>
             <div class="home-reel-meta">
@@ -3172,16 +3307,17 @@
         ((c.author || '').toLowerCase() === myName)
       );
       const canDelete = isCommentMine || isReelOwner;
-      const avatarSrc = c.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(c.author || 'member')}`;
+      const avatarSrc = resolveProfileAvatar(c.handle, c.author, c.avatar);
+      const commentAuthorName = resolveProfileName(c.handle, c.author);
       const timeStr = formatRelativeTime(c.created_at || c.time);
 
       return `
         <div class="reel-comment-item" data-comment-id="${escapeHTML(String(c.id))}">
-          <img src="${avatarSrc}" alt="${escapeHTML(c.author || 'Member')}" class="comment-avatar" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=member'">
+          <img src="${avatarSrc}" alt="${escapeHTML(commentAuthorName)}" class="comment-avatar" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=member'">
           <div class="comment-body">
             <div class="comment-header">
               <div class="comment-author-meta">
-                <strong>${escapeHTML(c.author || 'Member')}</strong>
+                <strong>${escapeHTML(commentAuthorName)}</strong>
                 ${c.handle ? `<span class="comment-handle">${escapeHTML(c.handle)}</span>` : ''}
               </div>
               <div class="comment-header-right">
@@ -3318,9 +3454,12 @@
       };
       categoryPill.textContent = catMap[reel.category] || '✨ Moment';
     }
-    if (authorAvatar) authorAvatar.src = reel.avatar;
-    if (authorName) authorName.textContent = reel.author;
-    if (authorHandle) authorHandle.textContent = reel.handle || `@${reel.author.toLowerCase().replace(/\s+/g, '')}`;
+    const activeReelAvatar = resolveProfileAvatar(reel.handle, reel.author, reel.avatar);
+    const activeReelAuthor = resolveProfileName(reel.handle, reel.author);
+
+    if (authorAvatar) authorAvatar.src = activeReelAvatar;
+    if (authorName) authorName.textContent = activeReelAuthor;
+    if (authorHandle) authorHandle.textContent = reel.handle || `@${activeReelAuthor.toLowerCase().replace(/\s+/g, '')}`;
     if (followBtn) {
       followBtn.textContent = reel.isFollowing ? 'Following ✓' : '＋ Follow';
       followBtn.classList.toggle('is-following', !!reel.isFollowing);
@@ -3338,9 +3477,9 @@
     if (currentEl) currentEl.textContent = "0:00";
     if (progressBar) progressBar.style.width = "0%";
 
-    if (infoAvatar) infoAvatar.src = reel.avatar;
-    if (infoName) infoName.textContent = reel.author;
-    if (infoHandle) infoHandle.textContent = reel.handle || `@${reel.author.toLowerCase().replace(/\s+/g, '')}`;
+    if (infoAvatar) infoAvatar.src = activeReelAvatar;
+    if (infoName) infoName.textContent = activeReelAuthor;
+    if (infoHandle) infoHandle.textContent = reel.handle || `@${activeReelAuthor.toLowerCase().replace(/\s+/g, '')}`;
     if (infoViews) infoViews.textContent = reel.views || "18.4k";
     if (infoLikes) infoLikes.textContent = reel.likes;
 
@@ -4150,6 +4289,12 @@
     const modal = document.getElementById('user-profile-modal');
     if (!modal) return;
 
+    // Resolve freshest in-memory data
+    const freshest = (typeof PEOPLE !== 'undefined' && Array.isArray(PEOPLE))
+      ? (PEOPLE.find(p => (p.handle && person.handle && p.handle.toLowerCase() === person.handle.toLowerCase()) || p.id === person.id) || person)
+      : person;
+    person = freshest;
+
     const elCover = document.getElementById('modal-profile-cover');
     const elAvatar = document.getElementById('modal-profile-avatar');
     const elName = document.getElementById('modal-profile-name');
@@ -4174,6 +4319,36 @@
     if (elBio) elBio.textContent = person.bio || 'Collecting moments, good light, and connecting with people on My Teta.';
     if (elLocText) elLocText.textContent = person.location || 'Brooklyn, NY';
     if (elMutualText) elMutualText.textContent = person.following ? 'Connected in Circle ✨' : (person.mutual || 'Community Member');
+
+    // Asynchronously verify latest cloud profile for absolute real-time accuracy
+    if (person.handle) {
+      SupabaseService.fetchProfiles().then(profiles => {
+        if (!profiles || !Array.isArray(profiles)) return;
+        const fresh = profiles.find(cp => cp.handle && cp.handle.toLowerCase() === person.handle.toLowerCase());
+        if (fresh && modal && !modal.hidden) {
+          const currentViewingHandle = document.getElementById('modal-profile-handle')?.textContent?.trim().toLowerCase();
+          if (currentViewingHandle === person.handle.toLowerCase()) {
+            if (fresh.cover && elCover) elCover.style.background = fresh.cover;
+            if (fresh.avatar && elAvatar) elAvatar.src = fresh.avatar;
+            if (fresh.name && elName) elName.textContent = fresh.name;
+            if (fresh.bio && elBio) elBio.textContent = fresh.bio;
+            if (fresh.role && elRole) elRole.textContent = fresh.role;
+            if (fresh.location && elLocText) elLocText.textContent = fresh.location;
+            
+            // Keep in-memory PEOPLE array fresh
+            if (typeof PEOPLE !== 'undefined' && Array.isArray(PEOPLE)) {
+              const pIdx = PEOPLE.findIndex(p => p.handle && p.handle.toLowerCase() === person.handle.toLowerCase());
+              if (pIdx !== -1) {
+                if (fresh.cover) PEOPLE[pIdx].cover = fresh.cover;
+                if (fresh.avatar) PEOPLE[pIdx].avatar = fresh.avatar;
+                if (fresh.name) PEOPLE[pIdx].name = fresh.name;
+                if (fresh.bio) PEOPLE[pIdx].bio = fresh.bio;
+              }
+            }
+          }
+        }
+      }).catch(() => {});
+    }
 
     const presence = evaluatePresence(person.updated_at);
     const onlineBadge = modal.querySelector('.user-modal-online-badge');
@@ -6185,6 +6360,7 @@
             location: CURRENT_USER.location,
             cover: CURRENT_USER.cover
           });
+          syncCommunityFromSupabase(true);
         } catch (err) {
           console.warn("Supabase profile sync:", err);
         }
@@ -6408,7 +6584,7 @@
             bio: CURRENT_USER.bio,
             location: CURRENT_USER.location,
             cover: CURRENT_USER.cover
-          });
+          }).then(() => syncCommunityFromSupabase(true)).catch(() => {});
           showToast("Profile cover updated successfully from device! ✨", "🎉");
         } catch (err) {
           showToast("Could not process image file. Please try again.", "⚠️");
@@ -6593,6 +6769,7 @@
             location: CURRENT_USER.location,
             cover: CURRENT_USER.cover
           });
+          syncCommunityFromSupabase(true);
         } catch (err) {
           console.warn("Supabase cover sync error:", err);
         }
@@ -6938,7 +7115,7 @@
             bio: CURRENT_USER.bio,
             location: CURRENT_USER.location,
             cover: CURRENT_USER.cover
-          });
+          }).then(() => syncCommunityFromSupabase(true)).catch(() => {});
         } catch (err) {
           console.warn("Profile sync error:", err);
         }
@@ -7842,10 +8019,24 @@
     SupabaseService.updateHeartbeat(CURRENT_USER.handle);
   }
 
-  // Periodic community profiles sync & presence update
+  // Continuous 3.5-second community profiles sync & presence update for real-time cross-user changes
   setInterval(() => {
-    syncCommunityFromSupabase();
-  }, 20000);
+    syncCommunityFromSupabase(true);
+  }, 3500);
+
+  // Supabase Realtime WebSocket subscription for instant cross-user profile synchronization
+  if (supabaseClient) {
+    try {
+      supabaseClient
+        .channel('public:profiles_live')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+          syncCommunityFromSupabase(true);
+        })
+        .subscribe();
+    } catch (err) {
+      console.warn("Supabase Realtime profiles subscription notice:", err);
+    }
+  }
 
   // Presence heartbeat for active user (every 30 seconds)
   setInterval(() => {
