@@ -61,7 +61,7 @@
 				<button class="topbar-auth-btn is-signup" id="topbar-signup-btn" data-view="auth" data-auth-mode="signup" type="button" aria-label="Sign up" title="Sign up"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg><span>Sign up</span></button>
 				<button class="topbar-auth-btn is-logout" id="topbar-logout-btn" type="button" aria-label="Log out" title="Log out of account"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg><span>Log out</span></button>
 			</div>
-			<button class="button button-primary button-small topbar-share-btn" data-action="write-post" type="button"><b>＋</b> Share</button>
+			<button class="button button-primary button-small topbar-share-btn" id="topbar-share-btn" data-action="share-app" type="button" title="Share invite link with friends" aria-label="Share App"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg><span>Share</span></button>
 			<button class="icon-button" id="notifications" type="button" aria-label="Notifications" title="Notifications" aria-expanded="false" aria-controls="notifications-popup"><svg class="notif-bell-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><i class="notification-dot" id="notif-dot"></i></button>
 			<button class="profile-trigger" data-view="profile" type="button" aria-label="Open profile"><img src="https://api.dicebear.com/7.x/bottts/svg?seed=tayyab" alt="Your profile"><i class="status-online"></i></button>
 
@@ -99,6 +99,7 @@
 			<button class="rail-link" data-view="profile" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Your profile</button>
 			<button class="rail-link" data-view="settings" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>Settings</button>
 			<button class="rail-link" data-view="contact" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Contact Us</button>
+			<button class="rail-link rail-share-btn" data-action="share-app" type="button" title="Invite friends to join My Teta"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>Invite Friends ↗</button>
 			<button class="rail-link rail-auth-btn" id="rail-auth-btn" data-view="auth" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg><span id="rail-auth-label">Sign In / Sign Up</span></button>
 			<button class="rail-link rail-logout-btn" id="rail-logout-btn" type="button" aria-label="Log out" title="Log out of account"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>Log out</button>
 			<p class="rail-note"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6.4-4.8-6.4 4.8 2.4-7.2-6-4.8h7.6z"></path></svg>Good things happen<br>when we show up.</p>
@@ -2718,7 +2719,89 @@
 				</button>
 			</div>
 		</section>
+	<!-- SHARE & INVITE APP MODAL -->
+	<div class="modal-backdrop share-modal-backdrop" id="share-app-modal" hidden role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+		<section class="modal share-modal-card">
+			<div class="share-modal-header">
+				<div class="share-modal-title-wrap">
+					<span class="share-modal-badge">✨ INVITE YOUR CIRCLE</span>
+					<h2 id="share-modal-title">Share My Teta with Friends</h2>
+					<p class="share-modal-subtitle">Invite the people you care about to join a calmer, ad-free social space.</p>
+				</div>
+				<button class="modal-close" id="btn-close-share-modal" type="button" aria-label="Close share dialog">✕</button>
+			</div>
+
+			<div class="share-modal-body">
+				<!-- Member Invitation Card Preview -->
+				<div class="share-invite-preview">
+					<div class="invite-preview-avatar">
+						<img id="share-preview-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=tayyab" alt="Inviter Avatar">
+						<span class="invite-preview-badge">👑</span>
+					</div>
+					<div class="invite-preview-content">
+						<span class="invite-eyebrow">PERSONAL INVITATION</span>
+						<strong id="share-preview-name">Tayyab</strong>
+						<p id="share-preview-text">"Join me on My Teta! Real moments, vertical reels, and direct conversations without viral noise."</p>
+					</div>
+				</div>
+
+				<!-- Link Copy Box with Animated Button -->
+				<div class="share-link-group">
+					<label for="share-app-link-input">Your Personal Invite Link</label>
+					<div class="share-link-input-row">
+						<div class="share-link-field">
+							<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+							<input type="text" id="share-app-link-input" readonly value="https://my-teta.vercel.app">
+						</div>
+						<button class="button button-primary share-copy-btn" id="btn-copy-share-link" type="button">
+							<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+							<span id="copy-btn-text">Copy Link</span>
+						</button>
+					</div>
+				</div>
+
+				<!-- 1-Click Social Sharing Channels -->
+				<div class="share-social-section">
+					<p class="share-social-label">Quick Share to Friends:</p>
+					<div class="share-social-grid">
+						<button class="share-channel-btn is-whatsapp" id="share-via-whatsapp" type="button" title="Share via WhatsApp">
+							<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.888 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+							<span>WhatsApp</span>
+						</button>
+						<button class="share-channel-btn is-telegram" id="share-via-telegram" type="button" title="Share via Telegram">
+							<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+							<span>Telegram</span>
+						</button>
+						<button class="share-channel-btn is-x" id="share-via-x" type="button" title="Share on X (Twitter)">
+							<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+							<span>X / Twitter</span>
+						</button>
+						<button class="share-channel-btn is-email" id="share-via-email" type="button" title="Share via Email">
+							<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+							<span>Email</span>
+						</button>
+						<button class="share-channel-btn is-native" id="share-via-native" type="button" title="More sharing options">
+							<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+							<span>More Options...</span>
+						</button>
+					</div>
+				</div>
+
+				<!-- Quick QR Code Dropdown/Toggle -->
+				<div class="share-qr-box">
+					<button class="share-qr-toggle" id="btn-toggle-qr" type="button">
+						<span>📷 Show Instant QR Code for Phone Camera</span>
+						<span id="qr-arrow">▼</span>
+					</button>
+					<div class="share-qr-content" id="share-qr-content" hidden>
+						<img id="share-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://my-teta.vercel.app" alt="Join My Teta QR Code">
+						<small>Scan with any smartphone camera to open My Teta instantly</small>
+					</div>
+				</div>
+			</div>
+		</section>
 	</div>
+
 	<div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
 </body>
 </html>

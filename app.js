@@ -5440,6 +5440,161 @@
     });
   });
 
+  // ==========================================
+  // SHARE & INVITE APP MODAL CONTROLLER
+  // ==========================================
+  const shareAppModal = document.getElementById('share-app-modal');
+  const btnCloseShareModal = document.getElementById('btn-close-share-modal');
+  const shareAppLinkInput = document.getElementById('share-app-link-input');
+  const btnCopyShareLink = document.getElementById('btn-copy-share-link');
+  const copyBtnText = document.getElementById('copy-btn-text');
+  const sharePreviewAvatar = document.getElementById('share-preview-avatar');
+  const sharePreviewName = document.getElementById('share-preview-name');
+  const sharePreviewText = document.getElementById('share-preview-text');
+  const btnToggleQr = document.getElementById('btn-toggle-qr');
+  const shareQrContent = document.getElementById('share-qr-content');
+  const shareQrImg = document.getElementById('share-qr-img');
+  const qrArrow = document.getElementById('qr-arrow');
+
+  function getShareInviteUrl() {
+    const origin = window.location.origin || 'https://my-teta.vercel.app';
+    const cleanHandle = (CURRENT_USER.handle || '').replace(/^@/, '');
+    if (cleanHandle && cleanHandle !== 'guest') {
+      return `${origin}?invite=@${cleanHandle}`;
+    }
+    return origin;
+  }
+
+  function getShareInviteText() {
+    const url = getShareInviteUrl();
+    return `Hey! Join me on My Teta — a calm, authentic social space for real friends and genuine moments: ${url}`;
+  }
+
+  function openShareAppModal() {
+    if (!shareAppModal) return;
+    const url = getShareInviteUrl();
+
+    if (shareAppLinkInput) shareAppLinkInput.value = url;
+    if (sharePreviewAvatar) {
+      sharePreviewAvatar.src = CURRENT_USER.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=tayyab';
+    }
+    if (sharePreviewName) {
+      sharePreviewName.textContent = CURRENT_USER.name || 'Member';
+    }
+    if (sharePreviewText && CURRENT_USER.name) {
+      sharePreviewText.textContent = `"Join me on My Teta! Real moments, vertical reels, and direct conversations without viral noise."`;
+    }
+    if (shareQrImg) {
+      shareQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}`;
+    }
+
+    shareAppModal.hidden = false;
+  }
+
+  function closeShareAppModal() {
+    if (shareAppModal) shareAppModal.hidden = true;
+  }
+
+  // Bind Open Triggers for Share App
+  document.querySelectorAll('[data-action="share-app"], .topbar-share-btn, #topbar-share-btn, #share-profile-btn, #player-share-btn, .rail-share-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openShareAppModal();
+    });
+  });
+
+  btnCloseShareModal?.addEventListener('click', closeShareAppModal);
+  shareAppModal?.addEventListener('click', (e) => {
+    if (e.target === shareAppModal) closeShareAppModal();
+  });
+
+  // 1-Click Copy Link
+  btnCopyShareLink?.addEventListener('click', async () => {
+    const url = getShareInviteUrl();
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else if (shareAppLinkInput) {
+        shareAppLinkInput.select();
+        document.execCommand('copy');
+      }
+      if (btnCopyShareLink) btnCopyShareLink.classList.add('is-copied');
+      if (copyBtnText) copyBtnText.textContent = "Copied! ✓";
+      showToast("Invite link copied to clipboard! Share it with friends 🔗", "✓");
+
+      setTimeout(() => {
+        if (btnCopyShareLink) btnCopyShareLink.classList.remove('is-copied');
+        if (copyBtnText) copyBtnText.textContent = "Copy Link";
+      }, 2500);
+    } catch (err) {
+      showToast("Link: " + url, "🔗");
+    }
+  });
+
+  // Quick WhatsApp Share
+  document.getElementById('share-via-whatsapp')?.addEventListener('click', () => {
+    const text = getShareInviteText();
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+  });
+
+  // Quick Telegram Share
+  document.getElementById('share-via-telegram')?.addEventListener('click', () => {
+    const url = getShareInviteUrl();
+    const text = `Join me on My Teta — a calmer, ad-free social space!`;
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
+  });
+
+  // Quick X / Twitter Share
+  document.getElementById('share-via-x')?.addEventListener('click', () => {
+    const url = getShareInviteUrl();
+    const text = `Join me on My Teta — a calmer, ad-free social space for real friends and genuine moments!`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+  });
+
+  // Quick Email Share
+  document.getElementById('share-via-email')?.addEventListener('click', () => {
+    const text = getShareInviteText();
+    window.location.href = `mailto:?subject=${encodeURIComponent("Join me on My Teta")}&body=${encodeURIComponent(text)}`;
+  });
+
+  // Native Device Share
+  document.getElementById('share-via-native')?.addEventListener('click', async () => {
+    const url = getShareInviteUrl();
+    const text = getShareInviteText();
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'My Teta Invitation',
+          text: text,
+          url: url
+        });
+      } catch (err) {}
+    } else {
+      btnCopyShareLink?.click();
+    }
+  });
+
+  // QR Code Toggle
+  btnToggleQr?.addEventListener('click', () => {
+    if (!shareQrContent) return;
+    const isHidden = shareQrContent.hidden;
+    shareQrContent.hidden = !isHidden;
+    if (qrArrow) qrArrow.textContent = isHidden ? '▲' : '▼';
+  });
+
+  // URL Invite Parameter Detection
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const invitedBy = urlParams.get('invite') || urlParams.get('ref');
+    if (invitedBy) {
+      const cleanInviter = invitedBy.replace(/^@/, '');
+      setTimeout(() => {
+        showToast(`Invited by @${cleanInviter} to join My Teta! ✨`, "✨");
+      }, 700);
+    }
+  } catch (err) {}
+
   const authSigninTab = document.getElementById('auth-signin-tab');
   const authSignupTab = document.getElementById('auth-signup-tab');
   const authTitle = document.getElementById('auth-title');
@@ -5591,6 +5746,9 @@
       const modal = document.getElementById('logout-modal');
       if (modal && !modal.hidden) {
         closeLogoutModal();
+      }
+      if (shareAppModal && !shareAppModal.hidden) {
+        closeShareAppModal();
       }
     }
   });
