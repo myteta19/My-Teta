@@ -93,7 +93,7 @@
 			<button class="rail-link" data-view="profile" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Your profile</button>
 			<button class="rail-link" data-view="settings" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>Settings</button>
 			<button class="rail-link" data-view="contact" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Contact Us</button>
-			<button class="rail-link rail-auth-btn" id="rail-auth-btn" data-view="auth" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>Log in / Sign up</button>
+			<button class="rail-link rail-auth-btn" id="rail-auth-btn" data-view="auth" type="button"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg><span id="rail-auth-label">Sign In / Sign Up</span></button>
 			<button class="rail-link rail-logout-btn" id="rail-logout-btn" type="button" aria-label="Log out" title="Log out of account"><svg class="rail-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>Log out</button>
 			<p class="rail-note"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6.4-4.8-6.4 4.8 2.4-7.2-6-4.8h7.6z"></path></svg>Good things happen<br>when we show up.</p>
 		</aside>
@@ -1957,13 +1957,17 @@
 
 						<!-- Social OAuth Row -->
 						<div class="auth-oauth-group">
-							<button class="oauth-quick-btn" data-oauth="Google" type="button">
+							<button class="oauth-quick-btn" data-oauth="Google" type="button" title="Log in with Google">
 								<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16c1.8 3.7 5.6 7 10.1 7z"/></svg>
 								<span>Google</span>
 							</button>
-							<button class="oauth-quick-btn" data-oauth="Apple" type="button">
+							<button class="oauth-quick-btn" data-oauth="Apple" type="button" title="Log in with Apple">
 								<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 0.92-2.87-.92.04-2.02.62-2.67 1.37-.56.65-1.06 1.71-.93 2.74 1.03.08 2.07-.49 2.68-1.24z"/></svg>
 								<span>Apple</span>
+							</button>
+							<button class="oauth-quick-btn" data-oauth="GitHub" type="button" title="Log in with GitHub">
+								<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+								<span>GitHub</span>
 							</button>
 						</div>
 
@@ -1978,11 +1982,37 @@
 								<p>Enter your email and password to return to your circle.</p>
 							</div>
 
+							<!-- 1-Click Demo Accounts Switcher -->
+							<div class="auth-demo-accounts-wrap">
+								<div class="auth-demo-head">
+									<span class="auth-demo-icon">⚡</span>
+									<span>Quick Demo Log In (1-Click):</span>
+								</div>
+								<div class="auth-demo-chips">
+									<button type="button" class="auth-demo-chip" data-demo-email="ta12gang23@gmail.com" data-demo-handle="@tayyab" data-demo-name="Tayyab" title="Sign in as Tayyab">
+										<img src="https://api.dicebear.com/7.x/bottts/svg?seed=tayyab" alt="">
+										<span>👑 Tayyab</span>
+									</button>
+									<button type="button" class="auth-demo-chip" data-demo-email="clara@myteta.app" data-demo-handle="@clara" data-demo-name="Dr. Clara Vance" title="Sign in as Dr. Clara">
+										<img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=60&h=60&q=80" alt="">
+										<span>🩺 Clara</span>
+									</button>
+									<button type="button" class="auth-demo-chip" data-demo-email="maya@myteta.app" data-demo-handle="@maya" data-demo-name="Maya Lin" title="Sign in as Maya Lin">
+										<img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=60&h=60&q=80" alt="">
+										<span>🎨 Maya</span>
+									</button>
+									<button type="button" class="auth-demo-chip" data-demo-email="kai@myteta.app" data-demo-handle="@kai" data-demo-name="Kai Rivera" title="Sign in as Kai Rivera">
+										<img src="https://api.dicebear.com/7.x/bottts/svg?seed=kai" alt="">
+										<span>🌊 Kai</span>
+									</button>
+								</div>
+							</div>
+
 							<div class="auth-input-group">
-								<label for="page-login-email">Email Address</label>
+								<label for="page-login-email">Email or Username</label>
 								<div class="auth-field-wrapper">
 									<svg class="auth-field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-									<input type="email" id="page-login-email" required placeholder="you@domain.com" autocomplete="email">
+									<input type="text" id="page-login-email" required placeholder="you@domain.com or @username" autocomplete="username">
 								</div>
 							</div>
 
@@ -2038,6 +2068,27 @@
 									<div class="auth-field-wrapper">
 										<span class="auth-handle-at">@</span>
 										<input type="text" id="page-signup-handle" required placeholder="kairivera" autocomplete="username">
+									</div>
+								</div>
+							</div>
+
+							<!-- Live Interactive Avatar Generator -->
+							<div class="auth-signup-avatar-box">
+								<div class="auth-signup-avatar-display">
+									<img id="signup-live-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=newmember" alt="Avatar Preview">
+									<span class="auth-signup-avatar-badge" title="Live Seed">✨</span>
+								</div>
+								<div class="auth-signup-avatar-controls">
+									<div class="auth-signup-avatar-title">
+										<strong>Your Profile Icon</strong>
+										<small id="signup-avatar-desc">Live preview based on username & style</small>
+									</div>
+									<div class="auth-signup-avatar-pills">
+										<button type="button" class="auth-style-pill is-active" data-signup-style="bottts">🤖 Bots</button>
+										<button type="button" class="auth-style-pill" data-signup-style="adventurer">🧙 Adventurer</button>
+										<button type="button" class="auth-style-pill" data-signup-style="lorelei">🎨 Lorelei</button>
+										<button type="button" class="auth-style-pill" data-signup-style="micah">✨ Micah</button>
+										<button type="button" class="auth-style-pill auth-shuffle-pill" id="btn-signup-shuffle-avatar">🎲 Shuffle</button>
 									</div>
 								</div>
 							</div>

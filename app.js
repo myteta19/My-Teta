@@ -1252,12 +1252,11 @@
     if (profileMainAvatar && CURRENT_USER.avatar) profileMainAvatar.src = CURRENT_USER.avatar;
 
     // Control visibility of Auth vs Logout buttons:
-    // When LOGGED IN -> Hide Log in & Sign up on the page; Show Log out.
-    // When LOGGED OUT -> Show Log in & Sign up; Hide Log out.
     const topbarLoginBtn = document.getElementById('topbar-login-btn');
     const topbarSignupBtn = document.getElementById('topbar-signup-btn');
     const topbarLogoutBtn = document.getElementById('topbar-logout-btn');
     const railAuthBtn = document.getElementById('rail-auth-btn');
+    const railAuthLabel = document.getElementById('rail-auth-label');
     const railLogoutBtn = document.getElementById('rail-logout-btn');
     const btnSettingsLogout = document.getElementById('btn-settings-logout');
 
@@ -1267,6 +1266,7 @@
       if (topbarLogoutBtn) topbarLogoutBtn.style.display = 'none';
 
       if (railAuthBtn) railAuthBtn.style.display = 'flex';
+      if (railAuthLabel) railAuthLabel.textContent = 'Sign In / Sign Up';
       if (railLogoutBtn) railLogoutBtn.style.display = 'none';
       if (btnSettingsLogout) btnSettingsLogout.style.display = 'none';
     } else {
@@ -1274,7 +1274,8 @@
       if (topbarSignupBtn) topbarSignupBtn.style.display = 'none';
       if (topbarLogoutBtn) topbarLogoutBtn.style.display = 'inline-flex';
 
-      if (railAuthBtn) railAuthBtn.style.display = 'none';
+      if (railAuthBtn) railAuthBtn.style.display = 'flex';
+      if (railAuthLabel) railAuthLabel.textContent = 'Switch Account';
       if (railLogoutBtn) {
         railLogoutBtn.style.display = 'flex';
         railLogoutBtn.title = `Log out of ${CURRENT_USER.handle || 'account'}`;
@@ -5568,6 +5569,71 @@
     showToast(`Password reset link dispatched to ${emailVal || 'your email'} ✉️`, "✉️");
   });
 
+  // 1-Click Demo Accounts Quick Sign-In
+  document.querySelectorAll('.auth-demo-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const email = chip.dataset.demoEmail || chip.dataset.demoHandle;
+      const emailInput = document.getElementById('page-login-email');
+      const pwdInput = document.getElementById('page-login-password');
+      if (emailInput) emailInput.value = email;
+      if (pwdInput) pwdInput.value = 'password123';
+      
+      chip.style.transform = 'scale(0.96)';
+      setTimeout(() => { chip.style.transform = ''; }, 150);
+
+      const submitBtn = document.getElementById('btn-execute-page-login');
+      if (submitBtn) submitBtn.click();
+    });
+  });
+
+  // Live Interactive Avatar Generator for Sign Up
+  let signupAvatarStyle = 'bottts';
+  let signupAvatarSeed = 'newmember';
+  const signupLiveAvatar = document.getElementById('signup-live-avatar');
+  const signupHandleInput = document.getElementById('page-signup-handle');
+  const signupAvatarDesc = document.getElementById('signup-avatar-desc');
+
+  function updateSignupLiveAvatar() {
+    if (!signupLiveAvatar) return;
+    const url = `https://api.dicebear.com/7.x/${signupAvatarStyle}/svg?seed=${encodeURIComponent(signupAvatarSeed)}`;
+    signupLiveAvatar.src = url;
+    if (signupAvatarDesc) {
+      signupAvatarDesc.textContent = `Style: ${signupAvatarStyle.toUpperCase()} · Seed: "${signupAvatarSeed}"`;
+    }
+  }
+
+  // Update seed on typing username
+  if (signupHandleInput) {
+    signupHandleInput.addEventListener('input', () => {
+      const raw = signupHandleInput.value.trim().replace(/^@/, '');
+      if (raw) {
+        signupAvatarSeed = raw;
+        updateSignupLiveAvatar();
+      }
+    });
+  }
+
+  // Style pills
+  document.querySelectorAll('.auth-style-pill[data-signup-style]').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.auth-style-pill[data-signup-style]').forEach(p => p.classList.remove('is-active'));
+      pill.classList.add('is-active');
+      signupAvatarStyle = pill.dataset.signupStyle || 'bottts';
+      updateSignupLiveAvatar();
+    });
+  });
+
+  // Shuffle button
+  const shuffleSeeds = ['zen_artist', 'brooklyn_mind', 'starlight_poet', 'gentle_wave', 'curious_wanderer', 'sunlit_coffee', 'calm_ocean', 'warm_hearth', 'wildflower', 'cloud_walker'];
+  document.getElementById('btn-signup-shuffle-avatar')?.addEventListener('click', () => {
+    const randomSeed = shuffleSeeds[Math.floor(Math.random() * shuffleSeeds.length)] + '_' + Math.floor(Math.random() * 899 + 100);
+    signupAvatarSeed = randomSeed;
+    updateSignupLiveAvatar();
+    if (signupHandleInput && !signupHandleInput.value) {
+      signupHandleInput.value = randomSeed.split('_')[0];
+    }
+  });
+
   // Dedicated Page Log In Form Submit
   if (pageLoginForm) {
     pageLoginForm.addEventListener('submit', async (e) => {
@@ -5644,8 +5710,9 @@
         if (textSpan) textSpan.textContent = "Saving profile to Supabase...";
       }
 
-      const avatarSeed = encodeURIComponent(handle.replace('@', ''));
-      const avatarUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${avatarSeed}`;
+      const avatarUrl = (signupLiveAvatar && signupLiveAvatar.src)
+        ? signupLiveAvatar.src
+        : `https://api.dicebear.com/7.x/${signupAvatarStyle}/svg?seed=${encodeURIComponent(signupAvatarSeed || handle.replace('@', ''))}`;
 
       CURRENT_USER.id = 'user_' + Date.now();
       CURRENT_USER.name = fullName;
@@ -5691,22 +5758,42 @@
   authSignupTab?.addEventListener('click', () => switchAuthMode('signup'));
 
   document.querySelectorAll('[data-oauth]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const provider = btn.dataset.oauth;
-      showToast(`Connecting securely to ${provider}...`, "🔒");
-      setTimeout(() => {
+    btn.addEventListener('click', async () => {
+      const provider = btn.dataset.oauth || 'Social';
+      showToast(`Connecting securely with ${provider}...`, "🔒");
+      
+      const providerAvatars = {
+        Google: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&h=200&q=80',
+        Apple: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&h=200&q=80',
+        GitHub: 'https://api.dicebear.com/7.x/bottts/svg?seed=githubber'
+      };
+
+      setTimeout(async () => {
         if (authModal) authModal.hidden = true;
         try {
           localStorage.removeItem('my_teta_logged_out');
           CURRENT_USER.id = CURRENT_USER.id || ('user_' + Date.now());
-          CURRENT_USER.name = `${provider} Member`;
-          CURRENT_USER.handle = `@${provider.toLowerCase()}_user`;
+          CURRENT_USER.name = `${provider} Friend`;
+          CURRENT_USER.handle = `@${provider.toLowerCase()}_member`;
+          CURRENT_USER.avatar = providerAvatars[provider] || CURRENT_USER.avatar;
           localStorage.setItem('my_teta_current_user', JSON.stringify(CURRENT_USER));
         } catch (err) {}
+
+        await SupabaseService.syncProfile({
+          name: CURRENT_USER.name,
+          handle: CURRENT_USER.handle,
+          email: `${provider.toLowerCase()}@auth.myteta.app`,
+          avatar: CURRENT_USER.avatar,
+          role: 'Connected via ' + provider,
+          bio: `Signed in with ${provider} on My Teta.`,
+          mutual: 'Active circle member'
+        });
+
         updateCurrentUserUI();
-        showToast(`Connected successfully with ${provider}!`, "✨");
+        await syncCommunityFromSupabase();
+        showToast(`Connected successfully with ${provider}! ✨`, "✨");
         switchView('home');
-      }, 700);
+      }, 600);
     });
   });
 

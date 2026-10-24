@@ -9020,8 +9020,14 @@ input:checked + .slider:before {
 /* OAuth Social Row */
 .auth-oauth-group {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+}
+
+@media (max-width: 500px) {
+  .auth-oauth-group {
+    grid-template-columns: 1fr;
+  }
 }
 
 .oauth-quick-btn {
@@ -9029,7 +9035,7 @@ input:checked + .slider:before {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 10px 12px;
   border-radius: 14px;
   border: 1px solid var(--border);
   background: #ffffff;
@@ -9047,6 +9053,174 @@ input:checked + .slider:before {
   border-color: #6366f1;
   color: var(--ink);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+/* Demo Accounts Tray */
+.auth-demo-accounts-wrap {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(6, 182, 212, 0.05) 100%);
+  border: 1px dashed rgba(99, 102, 241, 0.35);
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin: 6px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth-demo-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #6366f1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.auth-demo-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.auth-demo-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px 5px 6px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-demo-chip img {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #f1f5f9;
+}
+
+.auth-demo-chip:hover {
+  background: #6366f1;
+  color: #ffffff;
+  border-color: #6366f1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.28);
+}
+
+/* Signup Interactive Avatar Customizer */
+.auth-signup-avatar-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.04) 0%, rgba(6, 182, 212, 0.04) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 18px;
+  padding: 12px 14px;
+  margin: 4px 0;
+}
+
+.auth-signup-avatar-display {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.auth-signup-avatar-display img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #ffffff;
+  border: 2px solid #6366f1;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.auth-signup-avatar-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: #6366f1;
+  color: #ffffff;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  border: 2px solid #ffffff;
+}
+
+.auth-signup-avatar-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.auth-signup-avatar-title {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-signup-avatar-title strong {
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+.auth-signup-avatar-title small {
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+}
+
+.auth-signup-avatar-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.auth-style-pill {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 3px 9px;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.auth-style-pill:hover,
+.auth-style-pill.is-active {
+  background: #6366f1;
+  color: #ffffff;
+  border-color: #6366f1;
+}
+
+.auth-style-pill.auth-shuffle-pill {
+  background: rgba(13, 148, 136, 0.1);
+  color: #0d9488;
+  border-color: rgba(13, 148, 136, 0.3);
+}
+
+.auth-style-pill.auth-shuffle-pill:hover {
+  background: #0d9488;
+  color: #ffffff;
+  border-color: #0d9488;
 }
 
 /* Separator Line */
