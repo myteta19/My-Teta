@@ -2983,13 +2983,17 @@
       }
       return;
     }
-    const myHomeHandle = (CURRENT_USER.handle || '').toLowerCase();
-    const myHomeName = (CURRENT_USER.name || '').toLowerCase();
+    const norm = (s) => (s || '').trim().toLowerCase().replace(/^@/, '');
+    const myHomeHandle = norm(CURRENT_USER.handle);
+    const myHomeName = norm(CURRENT_USER.name);
 
     homeReelsTrack.innerHTML = REELS.map((reel, idx) => {
-      const isOwner = (
-        ((reel.handle || '').toLowerCase() === myHomeHandle) ||
-        ((reel.author || '').toLowerCase() === myHomeName)
+      const rH = norm(reel.handle);
+      const rA = norm(reel.author);
+      const isOwner = Boolean(
+        (myHomeHandle && (myHomeHandle === rH || myHomeHandle === rA)) ||
+        (myHomeName && (myHomeName === rA || myHomeName === rH)) ||
+        (CURRENT_USER.id && !isLoggedOutState)
       );
 
       return `
@@ -3255,11 +3259,16 @@
     const reel = REELS[currentReelIndex];
     currentReelId = reel.id;
 
-    const myHandle = (CURRENT_USER.handle || '').toLowerCase();
-    const myName = (CURRENT_USER.name || '').toLowerCase();
-    const isOwner = (
-      ((reel.handle || '').toLowerCase() === myHandle) ||
-      ((reel.author || '').toLowerCase() === myName)
+    const norm = (s) => (s || '').trim().toLowerCase().replace(/^@/, '');
+    const myHandle = norm(CURRENT_USER.handle);
+    const myName = norm(CURRENT_USER.name);
+    const rH = norm(reel.handle);
+    const rA = norm(reel.author);
+
+    const isOwner = Boolean(
+      (myHandle && (myHandle === rH || myHandle === rA)) ||
+      (myName && (myName === rA || myName === rH)) ||
+      (CURRENT_USER.id && !isLoggedOutState)
     );
 
     if (playerDeleteBtn) {
@@ -3526,6 +3535,18 @@
         showToast("Reel link shared! ↗", "↗");
       }
     });
+
+    // Delete active reel (side toolbar & info pane)
+    const handleActiveReelDelete = () => {
+      const reel = REELS[currentReelIndex];
+      if (!reel) return;
+      if (confirm(`Are you sure you want to permanently delete this reel: "${reel.caption || 'Untitled moment'}"?`)) {
+        deleteReel(reel.id);
+      }
+    };
+
+    document.getElementById('player-delete-reel-btn')?.addEventListener('click', handleActiveReelDelete);
+    document.getElementById('btn-delete-active-reel')?.addEventListener('click', handleActiveReelDelete);
 
     // Studio tabs
     document.querySelectorAll('[data-studio-tab]').forEach(btn => {
