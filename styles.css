@@ -9507,7 +9507,8 @@ input:checked + .slider:before {
   gap: 14px;
   min-width: 0;
 }
-.avatar-studio-tabs {
+.avatar-studio-tabs,
+.cover-studio-tabs {
   display: flex;
   background: var(--surface-subtle, #f1f5f9);
   padding: 4px;
@@ -9515,7 +9516,8 @@ input:checked + .slider:before {
   gap: 4px;
   overflow-x: auto;
 }
-.avatar-studio-tab {
+.avatar-studio-tab,
+.cover-studio-tab {
   flex: 1;
   padding: 7px 10px;
   font-size: 0.78rem;
@@ -9528,7 +9530,8 @@ input:checked + .slider:before {
   white-space: nowrap;
   transition: all 0.15s ease;
 }
-.avatar-studio-tab.is-active {
+.avatar-studio-tab.is-active,
+.cover-studio-tab.is-active {
   background: #fff;
   color: var(--ink);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
@@ -9737,10 +9740,12 @@ input:checked + .slider:before {
 [data-theme="dark"] .avatar-preview-halo {
   background: #1e293b;
 }
-[data-theme="dark"] .avatar-studio-tabs {
+[data-theme="dark"] .avatar-studio-tabs,
+[data-theme="dark"] .cover-studio-tabs {
   background: #0f172a;
 }
-[data-theme="dark"] .avatar-studio-tab.is-active {
+[data-theme="dark"] .avatar-studio-tab.is-active,
+[data-theme="dark"] .cover-studio-tab.is-active {
   background: #1e293b;
   color: #fff;
 }
@@ -9974,5 +9979,177 @@ input:checked + .slider:before {
   border-color: rgba(255, 255, 255, 0.1);
 }
 
+/* ==========================================
+   STUDIO PANES & HIDDEN ACCORDION CONTROLS
+   ========================================== */
+[hidden] {
+  display: none !important;
+}
 
+.avatar-studio-pane,
+.cover-studio-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 
+.avatar-studio-pane[hidden],
+.cover-studio-pane[hidden] {
+  display: none !important;
+}
+
+/* Trait Quick Tags for Custom Seed Generation */
+.avatar-trait-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.avatar-trait-tag {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--surface-subtle, #f1f5f9);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.avatar-trait-tag:hover {
+  background: rgba(13, 148, 136, 0.12);
+  border-color: var(--lagoon);
+  color: var(--lagoon);
+  transform: translateY(-1px);
+}
+
+/* Custom Background Color Picker */
+.avatar-color-picker-label {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px dashed var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  background: var(--surface-subtle, #f8fafc);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.avatar-color-picker-label:hover {
+  transform: scale(1.15);
+  border-color: var(--lagoon);
+}
+
+.avatar-color-picker-input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+}
+
+.avatar-color-picker-icon {
+  font-size: 0.75rem;
+  pointer-events: none;
+}
+
+/* Custom Dual-Color Cover Gradient Builder */
+.custom-gradient-builder {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--surface-subtle, #f8fafc);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.custom-grad-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.custom-grad-header strong {
+  font-size: 0.84rem;
+  color: var(--ink);
+}
+
+.custom-grad-header small {
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+}
+
+.custom-grad-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.custom-grad-picker-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.custom-grad-picker-group input[type="color"] {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px;
+  cursor: pointer;
+  background: #fff;
+  outline: none;
+}
+
+.custom-grad-select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 0.76rem;
+  background: var(--surface, #fff);
+  color: var(--ink);
+  outline: none;
+  cursor: pointer;
+}
+
+[data-theme="dark"] .avatar-trait-tag {
+  background: #0f172a;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .avatar-color-picker-label {
+  background: #0f172a;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .custom-gradient-builder {
+  background: #0f172a;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .custom-grad-picker-group input[type="color"] {
+  background: #1e293b;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .custom-grad-select {
+  background: #1e293b;
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+}

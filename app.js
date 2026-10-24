@@ -1705,6 +1705,10 @@
       }
     }
 
+    if (viewName === 'profile' && typeof renderProfile === 'function') {
+      renderProfile();
+    }
+
     Object.keys(viewPanels).forEach(key => {
       if (viewPanels[key]) {
         viewPanels[key].hidden = (key !== viewName);
@@ -5686,7 +5690,9 @@
     'lorelei': 'Anime Aesthetics 🌿',
     'fun-emoji': 'Playful Emoji 🎭',
     'adventurer': 'Adventurer Hero 🦁',
-    'notionists': 'Minimalist Sketch 👓'
+    'notionists': 'Minimalist Sketch 👓',
+    'pixel-art': 'Pixel Art 👾',
+    'micah': 'Minimalist Micah ✨'
   };
 
   const RANDOM_SEEDS = [
@@ -5697,7 +5703,8 @@
 
   function buildStudioAvatarUrl(style, seed, bgColor) {
     const safeSeed = encodeURIComponent((seed || 'creator').trim());
-    const bg = bgColor && bgColor !== 'transparent' ? `&backgroundColor=${bgColor}` : '';
+    const cleanBg = (bgColor || '').replace('#', '');
+    const bg = cleanBg && cleanBg !== 'transparent' ? `&backgroundColor=${cleanBg}` : '';
     return `https://api.dicebear.com/7.x/${style}/svg?seed=${safeSeed}${bg}`;
   }
 
@@ -5892,7 +5899,7 @@
       });
     });
 
-    // 5. Seed Word Input
+    // 5. Seed Word Input & Trait Tags
     const seedInput = document.getElementById('avatar-seed-input');
     if (seedInput) {
       seedInput.addEventListener('input', (e) => {
@@ -5902,7 +5909,20 @@
       });
     }
 
-    // 6. Background Color Swatches
+    document.querySelectorAll('.avatar-trait-tag').forEach(tag => {
+      tag.addEventListener('click', () => {
+        let seedVal = tag.dataset.trait;
+        if (seedVal === 'my-name') {
+          seedVal = (CURRENT_USER.name || 'tayyab').toLowerCase().replace(/\s+/g, '-');
+        }
+        studioCurrentSeed = seedVal;
+        if (seedInput) seedInput.value = seedVal;
+        const newUrl = buildStudioAvatarUrl(studioCurrentStyle, studioCurrentSeed, studioCurrentBg);
+        updateStudioPreview(newUrl, null, 'Trait: ' + seedVal);
+      });
+    });
+
+    // 6. Background Color Swatches & Custom Picker
     document.querySelectorAll('.avatar-color-swatch').forEach(swatch => {
       swatch.addEventListener('click', () => {
         document.querySelectorAll('.avatar-color-swatch').forEach(s => s.classList.remove('is-active'));
@@ -5912,6 +5932,17 @@
         updateStudioPreview(newUrl);
       });
     });
+
+    const customBgInput = document.getElementById('avatar-custom-bg-color');
+    if (customBgInput) {
+      customBgInput.addEventListener('input', (e) => {
+        const hex = e.target.value.replace('#', '');
+        studioCurrentBg = hex;
+        document.querySelectorAll('.avatar-color-swatch').forEach(s => s.classList.remove('is-active'));
+        const newUrl = buildStudioAvatarUrl(studioCurrentStyle, studioCurrentSeed, studioCurrentBg);
+        updateStudioPreview(newUrl);
+      });
+    }
 
     // 7. Shuffle & Randomize
     const performRandomize = () => {
@@ -6238,7 +6269,7 @@
   }
 
   function switchCoverStudioTab(tabName) {
-    document.querySelectorAll('[data-cover-tab]').forEach(t => {
+    document.querySelectorAll('.cover-studio-tab, [data-cover-tab]').forEach(t => {
       t.classList.toggle('is-active', t.dataset.coverTab === tabName);
     });
 
@@ -6326,11 +6357,33 @@
     });
 
     // 3. Tab switching
-    document.querySelectorAll('[data-cover-tab]').forEach(tab => {
+    document.querySelectorAll('.cover-studio-tab, [data-cover-tab]').forEach(tab => {
       tab.addEventListener('click', () => {
         switchCoverStudioTab(tab.dataset.coverTab);
       });
     });
+
+    // 3b. Custom Dual-Color Gradient Builder
+    const gradC1 = document.getElementById('cover-grad-color1');
+    const gradC2 = document.getElementById('cover-grad-color2');
+    const gradAngle = document.getElementById('cover-grad-angle');
+    const applyGradBtn = document.getElementById('btn-apply-custom-gradient');
+
+    const applyCustomCoverGradient = () => {
+      const c1 = gradC1 ? gradC1.value : '#0d9488';
+      const c2 = gradC2 ? gradC2.value : '#6366f1';
+      const angle = gradAngle ? gradAngle.value : '135deg';
+      const gradValue = `linear-gradient(${angle}, ${c1} 0%, ${c2} 100%)`;
+      document.querySelectorAll('.cover-gradient-card').forEach(c => c.classList.remove('is-active'));
+      document.querySelectorAll('.cover-scenic-card').forEach(c => c.classList.remove('is-active'));
+      updateCoverStudioPreview(gradValue, `Custom Gradient (${c1} → ${c2})`);
+      showToast("Custom gradient preview applied! ✨", "🎨");
+    };
+
+    applyGradBtn?.addEventListener('click', applyCustomCoverGradient);
+    gradC1?.addEventListener('input', applyCustomCoverGradient);
+    gradC2?.addEventListener('input', applyCustomCoverGradient);
+    gradAngle?.addEventListener('change', applyCustomCoverGradient);
 
     // 4. File Upload (Banner photo)
     const fileInput = document.getElementById('cover-device-file-input');
@@ -6491,7 +6544,14 @@
     const location = document.getElementById('profile-location');
     const bioText = document.getElementById('profile-bio-text');
 
-    if (coverBanner) coverBanner.style.background = CURRENT_USER.cover;
+    if (coverBanner) {
+      const c = CURRENT_USER.cover || 'linear-gradient(135deg, #0d9488 0%, #6366f1 50%, #059669 100%)';
+      if (c.startsWith('http://') || c.startsWith('https://') || c.startsWith('data:image/')) {
+        coverBanner.style.background = `linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.55)), url('${c}') center/cover`;
+      } else {
+        coverBanner.style.background = c;
+      }
+    }
     if (mainAvatar) mainAvatar.src = CURRENT_USER.avatar;
     if (displayName) displayName.textContent = CURRENT_USER.name;
     if (handle) handle.textContent = CURRENT_USER.handle;
@@ -6783,10 +6843,31 @@
           }
         });
 
+        // Persist to localStorage
+        try {
+          localStorage.setItem('my_teta_current_user', JSON.stringify(CURRENT_USER));
+        } catch (e) {}
+
         renderProfile();
         renderFeed();
         renderHomeReels();
         renderReels();
+
+        // Sync to Supabase in background
+        try {
+          SupabaseService.syncProfile({
+            name: CURRENT_USER.name,
+            handle: CURRENT_USER.handle,
+            email: CURRENT_USER.email,
+            avatar: CURRENT_USER.avatar,
+            role: CURRENT_USER.role,
+            bio: CURRENT_USER.bio,
+            location: CURRENT_USER.location,
+            cover: CURRENT_USER.cover
+          });
+        } catch (err) {
+          console.warn("Profile sync error:", err);
+        }
 
         switchProfileTab('moments');
         showToast("Profile changes saved successfully! ✨", "✓");

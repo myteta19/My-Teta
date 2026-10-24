@@ -2405,6 +2405,14 @@
 									<span class="avatar-style-icon">👓</span>
 									<strong>Sketch</strong>
 								</button>
+								<button type="button" class="avatar-style-chip" data-avatar-style="pixel-art">
+									<span class="avatar-style-icon">👾</span>
+									<strong>Pixel</strong>
+								</button>
+								<button type="button" class="avatar-style-chip" data-avatar-style="micah">
+									<span class="avatar-style-icon">✨</span>
+									<strong>Micah</strong>
+								</button>
 							</div>
 						</div>
 
@@ -2417,6 +2425,15 @@
 							<div class="avatar-seed-input-wrap">
 								<input type="text" id="avatar-seed-input" placeholder="e.g. tayyab, warrior, sunshine..." maxlength="30" autocomplete="off">
 								<button type="button" id="btn-shuffle-seed" title="Shuffle seed" aria-label="Shuffle seed">🔀</button>
+							</div>
+							<div class="avatar-trait-tags">
+								<button type="button" class="avatar-trait-tag" data-trait="my-name">👤 My Name</button>
+								<button type="button" class="avatar-trait-tag" data-trait="creative">🎨 Creative</button>
+								<button type="button" class="avatar-trait-tag" data-trait="warrior">⚔️ Warrior</button>
+								<button type="button" class="avatar-trait-tag" data-trait="chill">🌴 Chill</button>
+								<button type="button" class="avatar-trait-tag" data-trait="sparkle">✨ Sparkle</button>
+								<button type="button" class="avatar-trait-tag" data-trait="cyber">⚡ Cyber</button>
+								<button type="button" class="avatar-trait-tag" data-trait="glitch">🌀 Glitch</button>
 							</div>
 						</div>
 
@@ -2433,6 +2450,10 @@
 								<button type="button" class="avatar-color-swatch" data-color="b6e3f4" style="background:#b6e3f4;" title="Soft Sky"></button>
 								<button type="button" class="avatar-color-swatch" data-color="ffd5dc" style="background:#ffd5dc;" title="Pastel Pink"></button>
 								<button type="button" class="avatar-color-swatch" data-color="transparent" style="background: repeating-conic-gradient(#ddd 0% 25%, #fff 0% 50%) 50% / 8px 8px;" title="Transparent"></button>
+								<label class="avatar-color-picker-label" title="Pick any custom color">
+									<input type="color" id="avatar-custom-bg-color" value="#0d9488" class="avatar-color-picker-input">
+									<span class="avatar-color-picker-icon">🎨</span>
+								</label>
 							</div>
 						</div>
 					</div>
@@ -2511,16 +2532,16 @@
 			<div class="cover-studio-body">
 				<!-- Tabs -->
 				<div class="avatar-studio-tabs cover-studio-tabs" role="tablist">
-					<button type="button" class="avatar-studio-tab is-active" data-cover-tab="gradients" role="tab">
+					<button type="button" class="cover-studio-tab is-active" data-cover-tab="gradients" role="tab">
 						🌈 Gradients
 					</button>
-					<button type="button" class="avatar-studio-tab" data-cover-tab="scenic" role="tab">
+					<button type="button" class="cover-studio-tab" data-cover-tab="scenic" role="tab">
 						🏞 Landscapes & Scenery
 					</button>
-					<button type="button" class="avatar-studio-tab" data-cover-tab="upload" role="tab">
+					<button type="button" class="cover-studio-tab" data-cover-tab="upload" role="tab">
 						📸 Upload Banner
 					</button>
-					<button type="button" class="avatar-studio-tab" data-cover-tab="url" role="tab">
+					<button type="button" class="cover-studio-tab" data-cover-tab="url" role="tab">
 						🌐 Image URL
 					</button>
 				</div>
@@ -2529,6 +2550,37 @@
 				<div class="cover-studio-pane" id="pane-cover-gradients">
 					<div class="cover-gradients-grid" id="cover-gradients-grid">
 						<!-- Populated dynamically -->
+					</div>
+
+					<!-- Custom Dual-Color Gradient Builder -->
+					<div class="custom-gradient-builder">
+						<div class="custom-grad-header">
+							<strong>✨ Create Your Own Custom Gradient</strong>
+							<small>Choose start and end colors, direction, and apply to banner</small>
+						</div>
+						<div class="custom-grad-controls">
+							<div class="custom-grad-picker-group">
+								<label for="cover-grad-color1">Start</label>
+								<input type="color" id="cover-grad-color1" value="#0d9488" title="Start color">
+							</div>
+							<div class="custom-grad-picker-group">
+								<label for="cover-grad-color2">End</label>
+								<input type="color" id="cover-grad-color2" value="#6366f1" title="End color">
+							</div>
+							<div class="custom-grad-picker-group">
+								<label for="cover-grad-angle">Direction</label>
+								<select id="cover-grad-angle" class="custom-grad-select">
+									<option value="135deg">Diagonal ↘ (135°)</option>
+									<option value="90deg">Vertical ↓ (90°)</option>
+									<option value="45deg">Up-Right ↗ (45°)</option>
+									<option value="180deg">Horizontal → (180°)</option>
+									<option value="225deg">Bottom-Left ↙ (225°)</option>
+								</select>
+							</div>
+							<button type="button" class="button button-primary button-small" id="btn-apply-custom-gradient">
+								Apply Gradient
+							</button>
+						</div>
 					</div>
 				</div>
 
