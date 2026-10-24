@@ -2676,13 +2676,10 @@
     });
 
     container.querySelectorAll('[data-share-btn]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(window.location.href);
-          showToast("Moment link copied to clipboard! ↗", "↗");
-        } else {
-          showToast("Moment shared! ↗", "↗");
-        }
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openShareAppModal();
       });
     });
   }
@@ -3762,13 +3759,10 @@
     });
 
     // Share button
-    document.getElementById('player-share-btn')?.addEventListener('click', () => {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(window.location.href);
-        showToast("Reel link copied to clipboard! ↗", "↗");
-      } else {
-        showToast("Reel link shared! ↗", "↗");
-      }
+    document.getElementById('player-share-btn')?.addEventListener('click', (e) => {
+      e?.preventDefault();
+      e?.stopPropagation();
+      openShareAppModal();
     });
 
     // Delete active reel (side toolbar & info pane)
@@ -5471,7 +5465,8 @@
   }
 
   function openShareAppModal() {
-    if (!shareAppModal) return;
+    const modal = document.getElementById('share-app-modal') || shareAppModal;
+    if (!modal) return;
     const url = getShareInviteUrl();
 
     if (shareAppLinkInput) shareAppLinkInput.value = url;
@@ -5488,14 +5483,33 @@
       shareQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}`;
     }
 
-    shareAppModal.hidden = false;
+    modal.removeAttribute('hidden');
+    modal.hidden = false;
+    modal.style.setProperty('display', 'flex', 'important');
+    document.body.classList.add('modal-open');
   }
 
   function closeShareAppModal() {
-    if (shareAppModal) shareAppModal.hidden = true;
+    const modal = document.getElementById('share-app-modal') || shareAppModal;
+    if (!modal) return;
+    modal.setAttribute('hidden', '');
+    modal.hidden = true;
+    modal.style.setProperty('display', 'none', 'important');
+    document.body.classList.remove('modal-open');
   }
 
-  // Bind Open Triggers for Share App
+  // Global event delegation for all Share App buttons across the entire app
+  document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('[data-action="share-app"], .topbar-share-btn, #topbar-share-btn, #share-profile-btn, #player-share-btn, .rail-share-btn, [data-share-btn]');
+    if (trigger) {
+      if (trigger.id === 'share-post' || trigger.closest('#share-app-modal')) return;
+      e.preventDefault();
+      e.stopPropagation();
+      openShareAppModal();
+    }
+  });
+
+  // Also bind direct references
   document.querySelectorAll('[data-action="share-app"], .topbar-share-btn, #topbar-share-btn, #share-profile-btn, #player-share-btn, .rail-share-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -7348,13 +7362,10 @@
     });
 
     // 3. Share profile button
-    document.getElementById('share-profile-btn')?.addEventListener('click', () => {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(window.location.origin + window.location.pathname + "#profile");
-        showToast("Profile link copied to clipboard! ↗", "↗");
-      } else {
-        showToast("Profile link ready to share! ↗", "↗");
-      }
+    document.getElementById('share-profile-btn')?.addEventListener('click', (e) => {
+      e?.preventDefault();
+      e?.stopPropagation();
+      openShareAppModal();
     });
 
     // 4. Avatar Option selection

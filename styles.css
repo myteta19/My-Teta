@@ -6246,8 +6246,20 @@ input:checked + .slider:before {
   .brand-text {
     font-size: 1.15rem !important;
   }
-  .primary-nav, .search-box, .topbar-share-btn {
+  .primary-nav, .search-box {
     display: none !important;
+  }
+  .topbar-share-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    padding: 0 10px !important;
+    height: 32px !important;
+    font-size: 0.76rem !important;
+    font-weight: 700 !important;
+    border-radius: 999px !important;
+    flex-shrink: 0 !important;
   }
   .topbar-actions {
     gap: 5px !important;
@@ -10356,6 +10368,23 @@ html.auth-required .auth-back-btn {
 /* ==========================================================================
    SHARE & INVITE APP MODAL STYLES
    ========================================================================== */
+.share-modal-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 999999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  padding: 16px !important;
+}
+
+.share-modal-backdrop[hidden] {
+  display: none !important;
+}
+
 .share-modal-card {
   max-width: 520px !important;
   border-radius: 24px !important;
