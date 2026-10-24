@@ -145,12 +145,13 @@
 
     async sendFriendRequest(reqData) {
       try {
+        const activeSenderAvatar = reqData.sender_avatar || CURRENT_USER.avatar || resolveProfileAvatar(CURRENT_USER.handle, CURRENT_USER.name);
         const payload = {
           id: `req_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
           sender_name: reqData.sender_name || CURRENT_USER.name,
           sender_handle: reqData.sender_handle || CURRENT_USER.handle,
-          sender_avatar: reqData.sender_avatar || CURRENT_USER.avatar,
-          sender_role: reqData.sender_role || 'Member',
+          sender_avatar: activeSenderAvatar,
+          sender_role: reqData.sender_role || CURRENT_USER.role || 'Member',
           sender_mutual: reqData.sender_mutual || 'In your circle',
           receiver_handle: reqData.receiver_handle,
           status: 'pending',
@@ -978,6 +979,14 @@
         if (found && found.avatar) return found.avatar;
       }
     }
+
+    try {
+      const stored = localStorage.getItem('my_teta_custom_friends');
+      if (stored && h) {
+        const cf = JSON.parse(stored);
+        if (cf && cf[h] && cf[h].avatar) return cf[h].avatar;
+      }
+    } catch(e) {}
     
     return fallbackAvatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(handle || authorName || 'member')}`;
   }
@@ -1101,27 +1110,42 @@
       const incoming = await SupabaseService.fetchIncomingRequests(CURRENT_USER.handle);
       if (incoming && incoming.length > 0) {
         incoming.forEach(inc => {
+          // Look up sender's cloud profile to guarantee freshest live profile picture
+          const sProfile = (cloudProfiles || []).find(p => 
+            (p.handle && inc.sender_handle && p.handle.toLowerCase() === inc.sender_handle.toLowerCase()) ||
+            (p.name && inc.sender_name && p.name.toLowerCase() === inc.sender_name.toLowerCase())
+          );
+          const resolvedSenderAvatar = (sProfile && sProfile.avatar)
+            ? sProfile.avatar
+            : (inc.sender_avatar || resolveProfileAvatar(inc.sender_handle, inc.sender_name));
+          const resolvedSenderName = (sProfile && sProfile.name)
+            ? sProfile.name
+            : resolveProfileName(inc.sender_handle, inc.sender_name);
+
           friendRequests.unshift({
             id: inc.id,
-            name: inc.sender_name,
+            name: resolvedSenderName,
             handle: inc.sender_handle,
-            avatar: inc.sender_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-            role: inc.sender_role || 'Member',
+            avatar: resolvedSenderAvatar,
+            role: (sProfile && sProfile.role) || inc.sender_role || 'Member',
             mutual: inc.sender_mutual || 'Requested connection via Supabase',
             time: 'Just now',
             isSupabase: true
           });
 
           if (typeof notifications !== 'undefined' && Array.isArray(notifications)) {
-            const notifAlready = notifications.some(n => n.requestId === inc.id);
-            if (!notifAlready) {
+            const existingNotif = notifications.find(n => n.requestId === inc.id);
+            if (existingNotif) {
+              existingNotif.avatar = resolvedSenderAvatar;
+              existingNotif.actor = resolvedSenderName;
+            } else {
               notifications.unshift({
                 id: `notif_${inc.id}`,
                 type: "request",
                 icon: "👥",
                 iconClass: "icon-request",
-                actor: inc.sender_name,
-                avatar: inc.sender_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+                actor: resolvedSenderName,
+                avatar: resolvedSenderAvatar,
                 text: "sent you a friend request via Supabase",
                 time: "Just now",
                 read: false,
@@ -1131,6 +1155,13 @@
             }
           }
         });
+      }
+
+      // Update badge counts for received requests
+      const incomingBadge = document.getElementById('friends-incoming-badge');
+      if (incomingBadge) {
+        incomingBadge.textContent = friendRequests.length;
+        incomingBadge.style.display = friendRequests.length > 0 ? 'inline-flex' : 'none';
       }
 
       // Fetch accepted friendships involving CURRENT_USER from Supabase
@@ -2719,6 +2750,44 @@
   function renderFriends(filter = currentFriendFilter) {
     currentFriendFilter = filter;
     if (!peopleGrid) return;
+
+    // 1. INCOMING REQUESTS (Requests Received with Sender's Real Profile Picture)
+    if (filter === 'incoming') {
+      if (friendRequests.length === 0) {
+        if (friendCountSpan) friendCountSpan.textContent = "0 requests";
+        peopleGrid.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 48px 16px; text-align: center; color: var(--ink-faint);">
+            <div style="font-size: 2.4rem; margin-bottom: 8px;">📬</div>
+            <p style="margin: 0 0 6px; font-weight: 700; color: var(--ink-soft); font-size: 1.05rem;">No pending requests received</p>
+            <small>When other members send you connection requests, their real profile picture and details will appear here.</small>
+          </div>
+        `;
+        return;
+      }
+
+      if (friendCountSpan) {
+        friendCountSpan.textContent = `${friendRequests.length} ${friendRequests.length === 1 ? 'request' : 'requests'}`;
+      }
+
+      peopleGrid.innerHTML = friendRequests.map(req => `
+        <div class="person-card is-incoming-request" data-request-id="${req.id}" style="border: 1px solid rgba(99, 102, 241, 0.35); box-shadow: 0 8px 24px rgba(99, 102, 241, 0.08);">
+          <span class="person-card-status-pill" style="font-size:0.72rem; padding:3px 10px; border-radius:12px; background:rgba(99, 102, 241, 0.12); color:#6366f1; border:1px solid rgba(99, 102, 241, 0.28); font-weight:700;">✨ Wants to Connect</span>
+          <div class="person-card-avatar-wrap" style="cursor:pointer; display:inline-block; margin-top:8px;">
+            <img src="${req.avatar}" alt="${escapeHTML(req.name)}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(req.handle||req.name||'member')}'" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #6366f1;">
+          </div>
+          <h3 style="margin-top: 6px; font-size: 1.05rem; font-weight: 700;">${escapeHTML(req.name)}</h3>
+          <p style="color:var(--ink-soft); font-weight:600; margin-bottom:2px; font-size:0.85rem;">${escapeHTML(req.handle || '')}</p>
+          <p style="font-size:0.8rem; color:var(--ink-muted);">${escapeHTML(req.role || 'Member')} · <span style="color:var(--lagoon);">${escapeHTML(req.mutual || 'Via Supabase')}</span></p>
+          <div class="person-card-actions" style="margin-top:14px; display:flex; gap:8px;">
+            <button class="button button-primary button-small notif-accept-btn" data-accept-id="${req.id}" type="button" style="flex:1;">Confirm ✓</button>
+            <button class="button button-outline button-small notif-decline-btn" data-decline-id="${req.id}" type="button">Delete</button>
+          </div>
+        </div>
+      `).join('');
+
+      attachRequestActionListeners(peopleGrid);
+      return;
+    }
 
     const query = friendsSearchInput ? friendsSearchInput.value.trim().toLowerCase() : '';
     let list = PEOPLE;
@@ -5183,7 +5252,13 @@
     const friendsCountEl = document.querySelector('.profile-stats div strong');
     if (friendsCountEl) friendsCountEl.textContent = CURRENT_USER.friendsCount;
 
-    renderFriends('following');
+    const incomingBadge = document.getElementById('friends-incoming-badge');
+    if (incomingBadge) {
+      incomingBadge.textContent = friendRequests.length;
+      incomingBadge.style.display = friendRequests.length > 0 ? 'inline-flex' : 'none';
+    }
+
+    renderFriends(currentFriendFilter === 'incoming' ? 'incoming' : 'following');
     renderChatFriendsTray();
     renderChat();
     renderNotifications(activeNotifFilter);
@@ -5200,6 +5275,13 @@
     friendRequests = friendRequests.filter(r => r.id !== reqId);
     notifications = notifications.filter(n => !(n.isRequest && n.requestId === reqId));
 
+    const incomingBadge = document.getElementById('friends-incoming-badge');
+    if (incomingBadge) {
+      incomingBadge.textContent = friendRequests.length;
+      incomingBadge.style.display = friendRequests.length > 0 ? 'inline-flex' : 'none';
+    }
+
+    renderFriends(currentFriendFilter);
     renderNotifications(activeNotifFilter);
     showToast(`Declined request from ${reqName}`, '×');
   }
@@ -8154,6 +8236,20 @@
         .subscribe();
     } catch (err) {
       console.warn("Supabase Realtime profiles subscription notice:", err);
+    }
+  }
+
+  // Supabase Realtime WebSocket subscription for instant friend request synchronization
+  if (supabaseClient) {
+    try {
+      supabaseClient
+        .channel('public:friend_requests_live')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'friend_requests' }, () => {
+          syncCommunityFromSupabase(true);
+        })
+        .subscribe();
+    } catch (err) {
+      console.warn("Supabase Realtime friend requests subscription notice:", err);
     }
   }
 
